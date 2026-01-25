@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrativo - PDFs</title>
+    <link rel="stylesheet" href="stylePdf.css">
+</head>
+<body>
+    <div class="admin-panel">
+        <header>
+            <h1>Panel Administrativo - Generar PDFs</h1>
+            <p>Selecciona un área para generar el reporte en PDF</p>
+        </header>
+
+        <h2 style="color: #2980b9;">Lista de Asistentes - Fiesta Fin de Año</h2>
+        <div class="service-buttons">
+            <button class="service-btn" id="reporte-fiesta" data-service="FIESTA_FIN_ANIO">
+                <span class="btn-icon">🎉</span>
+                <span class="btn-text">FIESTA FIN DE AÑO</span>
+                <span class="btn-desc">Lista completa de asistentes</span>
+            </button>
+        </div>
+        
+        <h2 style="color: #c62828;">¿Quiénes y qué pidieron en la cena?</h2>
+        <div class="service-buttons">
+            <button class="service-btn" id="reporte-pavo" data-service="PAVO">
+                <span class="btn-icon">🦃</span>
+                <span class="btn-text">PAVO</span>
+                <span class="btn-desc">Ver quienes eligieron pavo</span>
+            </button>
+            <button class="service-btn" id="reporte-pierna" data-service="PIERNA">
+                <span class="btn-icon">🍖</span>
+                <span class="btn-text">PIERNA</span>
+                <span class="btn-desc">Ver quienes eligieron pierna</span>
+            </button>
+        </div>
+
+        <h2 style="text-align: center; margin: 40px 0 20px; color: #2c3e50;">Solicitudes de Vacaciones por Área</h2>
+        <div class="service-buttons">
+            <button class="service-btn" data-service="FLUJOS">
+                <span class="btn-icon">📊</span>
+                <span class="btn-text">Flujos</span>
+            </button>
+            <button class="service-btn" data-service="FABRICACION">
+                <span class="btn-icon">🏭</span>
+                <span class="btn-text">Fabricación</span>
+            </button>
+            <button class="service-btn" data-service="SERVICIOS">
+                <span class="btn-icon">🔧</span>
+                <span class="btn-text">Servicios</span>
+            </button>
+            <button class="service-btn" data-service="MECANICO ACONDICIONAMIENTO">
+                <span class="btn-icon">🔩</span>
+                <span class="btn-text">Mecánico Acondicionamiento</span>
+            </button>
+            <button class="service-btn" data-service="ACONDICIONAMIENTO A">
+                <span class="btn-icon">🏗️</span>
+                <span class="btn-text">Acondicionamiento A</span>
+            </button>
+            <button class="service-btn" data-service="ACONDICIONAMIENTO B">
+                <span class="btn-icon">🏗️</span>
+                <span class="btn-text">Acondicionamiento B</span>
+            </button>
+            <button class="service-btn" data-service="ACONDICIONAMIENTO C">
+                <span class="btn-icon">🏗️</span>
+                <span class="btn-text">Acondicionamiento C</span>
+            </button>
+            <button class="service-btn" data-service="ACONDICIONAMIENTO D">
+                <span class="btn-icon">🏗️</span>
+                <span class="btn-text">Acondicionamiento D</span>
+            </button>
+            <button class="service-btn" data-service="MECANICO FABRICACION">
+                <span class="btn-icon">🔧</span>
+                <span class="btn-text">Mecánico Fabricación</span>
+            </button>
+        </div>
+
+        <h2 style="text-align: center; margin: 40px 0 20px; color: #2c3e50;">Sistema de Gestión de Afiliados</h2>
+        <div class="service-buttons">
+            <button class="service-btn" onclick="window.location.href='../afiliados/index.html'">
+                <span class="btn-icon">👥</span>
+                <span class="btn-text">Gestión de Afiliados</span>
+                <span class="btn-desc">Administrar altas, bajas y reingresos</span>
+            </button>
+        </div>
+
+        <div class="logout-section">
+            <button class="logout-btn" id="logout-btn">
+                Cerrar Sesión
+            </button>
+        </div>
+    </div>
+
+    <script type="module" src="appPdf.js"></script>
+</body>
+</html>
