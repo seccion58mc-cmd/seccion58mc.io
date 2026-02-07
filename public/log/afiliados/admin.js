@@ -261,21 +261,21 @@ function mostrarAfiliados(afiliados) {
                 <td>${fechaNac}</td>
                 <td>
                     <div class="action-buttons">
-                        <button class="btn-small btn-info" onclick="verDetalles('${afiliado.id}')">👁️‍🗨️</button>
-                        <button class="btn-small btn-edit" onclick="editarAfiliado('${afiliado.id}')">✍🏼</button>
+                        <button class="btn-small btn-info" title="Ver detalles" onclick="verDetalles('${afiliado.id}')">👁️‍🗨️</button>
+                        <button class="btn-small btn-edit" title="Editar datos" onclick="editarAfiliado('${afiliado.id}')">✍🏼</button>
                         ${afiliado.status === 'A' || afiliado.status === 'R' ? 
-                            `<button class="btn-small btn-baja" onclick="mostrarModalBaja('${afiliado.id}')">⤵️</button>` 
+                            `<button class="btn-small btn-baja" title="Dar de baja" onclick="mostrarModalBaja('${afiliado.id}')">⤵️</button>` 
                             : ''}
                         ${afiliado.status === 'B' ? 
                             puedeReingresar ? 
-                                `<button class="btn-small btn-reingreso" onclick="mostrarModalReingreso('${afiliado.id}')">🔁</button>` 
+                                `<button class="btn-small btn-reingreso" title="Reingresar" onclick="mostrarModalReingreso('${afiliado.id}')">🔁</button>` 
                                 : 
-                                `<button class="btn-small btn-reingreso-disabled" onclick="mostrarMensajeNoReingresar('${afiliado.id}', ${mesesDesdeInhabilitacion.toFixed(1)})">🔁</button>`
+                                `<button class="btn-small btn-reingreso-disabled" title="No puede reingresar aún" onclick="mostrarMensajeNoReingresar('${afiliado.id}', ${mesesDesdeInhabilitacion.toFixed(1)})">🔁</button>`
                             : ''}
                         ${(afiliado.status === 'A' || afiliado.status === 'R') && afiliado.status !== 'AP' ? 
-                            `<button class="btn-small btn-planta" onclick="mostrarModalPlanta('${afiliado.id}')">🎖️</button>` 
+                            `<button class="btn-small btn-planta" title="Otorgar planta" onclick="mostrarModalPlanta('${afiliado.id}')">🎖️</button>` 
                             : ''}
-                        <button class="btn-small btn-delete" onclick="eliminarDeBaseDatos('${afiliado.id}', '${afiliado.nombreCompleto}', '${afiliado.curp}')" title="Eliminar permanentemente">
+                        <button class="btn-small btn-delete" title="Eliminar permanentemente" onclick="eliminarDeBaseDatos('${afiliado.id}', '${afiliado.nombreCompleto}', '${afiliado.curp}')">
                             🗑️
                         </button>
                     </div>
@@ -743,15 +743,13 @@ window.mostrarModalPlanta = function(id) {
     afiliadoSeleccionado = todosLosAfiliados.find(a => a.id === id);
     if (!afiliadoSeleccionado) return;
 
-    // Calcular meses desde el ingreso a la empresa (NO desde afiliación)
+    // Calcular meses desde el ingreso a la empresa
     let mesesTrabajados = 0;
     
     if (afiliadoSeleccionado.fechaIngresoEmpresa) {
-        // Usar fecha de ingreso a la empresa
         const fechaIngreso = new Date(afiliadoSeleccionado.fechaIngresoEmpresa);
         mesesTrabajados = calcularMesesDesde(fechaIngreso);
     } else {
-        // Fallback: si no hay fechaIngresoEmpresa, usar fechaAlta
         mesesTrabajados = afiliadoSeleccionado.mesesActivos || 0;
         if (afiliadoSeleccionado.status === 'A' || afiliadoSeleccionado.status === 'R') {
             const fechaInicio = afiliadoSeleccionado.fechaReingreso ? 
@@ -820,49 +818,266 @@ window.mostrarModalPlanta = function(id) {
     document.getElementById('plantaInfo').innerHTML = mensaje;
     openModal('modalPlanta');
     
-    document.getElementById('btnConfirmarPlanta').onclick = confirmarPlanta;
+    // Cambiar el botón para abrir el modal de confirmación
+    document.getElementById('btnConfirmarPlanta').onclick = mostrarConfirmacionPlanta;
 };
 
-// Confirmar planta
-async function confirmarPlanta() {
-    document.getElementById('confirmMessage').textContent = '¿Confirmas otorgar PLANTA a este afiliado?';
-    openModal('modalConfirm');
+// Mostrar confirmación de planta con opciones de fecha
+function mostrarConfirmacionPlanta() {
+    closeModal('modalPlanta');
     
-    document.getElementById('btnConfirmYes').onclick = async () => {
-        closeModal('modalConfirm');
-        closeModal('modalPlanta');
+    const hoy = new Date();
+    const fechaHoy = formatearFecha(hoy);
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header" style="background: #f39c12; color: white;">
+                <h2>🌟 Confirmar Planta</h2>
+            </div>
+            <div class="modal-body">
+                <div class="fecha-info">
+                    <p><strong>Se otorgará PLANTA a:</strong></p>
+                    <p class="nombre-empleado">${afiliadoSeleccionado.nombreCompleto}</p>
+                    <p>con fecha: <span class="fecha-destacada">${fechaHoy}</span></p>
+                </div>
+                
+                <p style="text-align: center; margin: 20px 0; font-size: 16px;">
+                    <strong>¿Qué deseas hacer?</strong>
+                </p>
+                
+                <div class="modal-buttons-fecha">
+                    <button class="btn-fecha btn-confirmar-fecha" id="btnHoy">
+                        ✅ Sí, con fecha de hoy (${fechaHoy})
+                    </button>
+                    <button class="btn-fecha btn-cambiar-fecha" id="btnCambiarFecha">
+                        📅 Quiero cambiar la fecha
+                    </button>
+                    <button class="btn-fecha btn-cancelar-fecha" id="btnCancelarFecha">
+                        ❌ Cancelar y regresar
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Configurar eventos
+    document.getElementById('btnHoy').onclick = () => {
+        modal.remove();
+        confirmarPlanta(hoy);
+    };
+    
+    document.getElementById('btnCambiarFecha').onclick = () => {
+        modal.remove();
+        mostrarSelectorFecha();
+    };
+    
+    document.getElementById('btnCancelarFecha').onclick = () => {
+        modal.remove();
+        openModal('modalPlanta');
+    };
+}
+
+// Mostrar selector de fecha personalizada
+function mostrarSelectorFecha() {
+    const hoy = new Date();
+    
+    // Calcular fechas límite: 30 días antes y 30 días después
+    const fechaMin = new Date(hoy);
+    fechaMin.setDate(hoy.getDate() - 30);
+    
+    const fechaMax = new Date(hoy);
+    fechaMax.setDate(hoy.getDate() + 30);
+    
+    // Formatear fechas para el input date
+    const hoyISO = formatearFechaISO(hoy);
+    const minISO = formatearFechaISO(fechaMin);
+    const maxISO = formatearFechaISO(fechaMax);
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header" style="background: #3498db; color: white;">
+                <h2>📅 Seleccionar Fecha</h2>
+            </div>
+            <div class="modal-body modal-fecha">
+                <h3>Selecciona una fecha para otorgar la planta</h3>
+                
+                <div class="fecha-info">
+                    <p><strong>Empleado:</strong> ${afiliadoSeleccionado.nombreCompleto}</p>
+                    <p><strong>Fecha de hoy:</strong> ${formatearFecha(hoy)}</p>
+                    <p><strong>Rango permitido:</strong> Desde ${formatearFecha(fechaMin)} hasta ${formatearFecha(fechaMax)}</p>
+                </div>
+                
+                <div class="fecha-selector">
+                    <label for="fechaPersonalizada">Fecha de otorgamiento:</label>
+                    <input type="date" id="fechaPersonalizada" 
+                           min="${minISO}" 
+                           max="${maxISO}"
+                           value="${hoyISO}">
+                    <small style="display: block; margin-top: 5px; color: #7f8c8d;">
+                        Puedes seleccionar fechas desde 30 días antes hasta 30 días después de hoy.
+                    </small>
+                </div>
+                
+                <div style="margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                    <p style="margin: 5px 0; font-size: 14px;">
+                        <strong>Opciones rápidas:</strong>
+                    </p>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button class="btn-small" style="background: #95a5a6; color: white; padding: 5px 10px;" 
+                                onclick="document.getElementById('fechaPersonalizada').value = '${minISO}'">
+                            ⏪ 30 días antes
+                        </button>
+                        <button class="btn-small" style="background: #3498db; color: white; padding: 5px 10px;" 
+                                onclick="document.getElementById('fechaPersonalizada').value = '${hoyISO}'">
+                            📅 Hoy
+                        </button>
+                        <button class="btn-small" style="background: #95a5a6; color: white; padding: 5px 10px;" 
+                                onclick="document.getElementById('fechaPersonalizada').value = '${maxISO}'">
+                            ⏩ 30 días después
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="modal-buttons-fecha">
+                    <button class="btn-fecha btn-confirmar-fecha" id="btnConfirmarFechaSeleccionada">
+                        ✅ Confirmar con esta fecha
+                    </button>
+                    <button class="btn-fecha btn-cancelar-fecha" id="btnCancelarSeleccion">
+                        🔙 Volver
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Configurar eventos
+    document.getElementById('btnConfirmarFechaSeleccionada').onclick = () => {
+        const fechaInput = document.getElementById('fechaPersonalizada');
         
-        try {
-            showLoading();
-
-            // Calcular meses activos totales al momento de otorgar planta
-            const fechaInicio = afiliadoSeleccionado.fechaReingreso ? 
-                afiliadoSeleccionado.fechaReingreso.toDate() : 
-                afiliadoSeleccionado.fechaAlta.toDate();
-            const mesesActualesActivos = calcularMesesDesde(fechaInicio);
-            const nuevosTotalMeses = (afiliadoSeleccionado.mesesActivos || 0) + mesesActualesActivos;
-
-            // Actualizar documento
-            const afiliadoRef = doc(window.db, 'ingresos', afiliadoSeleccionado.id);
-            await updateDoc(afiliadoRef, {
-                status: 'AP',
-                fechaPlanta: Timestamp.now(),
-                mesesActivos: nuevosTotalMeses
-            });
-
-            hideLoading();
-            mostrarExito('La planta se ha otorgado exitosamente al empleado.');
-            cargarAfiliados();
-        } catch (error) {
-            hideLoading();
-            console.error('Error al otorgar planta:', error);
-            mostrarError('No se pudo procesar el otorgamiento de planta. Por favor, intenta nuevamente.');
+        // Validar que la fecha esté dentro del rango
+        const fechaSeleccionada = new Date(fechaInput.value);
+        if (fechaSeleccionada < fechaMin || fechaSeleccionada > fechaMax) {
+            mostrarError('La fecha seleccionada está fuera del rango permitido (30 días antes/después de hoy).');
+            return;
         }
+        
+        modal.remove();
+        mostrarConfirmacionFechaSeleccionada(fechaSeleccionada);
     };
     
-    document.getElementById('btnConfirmNo').onclick = () => {
-        closeModal('modalConfirm');
+    document.getElementById('btnCancelarSeleccion').onclick = () => {
+        modal.remove();
+        mostrarConfirmacionPlanta();
     };
+}
+
+// Confirmar fecha seleccionada
+function mostrarConfirmacionFechaSeleccionada(fechaSeleccionada) {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header" style="background: #27ae60; color: white;">
+                <h2>🌟 Confirmar Planta</h2>
+            </div>
+            <div class="modal-body">
+                <div class="fecha-info">
+                    <p><strong>Se otorgará PLANTA a:</strong></p>
+                    <p class="nombre-empleado">${afiliadoSeleccionado.nombreCompleto}</p>
+                    <p>con fecha: <span class="fecha-destacada">${formatearFecha(fechaSeleccionada)}</span></p>
+                </div>
+                
+                <p style="text-align: center; margin: 20px 0; font-size: 16px;">
+                    <strong>¿Qué deseas hacer?</strong>
+                </p>
+                
+                <div class="modal-buttons-fecha">
+                    <button class="btn-fecha btn-confirmar-fecha" id="btnConfirmarFechaFinal">
+                        ✅ Sí, con fecha de ${formatearFecha(fechaSeleccionada)}
+                    </button>
+                    <button class="btn-fecha btn-cambiar-fecha" id="btnCambiarFechaNuevamente">
+                        📅 Quiero cambiar la fecha
+                    </button>
+                    <button class="btn-fecha btn-cancelar-fecha" id="btnCancelarTodo">
+                        ❌ Cancelar todo
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Configurar eventos
+    document.getElementById('btnConfirmarFechaFinal').onclick = () => {
+        modal.remove();
+        confirmarPlanta(fechaSeleccionada);
+    };
+    
+    document.getElementById('btnCambiarFechaNuevamente').onclick = () => {
+        modal.remove();
+        mostrarSelectorFecha();
+    };
+    
+    document.getElementById('btnCancelarTodo').onclick = () => {
+        modal.remove();
+        openModal('modalPlanta');
+    };
+}
+
+// Función para formatear fecha a YYYY-MM-DD (para input date)
+function formatearFechaISO(fecha) {
+    const año = fecha.getFullYear();
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+    const dia = String(fecha.getDate()).padStart(2, '0');
+    return `${año}-${mes}-${dia}`;
+}
+
+// Confirmar planta (versión modificada que acepta fecha)
+async function confirmarPlanta(fechaSeleccionada) {
+    try {
+        showLoading();
+
+        // Calcular meses activos totales al momento de otorgar planta
+        const fechaInicio = afiliadoSeleccionado.fechaReingreso ? 
+            afiliadoSeleccionado.fechaReingreso.toDate() : 
+            afiliadoSeleccionado.fechaAlta.toDate();
+        const mesesActualesActivos = calcularMesesDesde(fechaInicio);
+        const nuevosTotalMeses = (afiliadoSeleccionado.mesesActivos || 0) + mesesActualesActivos;
+
+        // Convertir fecha seleccionada a Timestamp
+        const fechaPlantaTimestamp = Timestamp.fromDate(fechaSeleccionada);
+
+        // Actualizar documento
+        const afiliadoRef = doc(window.db, 'ingresos', afiliadoSeleccionado.id);
+        await updateDoc(afiliadoRef, {
+            status: 'AP',
+            fechaPlanta: fechaPlantaTimestamp,
+            mesesActivos: nuevosTotalMeses
+        });
+
+        hideLoading();
+        mostrarExito(`✅ La planta se ha otorgado exitosamente a ${afiliadoSeleccionado.nombreCompleto} con fecha ${formatearFecha(fechaSeleccionada)}.`);
+        cargarAfiliados();
+    } catch (error) {
+        hideLoading();
+        console.error('Error al otorgar planta:', error);
+        mostrarError('No se pudo procesar el otorgamiento de planta. Por favor, intenta nuevamente.');
+    }
 }
 
 // Mostrar modal de baja

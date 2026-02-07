@@ -946,3 +946,173 @@ tbody tr:hover {
     background: #e74c3c;
     transform: scale(1.1);
 }
+
+
+/* Agregar al final del archivo CSS */
+
+/* Tooltips para botones de acción */
+.action-buttons button {
+    position: relative;
+}
+
+.action-buttons button::after {
+    content: attr(title);
+    position: absolute;
+    bottom: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 1000;
+}
+
+.action-buttons button:hover::after {
+    opacity: 1;
+}
+
+.action-buttons button::before {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-bottom-color: rgba(0, 0, 0, 0.8);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 1000;
+}
+
+.action-buttons button:hover::before {
+    opacity: 1;
+}
+
+/* Estilos para el modal de fecha */
+.modal-fecha {
+    padding: 25px;
+}
+
+.fecha-info {
+    background-color: #e8f5e9;
+    border-left: 4px solid #4caf50;
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 5px;
+}
+
+.fecha-info p {
+    margin: 5px 0;
+    color: #2e7d32;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.fecha-info .nombre-empleado {
+    font-weight: bold;
+    color: #1b5e20;
+    font-size: 16px;
+}
+
+.fecha-info .fecha-destacada {
+    font-weight: bold;
+    color: #1b5e20;
+    text-decoration: underline;
+}
+
+.fecha-selector {
+    margin: 20px 0;
+}
+
+.fecha-selector label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.fecha-selector input[type="date"] {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 15px;
+    transition: border-color 0.3s;
+}
+
+.fecha-selector input[type="date"]:focus {
+    outline: none;
+    border-color: #4caf50;
+}
+
+.modal-buttons-fecha {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 25px;
+}
+
+.btn-fecha {
+    padding: 14px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.3s;
+    text-align: center;
+}
+
+.btn-confirmar-fecha {
+    background-color: #4caf50;
+    color: white;
+}
+
+.btn-confirmar-fecha:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+}
+
+.btn-cambiar-fecha {
+    background-color: #2196f3;
+    color: white;
+}
+
+.btn-cambiar-fecha:hover {
+    background-color: #1976d2;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+}
+
+.btn-cancelar-fecha {
+    background-color: #f44336;
+    color: white;
+}
+
+.btn-cancelar-fecha:hover {
+    background-color: #d32f2f;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+}
+
+.modal-fecha h2 {
+    color: #4caf50;
+    margin-bottom: 20px;
+    font-size: 24px;
+    text-align: center;
+}
+
+.modal-fecha h3 {
+    color: #2196f3;
+    margin-bottom: 15px;
+    font-size: 20px;
+    text-align: center;
+}
