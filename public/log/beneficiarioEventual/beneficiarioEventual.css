@@ -1,0 +1,491 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+/* Header */
+.header {
+    background: linear-gradient(135deg, #c94b4b 0%, #4b134f 100%);
+    color: white;
+    padding: 30px;
+    text-align: center;
+}
+
+.header h1 {
+    font-size: 16px;
+    font-weight: normal;
+    margin-bottom: 5px;
+    font-style: italic;
+}
+
+.header h2 {
+    font-size: 14px;
+    font-weight: normal;
+    font-style: italic;
+    margin-bottom: 20px;
+}
+
+.logo-container {
+    margin: 20px 0;
+}
+
+.logo {
+    max-width: 120px;
+    height: auto;
+}
+
+.header h3 {
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 20px;
+    letter-spacing: 2px;
+}
+
+/* Formulario */
+.form-container {
+    padding: 40px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.label-bold {
+    font-weight: bold;
+    font-size: 14px;
+    color: #333;
+    min-width: 80px;
+}
+
+.form-group input {
+    flex: 1;
+    border: none;
+    border-bottom: 2px solid #333;
+    padding: 8px 10px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+    border-bottom: 2px solid #f5576c;
+}
+
+.form-group input[readonly] {
+    background-color: #f9f9f9;
+    color: #666;
+}
+
+.input-large {
+    width: 100%;
+}
+
+/* Secciones */
+.section-title {
+    text-align: center;
+    margin: 30px 0 20px;
+}
+
+.section-title p {
+    font-size: 14px;
+    font-weight: normal;
+    color: #333;
+}
+
+.section-title .underline {
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.empresa-section {
+    text-align: center;
+    margin: 20px 0 30px;
+}
+
+.empresa-section h2 {
+    font-size: 22px;
+    font-weight: bold;
+    color: #000;
+}
+
+/* Tabla de beneficiarios */
+.table-container {
+    margin: 30px 0;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+}
+
+thead {
+    background-color: #4b134f;
+    color: white;
+}
+
+th {
+    padding: 12px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+tbody tr {
+    border-bottom: 1px solid #ddd;
+}
+
+tbody td {
+    padding: 10px;
+}
+
+tbody input,
+tbody select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+tbody input:focus,
+tbody select:focus {
+    border-color: #f5576c;
+}
+
+.btn-eliminar {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.btn-eliminar:hover {
+    background-color: #c0392b;
+}
+
+/* Botón agregar */
+.btn-agregar {
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+    display: block;
+    margin: 0 auto 30px;
+}
+
+.btn-agregar:hover {
+    background-color: #229954;
+}
+
+/* Nota legal */
+.nota-legal {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 15px;
+    margin: 30px 0;
+    text-align: center;
+}
+
+.nota-legal p {
+    font-size: 13px;
+    font-weight: bold;
+    color: #856404;
+}
+
+/* Firma del trabajador */
+.firma-section {
+    text-align: center;
+    margin: 40px 0 30px;
+}
+
+.firma-titulo {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+.firma-linea {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.firma-linea input {
+    width: 100%;
+    border: none;
+    border-bottom: 2px solid #333;
+    padding: 10px;
+    text-align: center;
+    font-size: 14px;
+    background-color: #f9f9f9;
+    color: #666;
+}
+
+/* Testigos */
+.testigos-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin: 40px 0;
+}
+
+.testigo {
+    text-align: center;
+}
+
+.testigo-titulo {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 80px;
+    color: #333;
+}
+
+.testigo-info {
+    border-top: 2px solid #333;
+    padding-top: 10px;
+}
+
+.testigo-nombre {
+    font-size: 12px;
+    font-style: italic;
+    margin-bottom: 5px;
+    color: #666;
+}
+
+.testigo-label {
+    font-size: 11px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Botón enviar */
+.button-container {
+    text-align: center;
+    margin-top: 40px;
+}
+
+.btn-enviar {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border: none;
+    padding: 15px 50px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.btn-enviar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(245, 87, 108, 0.4);
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 30px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    animation: slideDown 0.3s;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-content h3 {
+    color: #4b134f;
+    margin-bottom: 20px;
+    font-size: 22px;
+    text-align: center;
+}
+
+#resumenDatos {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+#resumenDatos strong {
+    color: #4b134f;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.btn-confirmar {
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.btn-confirmar:hover {
+    background-color: #229954;
+}
+
+.btn-cancelar {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.btn-cancelar:hover {
+    background-color: #c0392b;
+}
+
+.modal-success h3 {
+    color: #27ae60;
+    font-size: 28px;
+}
+
+.modal-success p {
+    text-align: center;
+    font-size: 16px;
+    color: #333;
+    margin: 20px 0;
+}
+
+/* Alertas */
+.error-message {
+    background-color: #fee;
+    color: #c00;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 10px 0;
+    text-align: center;
+    font-weight: bold;
+    border-left: 4px solid #c00;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        margin: 10px;
+    }
+
+    .form-container {
+        padding: 20px;
+    }
+
+    .header h1 {
+        font-size: 14px;
+    }
+
+    .header h2 {
+        font-size: 12px;
+    }
+
+    .logo {
+        max-width: 80px;
+    }
+
+    .empresa-section h2 {
+        font-size: 18px;
+    }
+
+    .testigos-container {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    table {
+        font-size: 12px;
+    }
+
+    th, td {
+        padding: 8px 5px;
+    }
+
+    .modal-buttons {
+        flex-direction: column;
+    }
+
+    .form-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .label-bold {
+        min-width: auto;
+    }
+}

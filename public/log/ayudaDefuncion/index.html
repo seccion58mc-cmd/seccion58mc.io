@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carta de Designación de Beneficiarios</title>
+    <link rel="stylesheet" href="ayudaDefuncion.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>SINDICATO NACIONAL DE TRABAJADORES DE LA INDUSTRIA QUÍMICA,</h1>
+            <h2>PETROQUÍMICA, CARBOQUÍMICA, ENERGÍA Y GASES.</h2>
+            <div class="logo-container">
+                <img src="../../assets/sindicatoLogo.png" alt="Logo Sindicato" class="logo">
+            </div>
+            <h3>COMITÉ EJECUTIVO LOCAL</h3>
+            <h4>SECCIÓN 58</h4>
+        </header>
+
+        <div class="form-container">
+            <h2 class="form-title">CARTA DE DESIGNACIÓN DE BENEFICIARIOS</h2>
+
+            <form id="beneficiariosForm">
+                <!-- Fecha -->
+                <div class="form-group">
+                    <label>Lugar y fecha:</label>
+                    <input type="text" id="fecha" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label>A quien corresponda: Sección 58</label>
+                </div>
+
+                <!-- Datos del trabajador -->
+                <div class="form-group">
+                    <label>Por medio de la presente, yo</label>
+                    <input type="text" id="nombreTrabajador" class="input-large" placeholder="Nombre completo" required>
+                    <label>, con número de empleado</label>
+                    <input type="text" id="numeroEmpleado" class="input-medium" placeholder="Número de empleado" required>
+                    <label>, manifiesto de manera libre y voluntaria que designo como beneficiarios a las siguientes personas:</label>
+                </div>
+
+                <!-- Tabla de beneficiarios -->
+                <div class="table-container">
+                    <table id="tablaBeneficiarios">
+                        <thead>
+                            <tr>
+                                <th>Nombre del beneficiario.</th>
+                                <th>Parentesco</th>
+                                <th>Porcentaje asignado</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="beneficiariosBody">
+                            <!-- Las filas se generarán dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <button type="button" id="agregarBeneficiario" class="btn-agregar">+ Agregar Beneficiario</button>
+
+                <div class="declaracion">
+                    <p>Declaro que los porcentajes asignados suman el 100% del beneficio correspondiente.</p>
+                    <p>Esta designación aplica para la <strong>Ayuda de Defunción de trabajador</strong> (tendrá validez a partir de la fecha de firma del presente documento.)</p>
+                </div>
+
+                <div class="declaracion">
+                    <p>Asimismo, manifiesto que esta designación revoca y sustituye cualquier designación de beneficiarios realizada con anterioridad.</p>
+                    <p>Para los efectos legales correspondientes, firmo la presente en pleno uso de mis facultades.</p>
+                </div>
+
+                <!-- Datos finales -->
+                <div class="form-group">
+                    <label>Atentamente,</label>
+                </div>
+
+                <div class="form-group">
+                    <label>Firma:</label>
+                    <input type="text" id="firma" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label>Teléfono:</label>
+                    <input type="tel" id="telefono" maxlength="10" placeholder="10 dígitos" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Correo electrónico:</label>
+                    <input type="email" id="correo" placeholder="correo@ejemplo.com" required>
+                </div>
+
+                <div class="button-container">
+                    <button type="submit" class="btn-enviar">Enviar Designación</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación -->
+    <div id="modalConfirmacion" class="modal">
+        <div class="modal-content">
+            <h3>Confirmar Designación de Beneficiarios</h3>
+            <div id="resumenDatos"></div>
+            <div class="modal-buttons">
+                <button id="btnConfirmar" class="btn-confirmar">Confirmar y Enviar</button>
+                <button id="btnCancelar" class="btn-cancelar">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de éxito -->
+    <div id="modalExito" class="modal">
+        <div class="modal-content modal-success">
+            <h3>✓ Designación Registrada</h3>
+            <p>Su carta de designación de beneficiarios ha sido registrada exitosamente.</p>
+            <button id="btnCerrarExito" class="btn-confirmar">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { db } from '../../firebase-config.js';
+        window.db = db;
+    </script>
+
+    <script type="module" src="ayudaDefuncion.js"></script>
+</body>
+</html>

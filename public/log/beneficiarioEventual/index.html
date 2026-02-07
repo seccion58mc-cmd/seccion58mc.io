@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trabajador Eventual - Designación de Beneficiarios</title>
+    <link rel="stylesheet" href="beneficiarioEventual.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Sindicato Nacional de Trabajadores de la Industria Química, Petroquímica,</h1>
+            <h2>Carboquímica, Energía y Gases</h2>
+            <div class="logo-container">
+                <img src="../../assets/sindicatoLogo.png" alt="Logo Sindicato" class="logo">
+            </div>
+            <h3>COMITÉ NACIONAL</h3>
+        </header>
+
+        <div class="form-container">
+            <form id="beneficiarioEventualForm">
+                <!-- Fecha -->
+                <div class="form-group">
+                    <label class="label-bold">FECHA:</label>
+                    <input type="text" id="fecha" readonly>
+                </div>
+
+                <!-- Nombre del trabajador -->
+                <div class="form-group">
+                    <label class="label-bold">NOMBRE:</label>
+                    <input type="text" id="nombreTrabajador" class="input-large" placeholder="Nombre completo del trabajador" required>
+                </div>
+
+                <!-- Empresa -->
+                <div class="section-title">
+                    <p>TRABAJADOR EVENTUAL DE LA EMPRESA:</p>
+                </div>
+
+                <div class="empresa-section">
+                    <h2>COSBEL, S. A. DE C. V. (Sección 58)</h2>
+                </div>
+
+                <!-- Designación de beneficiarios -->
+                <div class="section-title">
+                    <p class="underline">DESIGNO COMO MIS BENEFICIARIOS:</p>
+                </div>
+
+                <!-- Tabla de beneficiarios -->
+                <div class="table-container">
+                    <table id="tablaBeneficiarios">
+                        <thead>
+                            <tr>
+                                <th>NOMBRE</th>
+                                <th>PARENTESCO</th>
+                                <th>PORCENTAJE</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="beneficiariosBody">
+                            <!-- Las filas se generarán dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <button type="button" id="agregarBeneficiario" class="btn-agregar">+ Agregar Beneficiario</button>
+
+                <!-- Nota legal -->
+                <div class="nota-legal">
+                    <p>EN CASO DE FALLECER TENIENDO CONTRATO VIGENTE CON LA EMPRESA ANTES MENCIONADA.</p>
+                </div>
+
+                <!-- Firma del trabajador -->
+                <div class="firma-section">
+                    <p class="firma-titulo">FIRMA DEL TRABAJADOR</p>
+                    <div class="firma-linea">
+                        <input type="text" id="firmaTrabajador" readonly>
+                    </div>
+                </div>
+
+                <!-- Testigos -->
+                <div class="testigos-container">
+                    <div class="testigo">
+                        <p class="testigo-titulo">TESTIGOS</p>
+                        <div class="testigo-info">
+                            <p class="testigo-nombre">MARTIN CORTES RIVERA</p>
+                            <p class="testigo-label">NOMBRE Y FECHA</p>
+                        </div>
+                    </div>
+
+                    <div class="testigo">
+                        <p class="testigo-titulo">TESTIGOS</p>
+                        <div class="testigo-info">
+                            <p class="testigo-nombre">ISRAEL NAVA VILLAREAL</p>
+                            <p class="testigo-label">NOMBRE Y FECHA</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-container">
+                    <button type="submit" class="btn-enviar">Registrar Designación</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación -->
+    <div id="modalConfirmacion" class="modal">
+        <div class="modal-content">
+            <h3>Confirmar Designación de Beneficiarios</h3>
+            <div id="resumenDatos"></div>
+            <div class="modal-buttons">
+                <button id="btnConfirmar" class="btn-confirmar">Confirmar y Enviar</button>
+                <button id="btnCancelar" class="btn-cancelar">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de éxito -->
+    <div id="modalExito" class="modal">
+        <div class="modal-content modal-success">
+            <h3>✓ Designación Registrada</h3>
+            <p>La designación de beneficiarios del trabajador eventual ha sido registrada exitosamente.</p>
+            <button id="btnCerrarExito" class="btn-confirmar">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { db } from '../../firebase-config.js';
+        window.db = db;
+    </script>
+
+    <script type="module" src="beneficiarioEventual.js"></script>
+</body>
+</html>
