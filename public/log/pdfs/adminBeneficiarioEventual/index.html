@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Beneficiario Eventual</title>
+    <link rel="stylesheet" href="adminBeneficiarioEventual.css">
+</head>
+<body>
+    <div class="admin-container">
+        <header>
+            <button class="back-btn" onclick="window.location.href='../index.html'">
+                ← Volver al Dashboard
+            </button>
+            <h1>📄 Administración - Beneficiario Eventual</h1>
+            <p>Gestionar trabajadores eventuales - COSBEL S.A. DE C.V.</p>
+        </header>
+
+        <div class="stats-container" id="statsContainer">
+            <div class="stat-card">
+                <span class="stat-number" id="totalRegistros">0</span>
+                <span class="stat-label">Total de Registros</span>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="table-header">
+                <h2>Registros de Beneficiarios Eventuales</h2>
+                <input type="text" id="searchInput" placeholder="Buscar por nombre..." class="search-input">
+            </div>
+            
+            <div id="loadingSpinner" class="loading">
+                Cargando registros...
+            </div>
+
+            <table id="registrosTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Nombre del Trabajador</th>
+                        <th>Beneficiarios</th>
+                        <th>Empresa</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Se llenará dinámicamente -->
+                </tbody>
+            </table>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <p>📭 No hay registros disponibles</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Edición -->
+    <div id="modalEditar" class="modal">
+        <div class="modal-content modal-large">
+            <span class="close" id="closeModal">&times;</span>
+            <h2>Editar Designación de Beneficiarios</h2>
+            <form id="formEditar">
+                <div class="form-group">
+                    <label>Nombre del Trabajador:</label>
+                    <input type="text" id="editNombre" required>
+                </div>
+
+                <h3>Beneficiarios</h3>
+                <div id="beneficiariosContainer"></div>
+                
+                <button type="button" class="btn-add" id="btnAgregarBeneficiario">+ Agregar Beneficiario</button>
+
+                <div class="modal-buttons">
+                    <button type="submit" class="btn-save">Guardar Cambios</button>
+                    <button type="button" class="btn-cancel" id="btnCancelarEditar">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación de Eliminación -->
+    <div id="modalEliminar" class="modal">
+        <div class="modal-content">
+            <h2>⚠️ Confirmar Eliminación</h2>
+            <p>¿Está seguro de que desea eliminar este registro?</p>
+            <p><strong id="nombreEliminar"></strong></p>
+            <p style="color: #e74c3c;">Esta acción no se puede deshacer.</p>
+            <div class="modal-buttons">
+                <button class="btn-delete" id="btnConfirmarEliminar">Eliminar</button>
+                <button class="btn-cancel" id="btnCancelarEliminar">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { db } from '../../../firebase-config.js';
+        window.db = db;
+    </script>
+
+    <!-- jsPDF Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script type="module" src="adminBeneficiarioEventual.js"></script>
+</body>
+</html>
