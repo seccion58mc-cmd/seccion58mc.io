@@ -273,6 +273,7 @@ window.descargarPDF = async function(id) {
 
         // Configuración
         const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
         const margin = 20;
 
         // Cargar y agregar el logo
@@ -326,6 +327,7 @@ window.descargarPDF = async function(id) {
         doc.setFont(undefined, 'bold');
         const textoDesigno = 'DESIGNO COMO MIS BENEFICIARIOS:';
         doc.text(textoDesigno, pageWidth / 2, y, { align: 'center' });
+        doc.line(margin + 40, y + 1, pageWidth - margin - 40, y + 1);
 
         // Tabla de beneficiarios
         y += 10;
@@ -344,6 +346,12 @@ window.descargarPDF = async function(id) {
             y += 8;
         });
 
+        // Verificar si necesitamos una nueva página
+        if (y > pageHeight - 80) {
+            doc.addPage();
+            y = 20;
+        }
+
         // Nota legal
         y += 15;
         doc.setFontSize(10);
@@ -356,9 +364,14 @@ window.descargarPDF = async function(id) {
         doc.setFont(undefined, 'bold');
         doc.text('FIRMA DEL TRABAJADOR', pageWidth / 2, y, { align: 'center' });
         
+        // Línea de firma centrada
         y += 15;
-        doc.line(margin + 40, y, pageWidth - margin - 40, y);
-        y += 2;
+        const firmaLineStartX = margin + 40;
+        const firmaLineEndX = pageWidth - margin - 40;
+        doc.line(firmaLineStartX, y, firmaLineEndX, y);
+        
+        // Nombre DEBAJO de la línea (no encima)
+        y += 5;
         doc.setFontSize(10);
         doc.setFont(undefined, 'italic');
         doc.text(registro.firma, pageWidth / 2, y, { align: 'center' });
@@ -368,16 +381,18 @@ window.descargarPDF = async function(id) {
         doc.setFontSize(11);
         doc.setFont(undefined, 'bold');
         
-        const col1X = margin + 30;
-        const col2X = pageWidth / 2 + 30;
+        const col1X = margin + 35;
+        const col2X = pageWidth - margin - 35;
         
         doc.text('TESTIGOS', col1X, y, { align: 'center' });
         doc.text('TESTIGOS', col2X, y, { align: 'center' });
         
-        y += 25;
-        doc.line(col1X - 35, y, col1X + 35, y);
-        doc.line(col2X - 35, y, col2X + 35, y);
+        y += 20;
+        // Líneas de firma de testigos
+        doc.line(col1X - 30, y, col1X + 30, y);
+        doc.line(col2X - 30, y, col2X + 30, y);
         
+        // Nombres de testigos DEBAJO de las líneas
         y += 5;
         doc.setFontSize(9);
         doc.setFont(undefined, 'italic');
@@ -385,6 +400,7 @@ window.descargarPDF = async function(id) {
         doc.text(TESTIGO_2, col2X, y, { align: 'center' });
         
         y += 5;
+        doc.setFontSize(8);
         doc.setFont(undefined, 'bold');
         doc.text('NOMBRE Y FECHA', col1X, y, { align: 'center' });
         doc.text('NOMBRE Y FECHA', col2X, y, { align: 'center' });

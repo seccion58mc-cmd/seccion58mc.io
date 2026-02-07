@@ -36,6 +36,14 @@ function configurarEventos() {
         document.getElementById('firma').value = this.value;
     });
 
+    // Validar número de empleado (solo números, 8-10 dígitos)
+    document.getElementById('numeroEmpleado').addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '');
+        if (this.value.length > 10) {
+            this.value = this.value.slice(0, 10);
+        }
+    });
+
     // Validar teléfono (solo números)
     document.getElementById('telefono').addEventListener('input', function() {
         this.value = this.value.replace(/[^0-9]/g, '');
@@ -114,6 +122,12 @@ function validarYMostrarConfirmacion(e) {
 
     if (!nombreTrabajador || !numeroEmpleado) {
         mostrarError('Por favor complete todos los campos del trabajador');
+        return;
+    }
+
+    // Validar longitud del número de empleado
+    if (numeroEmpleado.length < 8 || numeroEmpleado.length > 10) {
+        mostrarError('El número de empleado debe tener entre 8 y 10 dígitos');
         return;
     }
 

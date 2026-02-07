@@ -130,6 +130,15 @@ window.editarRegistro = function(id) {
     document.getElementById('editTelefono').value = registroActual.telefono;
     document.getElementById('editCorreo').value = registroActual.correo;
 
+    // Validación para número de empleado en edición
+    const numEmpleadoInput = document.getElementById('editNumEmpleado');
+    numEmpleadoInput.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '');
+        if (this.value.length > 10) {
+            this.value = this.value.slice(0, 10);
+        }
+    });
+
     // Cargar beneficiarios
     const container = document.getElementById('beneficiariosContainer');
     container.innerHTML = '';
@@ -191,6 +200,13 @@ async function guardarCambios(e) {
     if (!registroActual) return;
 
     try {
+        // Validar número de empleado
+        const numEmpleado = document.getElementById('editNumEmpleado').value.trim();
+        if (numEmpleado.length < 8 || numEmpleado.length > 10) {
+            alert('El número de empleado debe tener entre 8 y 10 dígitos');
+            return;
+        }
+
         // Recopilar beneficiarios
         const beneficiarios = [];
         const grupos = document.querySelectorAll('.beneficiario-group');
@@ -216,7 +232,7 @@ async function guardarCambios(e) {
         const docRef = doc(window.db, 'ayudaDefuncion', registroActual.id);
         await updateDoc(docRef, {
             nombreTrabajador: document.getElementById('editNombre').value.toUpperCase(),
-            numeroEmpleado: document.getElementById('editNumEmpleado').value.toUpperCase(),
+            numeroEmpleado: numEmpleado,
             telefono: document.getElementById('editTelefono').value,
             correo: document.getElementById('editCorreo').value.toLowerCase(),
             beneficiarios: beneficiarios,
@@ -274,113 +290,160 @@ window.descargarPDF = async function(id) {
 
         // Configuración
         const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
         const margin = 20;
 
         // Cargar y agregar el logo
         const logoImg = await cargarImagenBase64('../../../assets/sindicatoLogo.png');
-        
-        // Header - Título
-        doc.setFontSize(12);
-        doc.setFont(undefined, 'bold');
-        doc.text('SINDICATO NACIONAL DE TRABAJADORES DE LA INDUSTRIA QUÍMICA,', pageWidth / 2, 20, { align: 'center' });
-        doc.text('PETROQUÍMICA, CARBOQUÍMICA, ENERGÍA Y GASES.', pageWidth / 2, 27, { align: 'center' });
 
-        // Agregar logo centrado
-        const logoWidth = 30;
-        const logoHeight = 30;
-        const logoX = (pageWidth - logoWidth) / 2;
-        doc.addImage(logoImg, 'PNG', logoX, 32, logoWidth, logoHeight);
-
+        // Header - Título (más compacto)
         doc.setFontSize(11);
-        doc.text('COMITÉ EJECUTIVO LOCAL', pageWidth / 2, 68, { align: 'center' });
-        doc.text('SECCIÓN 58', pageWidth / 2, 75, { align: 'center' });
+        doc.setFont(undefined, 'bold');
+        doc.text('SINDICATO NACIONAL DE TRABAJADORES DE LA INDUSTRIA QUÍMICA,', pageWidth / 2, 15, { align: 'center' });
+        doc.text('PETROQUÍMICA, CARBOQUÍMICA, ENERGÍA Y GASES.', pageWidth / 2, 21, { align: 'center' });
+
+        // Agregar logo centrado (más pequeño)
+        const logoWidth = 25;
+        const logoHeight = 25;
+        const logoX = (pageWidth - logoWidth) / 2;
+        doc.addImage(logoImg, 'PNG', logoX, 25, logoWidth, logoHeight);
+
+        doc.setFontSize(10);
+        doc.text('COMITÉ EJECUTIVO LOCAL', pageWidth / 2, 54, { align: 'center' });
+        doc.text('SECCIÓN 58', pageWidth / 2, 60, { align: 'center' });
 
         // Título del documento
-        doc.setFontSize(14);
-        doc.text('CARTA DE DESIGNACIÓN DE BENEFICIARIOS', pageWidth / 2, 90, { align: 'center' });
+        doc.setFontSize(13);
+        doc.setFont(undefined, 'bold');
+        doc.text('CARTA DE DESIGNACIÓN DE BENEFICIARIOS', pageWidth / 2, 70, { align: 'center' });
 
         // Contenido
-        doc.setFontSize(11);
-        doc.setFont(undefined, 'normal');
-
-        let y = 105;
-        doc.text(`Lugar y fecha: ${registro.fecha}`, margin, y);
+        let y = 82;
         
-        y += 10;
+        // Lugar y fecha
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'normal');
+        doc.text('Lugar y fecha:', margin, y);
+        doc.setFont(undefined, 'bold');
+        doc.text(registro.fecha, margin + 30, y);
+        
+        y += 8;
+        doc.setFont(undefined, 'normal');
         doc.text('A quien corresponda: Sección 58', margin, y);
 
-        y += 15;
-        const textoInicio = `Por medio de la presente, yo ${registro.nombreTrabajador}, con número de empleado ${registro.numeroEmpleado}, manifiesto de manera libre y voluntaria que designo como beneficiarios a las siguientes personas:`;
-        const lineasInicio = doc.splitTextToSize(textoInicio, pageWidth - 2 * margin);
-        doc.text(lineasInicio, margin, y);
-        y += lineasInicio.length * 7;
+        // Texto principal con nombre y empleado en negritas y subrayado
+        y += 12;
+        doc.setFont(undefined, 'normal');
+        const texto1 = 'Por medio de la presente, yo ';
+        doc.text(texto1, margin, y);
+        
+        // Nombre en negritas y subrayado
+        const xNombre = margin + doc.getTextWidth(texto1);
+        doc.setFont(undefined, 'bold');
+        doc.text(registro.nombreTrabajador, xNombre, y);
+        const nombreWidth = doc.getTextWidth(registro.nombreTrabajador);
+        doc.line(xNombre, y + 0.5, xNombre + nombreWidth, y + 0.5); // Subrayado
+        
+        y += 6;
+        doc.setFont(undefined, 'normal');
+        const texto2 = 'con número de empleado ';
+        doc.text(texto2, margin, y);
+        
+        // Número de empleado en negritas y subrayado
+        const xEmpleado = margin + doc.getTextWidth(texto2);
+        doc.setFont(undefined, 'bold');
+        doc.text(registro.numeroEmpleado, xEmpleado, y);
+        const empleadoWidth = doc.getTextWidth(registro.numeroEmpleado);
+        doc.line(xEmpleado, y + 0.5, xEmpleado + empleadoWidth, y + 0.5); // Subrayado
+        
+        y += 6;
+        doc.setFont(undefined, 'normal');
+        const texto3 = 'manifiesto de manera libre y voluntaria que designo como beneficiarios a las';
+        doc.text(texto3, margin, y);
+        y += 6;
+        doc.text('siguientes personas:', margin, y);
 
-        // Tabla de beneficiarios
+        // Tabla de beneficiarios (más compacta)
         y += 10;
+        doc.setFontSize(9);
         doc.setFont(undefined, 'bold');
         doc.text('NOMBRE', margin, y);
-        doc.text('PARENTESCO', margin + 80, y);
-        doc.text('PORCENTAJE', margin + 130, y);
-        doc.line(margin, y + 2, pageWidth - margin, y + 2);
+        doc.text('PARENTESCO', margin + 75, y);
+        doc.text('PORCENTAJE', margin + 125, y);
+        doc.line(margin, y + 1, pageWidth - margin, y + 1);
 
-        y += 10;
+        y += 6;
         doc.setFont(undefined, 'normal');
         registro.beneficiarios.forEach(benef => {
+            doc.setFont(undefined, 'bold');
             doc.text(benef.nombre, margin, y);
-            doc.text(benef.parentesco, margin + 80, y);
-            doc.text(`${benef.porcentaje}%`, margin + 130, y);
-            y += 8;
+            doc.text(benef.parentesco, margin + 75, y);
+            doc.text(`${benef.porcentaje}%`, margin + 125, y);
+            y += 6;
         });
 
-        // Declaraciones
-        y += 10;
+        // Declaraciones (más compactas)
+        y += 8;
+        doc.setFontSize(9);
+        doc.setFont(undefined, 'normal');
         const textoDeclaracion = 'Declaro que los porcentajes asignados suman el 100% del beneficio correspondiente.';
         const lineasDeclaracion = doc.splitTextToSize(textoDeclaracion, pageWidth - 2 * margin);
         doc.text(lineasDeclaracion, margin, y);
-        y += lineasDeclaracion.length * 7;
+        y += lineasDeclaracion.length * 5;
 
-        y += 5;
-        doc.setFont(undefined, 'bold');
-        const textoAyuda = 'Esta designación aplica para la Ayuda de Defunción de trabajador ';
+        y += 4;
+        const textoAyuda = 'Esta designación aplica para la Ayuda de Defunción de trabajador (tendrá validez a partir de la fecha de firma del presente documento.)';
         const lineasAyuda = doc.splitTextToSize(textoAyuda, pageWidth - 2 * margin);
         doc.text(lineasAyuda, margin, y);
-        y += lineasAyuda.length * 7;
-        
-        doc.setFont(undefined, 'normal');
-        const textoValidez = '(tendrá validez a partir de la fecha de firma del presente documento.)';
-        const lineasValidez = doc.splitTextToSize(textoValidez, pageWidth - 2 * margin);
-        doc.text(lineasValidez, margin, y);
-        y += lineasValidez.length * 7;
+        y += lineasAyuda.length * 5;
 
-        y += 10;
+        y += 6;
         const textoRevoca = 'Asimismo, manifiesto que esta designación revoca y sustituye cualquier designación de beneficiarios realizada con anterioridad.';
         const lineasRevoca = doc.splitTextToSize(textoRevoca, pageWidth - 2 * margin);
         doc.text(lineasRevoca, margin, y);
-        y += lineasRevoca.length * 7;
+        y += lineasRevoca.length * 5;
 
-        y += 5;
+        y += 4;
         const textoFirma = 'Para los efectos legales correspondientes, firmo la presente en pleno uso de mis facultades.';
         const lineasFirma = doc.splitTextToSize(textoFirma, pageWidth - 2 * margin);
         doc.text(lineasFirma, margin, y);
-        y += lineasFirma.length * 7;
+        y += lineasFirma.length * 5;
 
-        // Firma
-        y += 15;
+        // Atentamente
+        y += 10;
+        doc.setFontSize(10);
         doc.text('Atentamente,', margin, y);
         
-        y += 15;
-        doc.text('Firma: _______________________________________', margin, y);
-        y += 2;
-        doc.setFontSize(10);
-        doc.setFont(undefined, 'italic');
-        doc.text(registro.firma, margin + 15, y);
+        // Firma
+        y += 12;
+        doc.setFont(undefined, 'bold');
+        doc.text('Firma:', margin, y);
         
-        doc.setFontSize(11);
-        doc.setFont(undefined, 'normal');
-        y += 10;
-        doc.text(`Teléfono: ${registro.telefono}`, margin, y);
-        y += 7;
-        doc.text(`Correo electrónico: ${registro.correo}`, margin, y);
+        // Línea de firma
+        const lineStartX = margin + 15;
+        const lineEndX = pageWidth - margin;
+        y += 2;
+        doc.line(lineStartX, y, lineEndX, y);
+        
+        // Nombre debajo de la línea en negritas
+        y += 4;
+        doc.setFontSize(9);
+        doc.setFont(undefined, 'bold');
+        doc.text(registro.firma, lineStartX, y);
+        
+        // Teléfono
+        y += 8;
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        doc.text('Teléfono:', margin, y);
+        doc.text(registro.telefono, margin + 22, y);
+        
+        // Correo electrónico
+        y += 6;
+        doc.setFont(undefined, 'bold');
+        doc.text('Correo electrónico:', margin, y);
+        doc.setFontSize(9);
+        doc.text(registro.correo, margin + 38, y);
 
         // Guardar
         doc.save(`Ayuda_Defuncion_${registro.nombreTrabajador}_${Date.now()}.pdf`);
