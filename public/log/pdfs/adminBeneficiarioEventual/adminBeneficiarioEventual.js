@@ -406,7 +406,7 @@ window.descargarPDF = async function(id) {
         doc.text('NOMBRE Y FECHA', col2X, y, { align: 'center' });
 
         // Guardar
-        doc.save(`Beneficiario_Eventual_${registro.nombreTrabajador}_${Date.now()}.pdf`);
+        doc.save(`PolizasEventual_${registro.nombreTrabajador}_${Date.now()}.pdf`);
         
     } catch (error) {
         console.error('Error al generar PDF:', error);
