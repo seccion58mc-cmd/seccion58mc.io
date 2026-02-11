@@ -5,8 +5,8 @@ let registroActual = null;
 let beneficiariosEditCount = 0;
 
 // Testigos fijos
-const TESTIGO_1 = "MARTIN CORTES RIVERA";
-const TESTIGO_2 = "ISRAEL NAVA VILLAREAL";
+const TESTIGO_1 = "MARIA DEL ROSARIO GÓMEZ GONZÁLEZ";
+const TESTIGO_2 = " ";
 
 // Inicializar
 document.addEventListener('DOMContentLoaded', () => {
