@@ -632,6 +632,161 @@ async function generarPDFFiestaFinAnio() {
     }
 }
 
+// Función para obtener datos de correos electrónicos
+async function obtenerDatosCorreos() {
+    try {
+        const querySnapshot = await getDocs(
+            query(collection(db, 'ListadoCorreos'), orderBy('nombreCompleto', 'asc'))
+        );
+        
+        const datos = [];
+        querySnapshot.forEach((doc) => {
+            datos.push({ id: doc.id, ...doc.data() });
+        });
+        
+        return datos;
+    } catch (error) {
+        console.error('Error obteniendo datos de correos:', error);
+        throw new Error('No se pudieron obtener los datos de correos electrónicos');
+    }
+}
+
+// Generar PDF para listado de correos
+async function generarPDFCorreos() {
+    try {
+        // Mostrar mensaje de carga
+        const loadingMsg = document.createElement('div');
+        loadingMsg.textContent = 'Generando listado de correos electrónicos...';
+        loadingMsg.style.position = 'fixed';
+        loadingMsg.style.top = '20px';
+        loadingMsg.style.left = '50%';
+        loadingMsg.style.transform = 'translateX(-50%)';
+        loadingMsg.style.background = '#16a085';
+        loadingMsg.style.color = 'white';
+        loadingMsg.style.padding = '10px 20px';
+        loadingMsg.style.borderRadius = '5px';
+        loadingMsg.style.zIndex = '1000';
+        document.body.appendChild(loadingMsg);
+        
+        // Obtener datos
+        const datos = await obtenerDatosCorreos();
+        
+        if (datos.length === 0) {
+            alert('No se encontraron correos registrados');
+            document.body.removeChild(loadingMsg);
+            return;
+        }
+
+        // Cargar jsPDF
+        const jsPDFLoaded = await loadJsPDF();
+        if (!jsPDFLoaded) {
+            document.body.removeChild(loadingMsg);
+            return;
+        }
+
+        // Crear PDF
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('landscape'); // Formato horizontal para más columnas
+        
+        // Configuración
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin = 15;
+        let yPosition = 15;
+        
+        // Título principal
+        doc.setFontSize(16);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(22, 160, 133); // Verde azulado
+        doc.text('LISTADO DE CORREOS ELECTRÓNICOS REGISTRADOS', pageWidth / 2, yPosition, { align: 'center' });
+        yPosition += 8;
+        
+        // Subtítulo
+        doc.setFontSize(12);
+        doc.setTextColor(52, 73, 94);
+        doc.text('Sindicato Nacional de Trabajadores', pageWidth / 2, yPosition, { align: 'center' });
+        yPosition += 8;
+        
+        // Fecha de generación
+        doc.setFontSize(9);
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(100, 100, 100);
+        doc.text(`Generado el: ${new Date().toLocaleDateString('es-ES', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        })}`, pageWidth / 2, yPosition, { align: 'center' });
+        yPosition += 6;
+        
+        // Estadísticas
+        doc.setFontSize(9);
+        doc.setTextColor(52, 73, 94);
+        doc.text(`Total de correos registrados: ${datos.length}`, margin, yPosition);
+        yPosition += 8;
+        
+        // Preparar datos para la tabla
+        const tableData = datos.map((item, index) => [
+            index + 1,
+            item.nombreCompleto || 'N/A',
+            item.correo || 'N/A',
+            item.fechaIngreso ? formatDate(item.fechaIngreso) : 'N/A',
+            item.antiguedadTotal || 'N/A',
+            item.fechaRegistro ? formatDate(item.fechaRegistro) : 'N/A'
+        ]);
+
+        // Crear tabla
+        doc.autoTable({
+            startY: yPosition,
+            head: [['#', 'Nombre Completo', 'Correo Electrónico', 'Fecha Ingreso', 'Antigüedad', 'Fecha Registro']],
+            body: tableData,
+            theme: 'grid',
+            headStyles: {
+                fillColor: [22, 160, 133],
+                textColor: 255,
+                fontStyle: 'bold',
+                fontSize: 9
+            },
+            styles: {
+                fontSize: 8,
+                cellPadding: 3,
+                overflow: 'linebreak',
+                minCellHeight: 8
+            },
+            margin: { left: margin, right: margin },
+            columnStyles: {
+                0: { cellWidth: 12, halign: 'center' },  // #
+                1: { cellWidth: 60 },  // Nombre
+                2: { cellWidth: 65 },  // Correo
+                3: { cellWidth: 28, halign: 'center' },  // Fecha Ingreso
+                4: { cellWidth: 40 },  // Antigüedad
+                5: { cellWidth: 28, halign: 'center' }   // Fecha Registro
+            },
+            didDrawPage: function(data) {
+                // Agregar número de página
+                doc.setFontSize(8);
+                doc.setTextColor(100, 100, 100);
+                const pageText = `Página ${data.pageNumber}`;
+                doc.text(
+                    pageText, 
+                    doc.internal.pageSize.width - margin - 10,
+                    doc.internal.pageSize.height - 10
+                );
+            }
+        });
+        
+        // Guardar PDF
+        const fileName = `listado_correos_${new Date().toISOString().slice(0, 10)}.pdf`;
+        doc.save(fileName);
+        
+        // Eliminar mensaje de carga
+        document.body.removeChild(loadingMsg);
+        
+    } catch (error) {
+        console.error('Error generando PDF de correos:', error);
+        alert('Error al generar el PDF: ' + error.message);
+    }
+}
+
 
 
 // Verificar autenticación
@@ -679,6 +834,8 @@ function initApp() {
                 generarPDFCena(service);
             } else if (service === 'FIESTA_FIN_ANIO') {
                 generarPDFFiestaFinAnio();
+            } else if (service === 'LISTADO_CORREOS') {
+                generarPDFCorreos();
             } else {
                 generatePDF(service);
             }
