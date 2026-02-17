@@ -274,76 +274,78 @@ window.descargarPDF = async function(id) {
         // Configuración
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
-        const margin = 20;
+        const margin = 18;
 
         // Cargar y agregar el logo
         const logoImg = await cargarImagenBase64('../../../assets/sindicatoLogo.png');
 
-        // Header - Título
-        doc.setFontSize(11);
+        // Header - Título (más compacto)
+        doc.setFontSize(9);
         doc.setFont(undefined, 'italic');
-        doc.text('Sindicato Nacional de Trabajadores de la Industria Química, Petroquímica,', pageWidth / 2, 20, { align: 'center' });
-        doc.text('Carboquímica, Energía y Gases', pageWidth / 2, 27, { align: 'center' });
+        doc.text('Sindicato Nacional de Trabajadores de la Industria Química, Petroquímica,', pageWidth / 2, 14, { align: 'center' });
+        doc.text('Carboquímica, Energía y Gases', pageWidth / 2, 19, { align: 'center' });
 
-        // Agregar logo centrado
-        const logoWidth = 30;
-        const logoHeight = 30;
+        // Logo más pequeño y más arriba
+        const logoWidth = 22;
+        const logoHeight = 22;
         const logoX = (pageWidth - logoWidth) / 2;
-        doc.addImage(logoImg, 'PNG', logoX, 32, logoWidth, logoHeight);
+        doc.addImage(logoImg, 'PNG', logoX, 22, logoWidth, logoHeight);
 
-        doc.setFontSize(12);
+        doc.setFontSize(10);
         doc.setFont(undefined, 'bold');
-        doc.text('COMITÉ NACIONAL', pageWidth / 2, 68, { align: 'center' });
+        doc.text('COMITÉ NACIONAL', pageWidth / 2, 50, { align: 'center' });
 
         // Contenido
-        doc.setFontSize(11);
+        doc.setFontSize(10);
         doc.setFont(undefined, 'normal');
 
-        let y = 85;
+        let y = 62;
         doc.setFont(undefined, 'bold');
         doc.text('FECHA:', margin, y);
         doc.setFont(undefined, 'normal');
-        doc.text(registro.fecha, margin + 20, y);
+        doc.text(registro.fecha, margin + 18, y);
 
-        y += 10;
+        y += 8;
         doc.setFont(undefined, 'bold');
         doc.text('NOMBRE:', margin, y);
         doc.setFont(undefined, 'normal');
-        doc.text(registro.nombreTrabajador, margin + 25, y);
+        doc.text(registro.nombreTrabajador, margin + 22, y);
 
         // Empresa
-        y += 15;
-        doc.setFontSize(10);
+        y += 12;
+        doc.setFontSize(9);
         doc.text('TRABAJADOR EVENTUAL DE LA EMPRESA:', pageWidth / 2, y, { align: 'center' });
         
-        y += 10;
-        doc.setFontSize(16);
+        y += 8;
+        doc.setFontSize(13);
         doc.setFont(undefined, 'bold');
         doc.text('COSBEL, S. A. DE C. V. (Sección 58)', pageWidth / 2, y, { align: 'center' });
 
         // Designación de beneficiarios
-        y += 15;
-        doc.setFontSize(11);
+        y += 12;
+        doc.setFontSize(10);
         doc.setFont(undefined, 'bold');
         const textoDesigno = 'DESIGNO COMO MIS BENEFICIARIOS:';
         doc.text(textoDesigno, pageWidth / 2, y, { align: 'center' });
-        doc.line(margin + 40, y + 1, pageWidth - margin - 40, y + 1);
+        doc.line(margin + 35, y + 1, pageWidth - margin - 35, y + 1);
 
         // Tabla de beneficiarios
-        y += 10;
+        y += 8;
+        doc.setFontSize(10);
         doc.setFont(undefined, 'bold');
         doc.text('NOMBRE', margin, y);
         doc.text('PARENTESCO', margin + 80, y);
-        doc.text('PORCENTAJE', margin + 130, y);
+        doc.text('PORCENTAJE', margin + 135, y);
         doc.line(margin, y + 2, pageWidth - margin, y + 2);
 
-        y += 10;
+        y += 8;
         doc.setFont(undefined, 'normal');
+        doc.setFontSize(9.5);
         registro.beneficiarios.forEach(benef => {
             doc.text(benef.nombre, margin, y);
             doc.text(benef.parentesco, margin + 80, y);
-            doc.text(`${benef.porcentaje}%`, margin + 130, y);
-            y += 8;
+            doc.text(`${benef.porcentaje}%`, margin + 140, y);
+            y += 7;
         });
 
         // Verificar si necesitamos una nueva página
@@ -353,32 +355,33 @@ window.descargarPDF = async function(id) {
         }
 
         // Nota legal
-        y += 15;
-        doc.setFontSize(10);
+        y += 10;
+        doc.setFontSize(9);
+        doc.setFont(undefined, 'normal');
         const textoLegal = 'EN CASO DE FALLECER TENIENDO CONTRATO VIGENTE CON LA EMPRESA ANTES MENCIONADA.';
         doc.text(textoLegal, pageWidth / 2, y, { align: 'center' });
 
         // Firma del trabajador
-        y += 20;
-        doc.setFontSize(11);
+        y += 15;
+        doc.setFontSize(10);
         doc.setFont(undefined, 'bold');
         doc.text('FIRMA DEL TRABAJADOR', pageWidth / 2, y, { align: 'center' });
         
         // Línea de firma centrada
-        y += 15;
-        const firmaLineStartX = margin + 40;
-        const firmaLineEndX = pageWidth - margin - 40;
+        y += 12;
+        const firmaLineStartX = margin + 35;
+        const firmaLineEndX = pageWidth - margin - 35;
         doc.line(firmaLineStartX, y, firmaLineEndX, y);
         
-        // Nombre DEBAJO de la línea (no encima)
+        // Nombre DEBAJO de la línea
         y += 5;
-        doc.setFontSize(10);
+        doc.setFontSize(9);
         doc.setFont(undefined, 'italic');
         doc.text(registro.firma, pageWidth / 2, y, { align: 'center' });
 
         // Testigos
-        y += 20;
-        doc.setFontSize(11);
+        y += 16;
+        doc.setFontSize(10);
         doc.setFont(undefined, 'bold');
         
         const col1X = margin + 35;
@@ -387,20 +390,20 @@ window.descargarPDF = async function(id) {
         doc.text('TESTIGOS', col1X, y, { align: 'center' });
         doc.text('TESTIGOS', col2X, y, { align: 'center' });
         
-        y += 20;
+        y += 16;
         // Líneas de firma de testigos
         doc.line(col1X - 30, y, col1X + 30, y);
         doc.line(col2X - 30, y, col2X + 30, y);
         
         // Nombres de testigos DEBAJO de las líneas
         y += 5;
-        doc.setFontSize(9);
+        doc.setFontSize(8);
         doc.setFont(undefined, 'italic');
         doc.text(TESTIGO_1, col1X, y, { align: 'center' });
         doc.text(TESTIGO_2, col2X, y, { align: 'center' });
         
         y += 5;
-        doc.setFontSize(8);
+        doc.setFontSize(7.5);
         doc.setFont(undefined, 'bold');
         doc.text('NOMBRE Y FECHA', col1X, y, { align: 'center' });
         doc.text('NOMBRE Y FECHA', col2X, y, { align: 'center' });
