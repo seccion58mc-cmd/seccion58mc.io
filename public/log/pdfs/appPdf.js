@@ -6,7 +6,10 @@ import {
     query, 
     where, 
     getDocs,
-    orderBy 
+    orderBy,
+    doc as firestoreDoc,
+    updateDoc,
+    deleteDoc
 } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 
 // Configuración de Firebase
@@ -632,18 +635,20 @@ async function generarPDFFiestaFinAnio() {
     }
 }
 
+// ─────────────────────────────────────────────
+//  GESTIÓN DE CORREOS  (panel + PDF con links)
+// ─────────────────────────────────────────────
+
 // Función para obtener datos de correos electrónicos
 async function obtenerDatosCorreos() {
     try {
         const querySnapshot = await getDocs(
             query(collection(db, 'ListadoCorreos'), orderBy('nombreCompleto', 'asc'))
         );
-        
         const datos = [];
-        querySnapshot.forEach((doc) => {
-            datos.push({ id: doc.id, ...doc.data() });
+        querySnapshot.forEach((d) => {
+            datos.push({ id: d.id, ...d.data() });
         });
-        
         return datos;
     } catch (error) {
         console.error('Error obteniendo datos de correos:', error);
@@ -651,138 +656,340 @@ async function obtenerDatosCorreos() {
     }
 }
 
-// Generar PDF para listado de correos
-async function generarPDFCorreos() {
+// Abrir panel de gestión de correos
+async function abrirPanelCorreos() {
+    // Overlay / modal
+    const overlay = document.createElement('div');
+    overlay.id = 'correos-overlay';
+    overlay.style.cssText = `
+        position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;
+        display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px;
+    `;
+
+    const panel = document.createElement('div');
+    panel.style.cssText = `
+        background:#fff;border-radius:14px;width:100%;max-width:1100px;
+        box-shadow:0 10px 40px rgba(0,0,0,.25);overflow:hidden;margin:auto;
+    `;
+
+    panel.innerHTML = `
+        <div style="background:linear-gradient(135deg,#16a085,#1abc9c);padding:22px 28px;display:flex;align-items:center;justify-content:space-between;">
+            <div>
+                <h2 style="margin:0;color:#fff;font-size:20px;">📧 Gestión de Correos Electrónicos</h2>
+                <p style="margin:4px 0 0;color:rgba(255,255,255,.8);font-size:13px;" id="correos-subtitulo">Cargando...</p>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button id="btn-generar-pdf-correos" style="
+                    background:#fff;color:#16a085;border:none;padding:10px 18px;
+                    border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;
+                    display:flex;align-items:center;gap:6px;
+                ">📄 Generar PDF</button>
+                <button id="btn-cerrar-panel-correos" style="
+                    background:rgba(255,255,255,.2);color:#fff;border:2px solid rgba(255,255,255,.5);
+                    padding:10px 18px;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;
+                ">✕ Cerrar</button>
+            </div>
+        </div>
+        <div style="padding:20px;">
+            <input id="correos-buscar" type="text" placeholder="🔍 Buscar por nombre o correo..."
+                style="width:100%;padding:10px 14px;border:2px solid #e0e0e0;border-radius:8px;
+                font-size:14px;margin-bottom:16px;outline:none;box-sizing:border-box;">
+            <div id="correos-tabla-wrapper" style="overflow-x:auto;">
+                <p style="text-align:center;color:#888;padding:40px;">Cargando datos...</p>
+            </div>
+        </div>
+    `;
+
+    overlay.appendChild(panel);
+    document.body.appendChild(overlay);
+
+    // Cerrar al hacer clic fuera del panel
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) cerrarPanelCorreos();
+    });
+    document.getElementById('btn-cerrar-panel-correos').addEventListener('click', cerrarPanelCorreos);
+
+    // Cargar datos
+    let datos = [];
     try {
-        // Mostrar mensaje de carga
-        const loadingMsg = document.createElement('div');
-        loadingMsg.textContent = 'Generando listado de correos electrónicos...';
-        loadingMsg.style.position = 'fixed';
-        loadingMsg.style.top = '20px';
-        loadingMsg.style.left = '50%';
-        loadingMsg.style.transform = 'translateX(-50%)';
-        loadingMsg.style.background = '#16a085';
-        loadingMsg.style.color = 'white';
-        loadingMsg.style.padding = '10px 20px';
-        loadingMsg.style.borderRadius = '5px';
-        loadingMsg.style.zIndex = '1000';
-        document.body.appendChild(loadingMsg);
-        
-        // Obtener datos
-        const datos = await obtenerDatosCorreos();
-        
-        if (datos.length === 0) {
-            alert('No se encontraron correos registrados');
-            document.body.removeChild(loadingMsg);
+        datos = await obtenerDatosCorreos();
+    } catch (err) {
+        document.getElementById('correos-tabla-wrapper').innerHTML =
+            `<p style="color:red;text-align:center;padding:30px;">Error al cargar datos: ${err.message}</p>`;
+        return;
+    }
+
+    document.getElementById('correos-subtitulo').textContent =
+        `Total registrados: ${datos.length} correos`;
+
+    renderTablaCorreos(datos);
+
+    // Búsqueda en tiempo real
+    document.getElementById('correos-buscar').addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        const filtrados = datos.filter(d =>
+            (d.nombreCompleto || '').toLowerCase().includes(term) ||
+            (d.correo || '').toLowerCase().includes(term)
+        );
+        renderTablaCorreos(filtrados, datos);
+    });
+
+    // Generar PDF
+    document.getElementById('btn-generar-pdf-correos').addEventListener('click', () => {
+        generarPDFCorreos(datos);
+    });
+
+    function cerrarPanelCorreos() {
+        document.body.removeChild(overlay);
+    }
+
+    function renderTablaCorreos(lista, todosDatos = datos) {
+        const wrapper = document.getElementById('correos-tabla-wrapper');
+        if (lista.length === 0) {
+            wrapper.innerHTML = '<p style="text-align:center;color:#888;padding:30px;">No se encontraron registros.</p>';
             return;
         }
 
-        // Cargar jsPDF
+        const filas = lista.map((item, idx) => `
+            <tr style="border-bottom:1px solid #f0f0f0;transition:background .15s;" 
+                onmouseover="this.style.background='#f0faf8'" onmouseout="this.style.background=''">
+                <td style="padding:10px 12px;text-align:center;color:#888;font-size:13px;">${idx + 1}</td>
+                <td style="padding:10px 12px;font-weight:500;font-size:14px;">${escHtml(item.nombreCompleto || 'N/A')}</td>
+                <td style="padding:10px 12px;">
+                    <a href="mailto:${escHtml(item.correo || '')}"
+                       style="color:#16a085;text-decoration:none;font-size:14px;font-weight:500;"
+                       title="Enviar correo a ${escHtml(item.correo || '')}">
+                        📧 ${escHtml(item.correo || 'N/A')}
+                    </a>
+                </td>
+                <td style="padding:10px 12px;font-size:13px;color:#555;">${item.fechaIngreso ? formatDate(item.fechaIngreso) : 'N/A'}</td>
+                <td style="padding:10px 12px;font-size:13px;color:#555;">${escHtml(item.antiguedadTotal || 'N/A')}</td>
+                <td style="padding:10px 12px;font-size:13px;color:#555;">${item.fechaRegistro ? formatDate(item.fechaRegistro) : 'N/A'}</td>
+                <td style="padding:10px 12px;text-align:center;">
+                    <div style="display:flex;gap:6px;justify-content:center;">
+                        <button onclick="editarCorreo('${item.id}')"
+                            style="background:#3498db;color:#fff;border:none;padding:6px 12px;
+                            border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">
+                            ✏️ Editar
+                        </button>
+                        <button onclick="eliminarCorreo('${item.id}','${escHtml(item.nombreCompleto || '')}')"
+                            style="background:#e74c3c;color:#fff;border:none;padding:6px 12px;
+                            border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">
+                            🗑️ Eliminar
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+
+        wrapper.innerHTML = `
+            <table style="width:100%;border-collapse:collapse;min-width:750px;">
+                <thead>
+                    <tr style="background:#16a085;color:#fff;">
+                        <th style="padding:12px;font-size:13px;">#</th>
+                        <th style="padding:12px;font-size:13px;text-align:left;">Nombre Completo</th>
+                        <th style="padding:12px;font-size:13px;text-align:left;">Correo Electrónico</th>
+                        <th style="padding:12px;font-size:13px;">Fecha Ingreso</th>
+                        <th style="padding:12px;font-size:13px;">Antigüedad</th>
+                        <th style="padding:12px;font-size:13px;">Fecha Registro</th>
+                        <th style="padding:12px;font-size:13px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>${filas}</tbody>
+            </table>
+        `;
+
+        // Callbacks globales para los botones dentro de la tabla
+        window.editarCorreo = async (id) => {
+            const registro = todosDatos.find(d => d.id === id) || lista.find(d => d.id === id);
+            if (!registro) return;
+
+            const nuevoNombre = prompt('Nombre completo:', registro.nombreCompleto || '');
+            if (nuevoNombre === null) return;
+            const nuevoCorreo = prompt('Correo electrónico:', registro.correo || '');
+            if (nuevoCorreo === null) return;
+            const nuevaAntiguedad = prompt('Antigüedad:', registro.antiguedadTotal || '');
+            if (nuevaAntiguedad === null) return;
+
+            try {
+                await updateDoc(firestoreDoc(db, 'ListadoCorreos', id), {
+                    nombreCompleto: nuevoNombre.trim(),
+                    correo: nuevoCorreo.trim(),
+                    antiguedadTotal: nuevaAntiguedad.trim()
+                });
+                // Refrescar datos
+                const idx = todosDatos.findIndex(d => d.id === id);
+                if (idx !== -1) {
+                    todosDatos[idx].nombreCompleto = nuevoNombre.trim();
+                    todosDatos[idx].correo = nuevoCorreo.trim();
+                    todosDatos[idx].antiguedadTotal = nuevaAntiguedad.trim();
+                }
+                document.getElementById('correos-subtitulo').textContent =
+                    `Total registrados: ${todosDatos.length} correos`;
+                const term = document.getElementById('correos-buscar').value.toLowerCase();
+                const filtrados = term
+                    ? todosDatos.filter(d =>
+                        (d.nombreCompleto || '').toLowerCase().includes(term) ||
+                        (d.correo || '').toLowerCase().includes(term))
+                    : todosDatos;
+                renderTablaCorreos(filtrados, todosDatos);
+                mostrarToast('✅ Registro actualizado correctamente', '#16a085');
+            } catch (err) {
+                alert('Error al actualizar: ' + err.message);
+            }
+        };
+
+        window.eliminarCorreo = async (id, nombre) => {
+            if (!confirm(`¿Eliminar a "${nombre}" de la base de datos?\nEsta acción no se puede deshacer.`)) return;
+            try {
+                await deleteDoc(firestoreDoc(db, 'ListadoCorreos', id));
+                const idx = todosDatos.findIndex(d => d.id === id);
+                if (idx !== -1) todosDatos.splice(idx, 1);
+                document.getElementById('correos-subtitulo').textContent =
+                    `Total registrados: ${todosDatos.length} correos`;
+                const term = document.getElementById('correos-buscar').value.toLowerCase();
+                const filtrados = term
+                    ? todosDatos.filter(d =>
+                        (d.nombreCompleto || '').toLowerCase().includes(term) ||
+                        (d.correo || '').toLowerCase().includes(term))
+                    : todosDatos;
+                renderTablaCorreos(filtrados, todosDatos);
+                mostrarToast('🗑️ Registro eliminado correctamente', '#e74c3c');
+            } catch (err) {
+                alert('Error al eliminar: ' + err.message);
+            }
+        };
+    }
+}
+
+// Pequeño toast de confirmación
+function mostrarToast(msg, color = '#333') {
+    const t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = `
+        position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
+        background:${color};color:#fff;padding:12px 24px;border-radius:8px;
+        font-size:15px;font-weight:600;z-index:99999;
+        box-shadow:0 4px 15px rgba(0,0,0,.25);
+    `;
+    document.body.appendChild(t);
+    setTimeout(() => document.body.removeChild(t), 3000);
+}
+
+// Escape HTML básico
+function escHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+// Generar PDF con enlaces mailto en cada correo
+async function generarPDFCorreos(datos) {
+    if (!datos || datos.length === 0) {
+        alert('No hay datos para generar el PDF.');
+        return;
+    }
+
+    const loadingMsg = document.createElement('div');
+    loadingMsg.textContent = 'Generando PDF con enlaces de correo...';
+    loadingMsg.style.cssText = `
+        position:fixed;top:20px;left:50%;transform:translateX(-50%);
+        background:#16a085;color:#fff;padding:10px 20px;
+        border-radius:5px;z-index:99999;font-weight:600;
+    `;
+    document.body.appendChild(loadingMsg);
+
+    try {
         const jsPDFLoaded = await loadJsPDF();
-        if (!jsPDFLoaded) {
-            document.body.removeChild(loadingMsg);
-            return;
-        }
+        if (!jsPDFLoaded) { document.body.removeChild(loadingMsg); return; }
 
-        // Crear PDF
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('landscape'); // Formato horizontal para más columnas
-        
-        // Configuración
-        const pageWidth = doc.internal.pageSize.getWidth();
+        const doc = new jsPDF('landscape');
+        const pageWidth  = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
         const margin = 15;
-        let yPosition = 15;
-        
-        // Título principal
+
+        // ── Encabezado ──
+        doc.setFillColor(22, 160, 133);
+        doc.rect(0, 0, pageWidth, 28, 'F');
         doc.setFontSize(16);
         doc.setFont(undefined, 'bold');
-        doc.setTextColor(22, 160, 133); // Verde azulado
-        doc.text('LISTADO DE CORREOS ELECTRÓNICOS REGISTRADOS', pageWidth / 2, yPosition, { align: 'center' });
-        yPosition += 8;
-        
-        // Subtítulo
-        doc.setFontSize(12);
-        doc.setTextColor(52, 73, 94);
-        doc.text('Sindicato Nacional de Trabajadores', pageWidth / 2, yPosition, { align: 'center' });
-        yPosition += 8;
-        
-        // Fecha de generación
-        doc.setFontSize(9);
+        doc.setTextColor(255, 255, 255);
+        doc.text('LISTADO DE CORREOS ELECTRÓNICOS REGISTRADOS', pageWidth / 2, 12, { align: 'center' });
+        doc.setFontSize(10);
         doc.setFont(undefined, 'normal');
-        doc.setTextColor(100, 100, 100);
-        doc.text(`Generado el: ${new Date().toLocaleDateString('es-ES', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-        })}`, pageWidth / 2, yPosition, { align: 'center' });
-        yPosition += 6;
-        
-        // Estadísticas
-        doc.setFontSize(9);
-        doc.setTextColor(52, 73, 94);
-        doc.text(`Total de correos registrados: ${datos.length}`, margin, yPosition);
-        yPosition += 8;
-        
-        // Preparar datos para la tabla
-        const tableData = datos.map((item, index) => [
-            index + 1,
-            item.nombreCompleto || 'N/A',
-            item.correo || 'N/A',
-            item.fechaIngreso ? formatDate(item.fechaIngreso) : 'N/A',
-            item.antiguedadTotal || 'N/A',
-            item.fechaRegistro ? formatDate(item.fechaRegistro) : 'N/A'
-        ]);
+        doc.text('Sindicato Nacional de Trabajadores', pageWidth / 2, 20, { align: 'center' });
 
-        // Crear tabla
+        let yPos = 35;
+        doc.setFontSize(9);
+        doc.setTextColor(80, 80, 80);
+        doc.text(`Generado el: ${new Date().toLocaleDateString('es-ES', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}`, margin, yPos);
+        doc.text(`Total de correos: ${datos.length}`, pageWidth - margin, yPos, { align: 'right' });
+        yPos += 5;
+
+        // ── Tabla con autoTable, pero añadimos los links manualmente ──
+        const colWidths = { 0:10, 1:65, 2:75, 3:30, 4:45, 5:30 };
+        const colX = [margin];
+        Object.values(colWidths).forEach((w, i) => {
+            if (i < Object.keys(colWidths).length - 1)
+                colX.push(colX[i] + w + 2);
+        });
+
         doc.autoTable({
-            startY: yPosition,
-            head: [['#', 'Nombre Completo', 'Correo Electrónico', 'Fecha Ingreso', 'Antigüedad', 'Fecha Registro']],
-            body: tableData,
+            startY: yPos,
+            head: [['#','Nombre Completo','Correo Electrónico','Fecha Ingreso','Antigüedad','Fecha Registro']],
+            body: datos.map((item, i) => [
+                i + 1,
+                item.nombreCompleto || 'N/A',
+                item.correo || 'N/A',
+                item.fechaIngreso ? formatDate(item.fechaIngreso) : 'N/A',
+                item.antiguedadTotal || 'N/A',
+                item.fechaRegistro ? formatDate(item.fechaRegistro) : 'N/A'
+            ]),
             theme: 'grid',
-            headStyles: {
-                fillColor: [22, 160, 133],
-                textColor: 255,
-                fontStyle: 'bold',
-                fontSize: 9
-            },
-            styles: {
-                fontSize: 8,
-                cellPadding: 3,
-                overflow: 'linebreak',
-                minCellHeight: 8
-            },
+            headStyles: { fillColor:[22,160,133], textColor:255, fontStyle:'bold', fontSize:9 },
+            styles: { fontSize:8, cellPadding:3, overflow:'linebreak', minCellHeight:9 },
             margin: { left: margin, right: margin },
             columnStyles: {
-                0: { cellWidth: 12, halign: 'center' },  // #
-                1: { cellWidth: 60 },  // Nombre
-                2: { cellWidth: 65 },  // Correo
-                3: { cellWidth: 28, halign: 'center' },  // Fecha Ingreso
-                4: { cellWidth: 40 },  // Antigüedad
-                5: { cellWidth: 28, halign: 'center' }   // Fecha Registro
+                0: { cellWidth:10, halign:'center' },
+                1: { cellWidth:65 },
+                2: { cellWidth:75, textColor:[22,160,133] }, // color de link
+                3: { cellWidth:30, halign:'center' },
+                4: { cellWidth:45 },
+                5: { cellWidth:30, halign:'center' }
+            },
+            // Añadir enlace mailto en la celda de correo
+            didDrawCell: function(hookData) {
+                if (hookData.section === 'body' && hookData.column.index === 2) {
+                    const correo = datos[hookData.row.index]?.correo;
+                    if (correo && correo !== 'N/A') {
+                        doc.link(
+                            hookData.cell.x,
+                            hookData.cell.y,
+                            hookData.cell.width,
+                            hookData.cell.height,
+                            { url: `mailto:${correo}` }
+                        );
+                    }
+                }
             },
             didDrawPage: function(data) {
-                // Agregar número de página
                 doc.setFontSize(8);
-                doc.setTextColor(100, 100, 100);
-                const pageText = `Página ${data.pageNumber}`;
-                doc.text(
-                    pageText, 
-                    doc.internal.pageSize.width - margin - 10,
-                    doc.internal.pageSize.height - 10
-                );
+                doc.setTextColor(130,130,130);
+                doc.text(`Página ${data.pageNumber}`, pageWidth - margin, pageHeight - 8, { align:'right' });
+                doc.text('CONFIDENCIAL - Uso interno', margin, pageHeight - 8);
             }
         });
-        
-        // Guardar PDF
-        const fileName = `listado_correos_${new Date().toISOString().slice(0, 10)}.pdf`;
-        doc.save(fileName);
-        
-        // Eliminar mensaje de carga
+
+        doc.save(`listado_correos_${new Date().toISOString().slice(0,10)}.pdf`);
         document.body.removeChild(loadingMsg);
-        
+        mostrarToast('📄 PDF generado con éxito', '#16a085');
+
     } catch (error) {
         console.error('Error generando PDF de correos:', error);
+        document.body.removeChild(loadingMsg);
         alert('Error al generar el PDF: ' + error.message);
     }
 }
@@ -835,7 +1042,7 @@ function initApp() {
             } else if (service === 'FIESTA_FIN_ANIO') {
                 generarPDFFiestaFinAnio();
             } else if (service === 'LISTADO_CORREOS') {
-                generarPDFCorreos();
+                abrirPanelCorreos();
             } else {
                 generatePDF(service);
             }
