@@ -380,6 +380,16 @@ tbody tr:hover {
     background: #f57f17;
 }
 
+.btn-despido {
+    background: #7b241c;
+    color: white;
+    font-weight: 600;
+}
+
+.btn-despido:hover {
+    background: #5b1a14;
+}
+
 .loading-row {
     text-align: center;
     padding: 40px !important;

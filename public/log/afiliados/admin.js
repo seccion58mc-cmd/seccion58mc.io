@@ -275,6 +275,9 @@ function mostrarAfiliados(afiliados) {
                         ${(afiliado.status === 'A' || afiliado.status === 'R') && afiliado.status !== 'AP' ? 
                             `<button class="btn-small btn-planta" title="Otorgar planta" onclick="mostrarModalPlanta('${afiliado.id}')">🎖️</button>` 
                             : ''}
+                        ${afiliado.status !== 'D' ? 
+                            `<button class="btn-small btn-despido" title="Despedir" onclick="despedirInmediato('${afiliado.id}')">Despedir</button>`
+                            : ''}
                         <button class="btn-small btn-delete" title="Eliminar permanentemente" onclick="eliminarDeBaseDatos('${afiliado.id}', '${afiliado.nombreCompleto}', '${afiliado.curp}')">
                             🗑️
                         </button>
@@ -1820,6 +1823,125 @@ window.eliminarDuplicados = async function() {
     }
 };
 
+
+// Despedir trabajador de forma inmediata
+window.despedirInmediato = function(id) {
+    const afiliado = todosLosAfiliados.find(a => a.id === id);
+    if (!afiliado) return;
+
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header" style="background: #7b241c; color: white;">
+                <h2>DESPIDO INMEDIATO</h2>
+            </div>
+            <div class="modal-body">
+                <div class="alert-box alert-danger" style="margin-bottom: 20px;">
+                    <strong>ADVERTENCIA: Esta acción es permanente.</strong><br>
+                    Una vez despedido, el trabajador no podrá volver a ingresar al sistema bajo ningun concepto.
+                </div>
+
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <strong>Trabajador:</strong> ${afiliado.nombreCompleto}<br>
+                    <strong>CURP:</strong> ${afiliado.curp}<br>
+                    <strong>Estado actual:</strong> ${getStatusTexto(afiliado.status)}
+                </div>
+
+                <div class="form-group">
+                    <label for="motivoDespidoInmediato">Motivo del despido: <span class="required">*</span></label>
+                    <textarea id="motivoDespidoInmediato" rows="4" placeholder="Describe el motivo del despido..." style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 5px; font-family: inherit; font-size: 0.95rem; resize: vertical;"></textarea>
+                </div>
+
+                <div class="modal-buttons" style="margin-top: 20px;">
+                    <button class="btn-danger" id="btnConfirmarDespidoInmediato" style="background: #7b241c; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: 700; cursor: pointer; font-size: 0.95rem;">
+                        SI, DESPEDIR
+                    </button>
+                    <button class="btn-secondary" id="btnCancelarDespidoInmediato">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    document.getElementById('btnConfirmarDespidoInmediato').onclick = async () => {
+        const motivo = document.getElementById('motivoDespidoInmediato').value.trim();
+        if (!motivo) {
+            alert('Debes ingresar el motivo del despido para continuar.');
+            return;
+        }
+
+        modal.remove();
+
+        // Modal de confirmación final
+        const modalConfirm = document.createElement('div');
+        modalConfirm.className = 'modal';
+        modalConfirm.style.display = 'block';
+        modalConfirm.innerHTML = `
+            <div class="modal-content small">
+                <div class="modal-header" style="background: #7b241c; color: white;">
+                    <h2>Confirmar Despido</h2>
+                </div>
+                <div class="modal-body">
+                    <p style="margin-bottom: 15px; font-size: 1rem;">
+                        Esta acción no puede revertirse. El trabajador <strong>${afiliado.nombreCompleto}</strong> quedara despedido de forma permanente.
+                    </p>
+                    <p style="margin-bottom: 20px; color: #7b241c; font-weight: 600;">
+                        ¿Estas completamente seguro?
+                    </p>
+                    <div class="modal-buttons">
+                        <button class="btn-danger" id="btnFinalDespido" style="background: #7b241c; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: 700; cursor: pointer;">
+                            SI, CONFIRMAR DESPIDO
+                        </button>
+                        <button class="btn-secondary" id="btnCancelarFinalDespido">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modalConfirm);
+
+        document.getElementById('btnFinalDespido').onclick = async () => {
+            modalConfirm.remove();
+            try {
+                showLoading();
+                const afiliadoRef = doc(window.db, 'ingresos', id);
+                await updateDoc(afiliadoRef, {
+                    status: 'D',
+                    fechaDespido: Timestamp.now(),
+                    motivoDespido: motivo.toUpperCase(),
+                    despidoPermanente: true
+                });
+                hideLoading();
+                mostrarExito(`El trabajador ${afiliado.nombreCompleto} ha sido despedido de forma permanente.`);
+                await cargarAfiliados();
+            } catch (error) {
+                hideLoading();
+                console.error('Error al despedir:', error);
+                mostrarError('No se pudo registrar el despido. Por favor, intenta nuevamente.');
+            }
+        };
+
+        document.getElementById('btnCancelarFinalDespido').onclick = () => {
+            modalConfirm.remove();
+        };
+
+        modalConfirm.onclick = (e) => {
+            if (e.target === modalConfirm) modalConfirm.remove();
+        };
+    };
+
+    document.getElementById('btnCancelarDespidoInmediato').onclick = () => {
+        modal.remove();
+    };
+
+    modal.onclick = (e) => {
+        if (e.target === modal) modal.remove();
+    };
+};
 
 // Eliminar afiliado de la base de datos permanentemente
 window.eliminarDeBaseDatos = function(id, nombre, curp) {
