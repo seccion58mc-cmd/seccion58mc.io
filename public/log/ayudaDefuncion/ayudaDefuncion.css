@@ -20,11 +20,11 @@ body {
     overflow: hidden;
 }
 
-/* Header */
+/* ===== HEADER ===== */
 .header {
     background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
     color: white;
-    padding: 30px;
+    padding: 30px 20px;
     text-align: center;
 }
 
@@ -32,12 +32,14 @@ body {
     font-size: 18px;
     font-weight: bold;
     margin-bottom: 5px;
+    line-height: 1.4;
 }
 
 .header h2 {
     font-size: 16px;
     font-weight: normal;
     margin-bottom: 20px;
+    line-height: 1.4;
 }
 
 .logo-container {
@@ -47,7 +49,6 @@ body {
 .logo {
     max-width: 120px;
     height: auto;
-    /* filter: brightness(0) invert(1); */
 }
 
 .header h3 {
@@ -62,7 +63,7 @@ body {
     font-weight: bold;
 }
 
-/* Formulario */
+/* ===== FORMULARIO ===== */
 .form-container {
     padding: 40px;
 }
@@ -73,11 +74,13 @@ body {
     font-weight: bold;
     margin-bottom: 30px;
     color: #1e3c72;
+    line-height: 1.4;
 }
 
 .form-group {
     margin-bottom: 20px;
     line-height: 1.8;
+    flex-wrap: wrap;
 }
 
 .form-group label {
@@ -111,16 +114,18 @@ body {
     width: 150px;
 }
 
-/* Tabla de beneficiarios */
+/* ===== TABLA DE BENEFICIARIOS ===== */
 .table-container {
     margin: 30px 0;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 15px;
+    min-width: 560px;
 }
 
 thead {
@@ -133,6 +138,7 @@ th {
     text-align: left;
     font-size: 14px;
     font-weight: bold;
+    white-space: nowrap;
 }
 
 tbody tr {
@@ -141,6 +147,7 @@ tbody tr {
 
 tbody td {
     padding: 10px;
+    vertical-align: top;
 }
 
 tbody input,
@@ -159,6 +166,22 @@ tbody select:focus {
     border-color: #667eea;
 }
 
+/* Fecha de nacimiento en tabla */
+tbody input[type="date"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.3s;
+}
+
+tbody input[type="date"]:focus {
+    border-color: #667eea;
+}
+
 .btn-eliminar {
     background-color: #e74c3c;
     color: white;
@@ -168,13 +191,33 @@ tbody select:focus {
     cursor: pointer;
     font-size: 14px;
     transition: background-color 0.3s;
+    white-space: nowrap;
 }
 
 .btn-eliminar:hover {
     background-color: #c0392b;
 }
 
-/* Botón agregar */
+/* ===== INDICADOR DE EDAD EN BENEFICIARIOS ===== */
+.beneficiario-edad-info {
+    font-size: 12px;
+    font-weight: bold;
+    margin-top: 4px;
+    padding: 3px 6px;
+    border-radius: 4px;
+}
+
+.edad-mayor {
+    color: #27ae60;
+    background-color: #eafaf1;
+}
+
+.edad-menor {
+    color: #e74c3c;
+    background-color: #fdf0ef;
+}
+
+/* ===== BOTÓN AGREGAR ===== */
 .btn-agregar {
     background-color: #27ae60;
     color: white;
@@ -187,13 +230,14 @@ tbody select:focus {
     transition: background-color 0.3s;
     display: block;
     margin: 0 auto 30px;
+    width: auto;
 }
 
 .btn-agregar:hover {
     background-color: #229954;
 }
 
-/* Declaraciones */
+/* ===== DECLARACIONES ===== */
 .declaracion {
     background-color: #f8f9fa;
     padding: 20px;
@@ -212,7 +256,7 @@ tbody select:focus {
     margin-bottom: 0;
 }
 
-/* Botón enviar */
+/* ===== BOTÓN ENVIAR ===== */
 .button-container {
     text-align: center;
     margin-top: 30px;
@@ -235,7 +279,7 @@ tbody select:focus {
     box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
 }
 
-/* Modal */
+/* ===== MODAL ===== */
 .modal {
     display: none;
     position: fixed;
@@ -246,6 +290,7 @@ tbody select:focus {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     animation: fadeIn 0.3s;
+    padding: 10px;
 }
 
 @keyframes fadeIn {
@@ -260,21 +305,15 @@ tbody select:focus {
     border-radius: 10px;
     width: 90%;
     max-width: 600px;
-    max-height: 80vh;
+    max-height: 85vh;
     overflow-y: auto;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     animation: slideDown 0.3s;
 }
 
 @keyframes slideDown {
-    from {
-        transform: translateY(-50px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
+    from { transform: translateY(-50px); opacity: 0; }
+    to   { transform: translateY(0);     opacity: 1; }
 }
 
 .modal-content h3 {
@@ -282,6 +321,7 @@ tbody select:focus {
     margin-bottom: 20px;
     font-size: 22px;
     text-align: center;
+    line-height: 1.3;
 }
 
 #resumenDatos {
@@ -291,6 +331,7 @@ tbody select:focus {
     margin-bottom: 20px;
     font-size: 14px;
     line-height: 1.8;
+    word-break: break-word;
 }
 
 #resumenDatos strong {
@@ -302,6 +343,7 @@ tbody select:focus {
     gap: 15px;
     justify-content: center;
     margin-top: 20px;
+    flex-wrap: wrap;
 }
 
 .btn-confirmar {
@@ -374,7 +416,7 @@ tbody select:focus {
     margin-bottom: 15px;
 }
 
-/* Alertas */
+/* ===== ALERTAS ===== */
 .error-message {
     background-color: #fee;
     color: #c00;
@@ -385,14 +427,18 @@ tbody select:focus {
     font-weight: bold;
 }
 
-/* Responsive */
+/* ===== RESPONSIVE — TABLET (max 768px) ===== */
 @media (max-width: 768px) {
-    .container {
-        margin: 10px;
+    body {
+        padding: 10px;
     }
 
-    .form-container {
-        padding: 20px;
+    .container {
+        border-radius: 8px;
+    }
+
+    .header {
+        padding: 20px 15px;
     }
 
     .header h1 {
@@ -403,150 +449,242 @@ tbody select:focus {
         font-size: 12px;
     }
 
+    .header h3 {
+        font-size: 14px;
+    }
+
+    .header h4 {
+        font-size: 16px;
+    }
+
     .logo {
         max-width: 80px;
     }
 
-    .input-large {
-        width: 100%;
+    .form-container {
+        padding: 20px 15px;
     }
 
+    .form-title {
+        font-size: 16px;
+    }
+
+    /* Campos inline pasan a bloque */
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        line-height: 1.6;
+    }
+
+    .form-group label {
+        display: block;
+    }
+
+    .input-large,
     .input-medium {
         width: 100%;
     }
 
-    table {
-        font-size: 12px;
+    .form-group input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-bottom: 2px solid #333;
+        border-radius: 4px;
     }
 
-    th, td {
-        padding: 8px 5px;
+    /* Tabla → tarjetas en móvil */
+    .table-container {
+        overflow-x: visible;
+    }
+
+    table,
+    thead,
+    tbody,
+    th,
+    td,
+    tr {
+        display: block;
+    }
+
+    table {
+        min-width: unset;
+    }
+
+    thead {
+        display: none; /* Ocultamos cabecera, usamos data-label */
+    }
+
+    tbody tr {
+        background: #f8f9fa;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        padding: 12px;
+        position: relative;
+    }
+
+    tbody td {
+        padding: 6px 0;
+        border: none;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    tbody td::before {
+        content: attr(data-label);
+        font-size: 11px;
+        font-weight: bold;
+        color: #1e3c72;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    tbody input,
+    tbody select,
+    tbody input[type="date"] {
+        font-size: 15px;
+        padding: 10px;
+    }
+
+    .btn-eliminar {
+        width: 100%;
+        margin-top: 8px;
+        padding: 10px;
+        font-size: 15px;
+    }
+
+    /* Botones principales */
+    .btn-agregar {
+        width: 100%;
+        font-size: 15px;
+        padding: 14px;
+    }
+
+    .btn-enviar {
+        width: 100%;
+        font-size: 16px;
+        padding: 16px;
+    }
+
+    /* Modal */
+    .modal-content {
+        margin: 10% auto;
+        padding: 20px 15px;
+        width: 95%;
+    }
+
+    .modal-content h3 {
+        font-size: 18px;
     }
 
     .modal-buttons {
         flex-direction: column;
     }
-}
-/* ===== VERIFICACIÓN DE EDAD ===== */
-.verificacion-edad-container {
-    padding: 50px 40px;
-    text-align: center;
+
+    .btn-confirmar,
+    .btn-cancelar {
+        width: 100%;
+        text-align: center;
+    }
+
+    .modal-success h3 {
+        font-size: 22px;
+    }
+
+    .modal-menor-edad h3 {
+        font-size: 20px;
+    }
+
+    .modal-menor-edad p {
+        font-size: 15px;
+    }
 }
 
-.verificacion-edad-container h2 {
+/* ===== RESPONSIVE — MÓVIL PEQUEÑO (max 400px) ===== */
+@media (max-width: 400px) {
+    body {
+        padding: 5px;
+    }
+
+    .header h1 {
+        font-size: 12px;
+    }
+
+    .header h2 {
+        font-size: 11px;
+    }
+
+    .form-container {
+        padding: 15px 10px;
+    }
+
+    .form-title {
+        font-size: 14px;
+    }
+
+    .declaracion {
+        padding: 15px 12px;
+    }
+
+    .declaracion p {
+        font-size: 13px;
+    }
+}
+
+/* ===== INFO BENEFICIARIOS ===== */
+.info-beneficiarios {
+    background-color: #eef4ff;
+    border: 1px solid #c3d9ff;
+    border-left: 4px solid #1e3c72;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 0 0 20px;
+}
+
+.info-beneficiarios-titulo {
+    font-size: 14px;
+    font-weight: bold;
     color: #1e3c72;
-    font-size: 22px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
-.verificacion-edad-container p {
-    color: #555;
-    font-size: 15px;
-    line-height: 1.7;
-    margin-bottom: 30px;
-}
-
-.verificacion-icono {
-    font-size: 60px;
-    margin-bottom: 20px;
-}
-
-.verificacion-campo {
+.info-beneficiarios-lista {
+    list-style: none;
+    padding: 0;
+    margin: 0;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 15px;
+    gap: 6px;
 }
 
-.verificacion-campo label {
-    font-size: 15px;
-    font-weight: bold;
-    color: #333;
-}
-
-.verificacion-campo input[type="date"] {
-    padding: 12px 18px;
-    font-size: 16px;
-    border: 2px solid #ccc;
-    border-radius: 8px;
-    outline: none;
-    cursor: pointer;
-    transition: border-color 0.3s;
-    width: 220px;
-}
-
-.verificacion-campo input[type="date"]:focus {
-    border-color: #1e3c72;
-}
-
-.edad-calculada {
-    font-size: 15px;
-    color: #27ae60;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.error-edad {
-    font-size: 14px;
-    color: #e74c3c;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.btn-verificar {
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    color: white;
-    border: none;
-    padding: 14px 45px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    margin-top: 15px;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.btn-verificar:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 18px rgba(30, 60, 114, 0.4);
-}
-
-/* ===== PANTALLA BLOQUEADO MENOR DE EDAD ===== */
-.bloqueado-container {
-    padding: 60px 40px;
-    text-align: center;
-}
-
-.bloqueado-icono {
-    font-size: 70px;
-    margin-bottom: 20px;
-}
-
-.bloqueado-container h2 {
-    color: #e74c3c;
-    font-size: 28px;
-    margin-bottom: 15px;
-}
-
-.bloqueado-mensaje {
-    font-size: 18px;
-    color: #333;
-    line-height: 1.7;
-    margin-bottom: 10px;
-}
-
-.bloqueado-sub {
+.info-beneficiarios-lista li {
     font-size: 13px;
-    color: #999;
-    margin-bottom: 30px;
+    color: #444;
+    padding-left: 20px;
+    position: relative;
+    line-height: 1.5;
 }
 
-.btn-reintentar {
-    background: linear-gradient(135deg, #7f8c8d 0%, #95a5a6 100%);
-    margin-top: 10px;
+.info-beneficiarios-lista li::before {
+    content: "✔";
+    position: absolute;
+    left: 0;
+    color: #27ae60;
+    font-size: 12px;
+    top: 1px;
 }
 
-.btn-reintentar:hover {
-    box-shadow: 0 5px 18px rgba(127, 140, 141, 0.4);
+@media (max-width: 768px) {
+    .info-beneficiarios {
+        padding: 14px 15px;
+    }
+    .info-beneficiarios-titulo {
+        font-size: 13px;
+    }
+    .info-beneficiarios-lista li {
+        font-size: 13px;
+    }
 }

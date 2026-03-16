@@ -20,11 +20,11 @@ body {
     overflow: hidden;
 }
 
-/* Header */
+/* ===== HEADER ===== */
 .header {
     background: linear-gradient(135deg, #c94b4b 0%, #4b134f 100%);
     color: white;
-    padding: 30px;
+    padding: 30px 20px;
     text-align: center;
 }
 
@@ -33,6 +33,7 @@ body {
     font-weight: normal;
     margin-bottom: 5px;
     font-style: italic;
+    line-height: 1.4;
 }
 
 .header h2 {
@@ -40,6 +41,7 @@ body {
     font-weight: normal;
     font-style: italic;
     margin-bottom: 20px;
+    line-height: 1.4;
 }
 
 .logo-container {
@@ -58,7 +60,7 @@ body {
     letter-spacing: 2px;
 }
 
-/* Formulario */
+/* ===== FORMULARIO ===== */
 .form-container {
     padding: 40px;
 }
@@ -68,6 +70,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-wrap: wrap;
 }
 
 .label-bold {
@@ -79,6 +82,7 @@ body {
 
 .form-group input {
     flex: 1;
+    min-width: 0;
     border: none;
     border-bottom: 2px solid #333;
     padding: 8px 10px;
@@ -100,7 +104,7 @@ body {
     width: 100%;
 }
 
-/* Secciones */
+/* ===== SECCIONES ===== */
 .section-title {
     text-align: center;
     margin: 30px 0 20px;
@@ -126,18 +130,21 @@ body {
     font-size: 22px;
     font-weight: bold;
     color: #000;
+    line-height: 1.3;
 }
 
-/* Tabla de beneficiarios */
+/* ===== TABLA DE BENEFICIARIOS ===== */
 .table-container {
     margin: 30px 0;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 15px;
+    min-width: 580px;
 }
 
 thead {
@@ -150,6 +157,7 @@ th {
     text-align: left;
     font-size: 14px;
     font-weight: bold;
+    white-space: nowrap;
 }
 
 tbody tr {
@@ -158,6 +166,7 @@ tbody tr {
 
 tbody td {
     padding: 10px;
+    vertical-align: top;
 }
 
 tbody input,
@@ -176,6 +185,22 @@ tbody select:focus {
     border-color: #f5576c;
 }
 
+/* Fecha de nacimiento en tabla */
+tbody input[type="date"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.3s;
+}
+
+tbody input[type="date"]:focus {
+    border-color: #f5576c;
+}
+
 .btn-eliminar {
     background-color: #e74c3c;
     color: white;
@@ -185,13 +210,33 @@ tbody select:focus {
     cursor: pointer;
     font-size: 14px;
     transition: background-color 0.3s;
+    white-space: nowrap;
 }
 
 .btn-eliminar:hover {
     background-color: #c0392b;
 }
 
-/* Botón agregar */
+/* ===== INDICADOR DE EDAD EN BENEFICIARIOS ===== */
+.beneficiario-edad-info {
+    font-size: 12px;
+    font-weight: bold;
+    margin-top: 4px;
+    padding: 3px 6px;
+    border-radius: 4px;
+}
+
+.edad-mayor {
+    color: #27ae60;
+    background-color: #eafaf1;
+}
+
+.edad-menor {
+    color: #e74c3c;
+    background-color: #fdf0ef;
+}
+
+/* ===== BOTÓN AGREGAR ===== */
 .btn-agregar {
     background-color: #27ae60;
     color: white;
@@ -210,7 +255,7 @@ tbody select:focus {
     background-color: #229954;
 }
 
-/* Nota legal */
+/* ===== NOTA LEGAL ===== */
 .nota-legal {
     background-color: #fff3cd;
     border-left: 4px solid #ffc107;
@@ -223,9 +268,10 @@ tbody select:focus {
     font-size: 13px;
     font-weight: bold;
     color: #856404;
+    line-height: 1.5;
 }
 
-/* Firma del trabajador */
+/* ===== FIRMA DEL TRABAJADOR ===== */
 .firma-section {
     text-align: center;
     margin: 40px 0 30px;
@@ -254,7 +300,7 @@ tbody select:focus {
     color: #666;
 }
 
-/* Testigos */
+/* ===== TESTIGOS ===== */
 .testigos-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -291,7 +337,7 @@ tbody select:focus {
     color: #333;
 }
 
-/* Botón enviar */
+/* ===== BOTÓN ENVIAR ===== */
 .button-container {
     text-align: center;
     margin-top: 40px;
@@ -314,7 +360,7 @@ tbody select:focus {
     box-shadow: 0 5px 20px rgba(245, 87, 108, 0.4);
 }
 
-/* Modal */
+/* ===== MODAL ===== */
 .modal {
     display: none;
     position: fixed;
@@ -325,6 +371,7 @@ tbody select:focus {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     animation: fadeIn 0.3s;
+    padding: 10px;
 }
 
 @keyframes fadeIn {
@@ -339,21 +386,15 @@ tbody select:focus {
     border-radius: 10px;
     width: 90%;
     max-width: 600px;
-    max-height: 80vh;
+    max-height: 85vh;
     overflow-y: auto;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     animation: slideDown 0.3s;
 }
 
 @keyframes slideDown {
-    from {
-        transform: translateY(-50px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
+    from { transform: translateY(-50px); opacity: 0; }
+    to   { transform: translateY(0);     opacity: 1; }
 }
 
 .modal-content h3 {
@@ -361,6 +402,7 @@ tbody select:focus {
     margin-bottom: 20px;
     font-size: 22px;
     text-align: center;
+    line-height: 1.3;
 }
 
 #resumenDatos {
@@ -370,6 +412,7 @@ tbody select:focus {
     margin-bottom: 20px;
     font-size: 14px;
     line-height: 1.8;
+    word-break: break-word;
 }
 
 #resumenDatos strong {
@@ -381,6 +424,7 @@ tbody select:focus {
     gap: 15px;
     justify-content: center;
     margin-top: 20px;
+    flex-wrap: wrap;
 }
 
 .btn-confirmar {
@@ -425,7 +469,35 @@ tbody select:focus {
     margin: 20px 0;
 }
 
-/* Alertas */
+/* Modal menor de edad */
+.modal-menor-edad {
+    text-align: center;
+}
+
+.modal-menor-edad h3 {
+    color: #e74c3c;
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+.modal-menor-edad p {
+    font-size: 16px;
+    color: #333;
+    margin: 10px 0;
+    line-height: 1.6;
+}
+
+.menor-edad-sub {
+    font-size: 13px !important;
+    color: #888 !important;
+}
+
+.menor-edad-icon {
+    font-size: 50px;
+    margin-bottom: 15px;
+}
+
+/* ===== ALERTAS ===== */
 .error-message {
     background-color: #fee;
     color: #c00;
@@ -437,178 +509,260 @@ tbody select:focus {
     border-left: 4px solid #c00;
 }
 
-/* Responsive */
+/* ===== RESPONSIVE — TABLET (max 768px) ===== */
 @media (max-width: 768px) {
-    .container {
-        margin: 10px;
+    body {
+        padding: 10px;
     }
 
-    .form-container {
-        padding: 20px;
+    .container {
+        border-radius: 8px;
+    }
+
+    .header {
+        padding: 20px 15px;
     }
 
     .header h1 {
-        font-size: 14px;
+        font-size: 13px;
     }
 
     .header h2 {
         font-size: 12px;
     }
 
+    .header h3 {
+        font-size: 14px;
+        letter-spacing: 1px;
+    }
+
     .logo {
         max-width: 80px;
+    }
+
+    .form-container {
+        padding: 20px 15px;
+    }
+
+    .form-group {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .label-bold {
+        min-width: auto;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-bottom: 2px solid #333;
+        border-radius: 4px;
     }
 
     .empresa-section h2 {
         font-size: 18px;
     }
 
+    /* Tabla → tarjetas en móvil */
+    .table-container {
+        overflow-x: visible;
+    }
+
+    table,
+    thead,
+    tbody,
+    th,
+    td,
+    tr {
+        display: block;
+    }
+
+    table {
+        min-width: unset;
+    }
+
+    thead {
+        display: none;
+    }
+
+    tbody tr {
+        background: #f8f9fa;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        padding: 12px;
+        position: relative;
+    }
+
+    tbody td {
+        padding: 6px 0;
+        border: none;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    tbody td::before {
+        content: attr(data-label);
+        font-size: 11px;
+        font-weight: bold;
+        color: #4b134f;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    tbody input,
+    tbody select,
+    tbody input[type="date"] {
+        font-size: 15px;
+        padding: 10px;
+    }
+
+    .btn-eliminar {
+        width: 100%;
+        margin-top: 8px;
+        padding: 10px;
+        font-size: 15px;
+    }
+
+    /* Testigos en columna */
     .testigos-container {
         grid-template-columns: 1fr;
         gap: 30px;
     }
 
-    table {
-        font-size: 12px;
+    .testigo-titulo {
+        margin-bottom: 40px;
     }
 
-    th, td {
-        padding: 8px 5px;
+    /* Botones principales */
+    .btn-agregar {
+        width: 100%;
+        font-size: 15px;
+        padding: 14px;
+    }
+
+    .btn-enviar {
+        width: 100%;
+        font-size: 16px;
+        padding: 16px;
+    }
+
+    /* Modal */
+    .modal-content {
+        margin: 10% auto;
+        padding: 20px 15px;
+        width: 95%;
+    }
+
+    .modal-content h3 {
+        font-size: 18px;
     }
 
     .modal-buttons {
         flex-direction: column;
     }
 
-    .form-group {
-        flex-direction: column;
-        align-items: flex-start;
+    .btn-confirmar,
+    .btn-cancelar {
+        width: 100%;
+        text-align: center;
     }
 
-    .label-bold {
-        min-width: auto;
+    .modal-success h3 {
+        font-size: 22px;
+    }
+
+    .modal-menor-edad h3 {
+        font-size: 20px;
+    }
+
+    .modal-menor-edad p {
+        font-size: 15px;
     }
 }
-/* ===== VERIFICACIÓN DE EDAD ===== */
-.verificacion-edad-container {
-    padding: 50px 40px;
-    text-align: center;
+
+/* ===== RESPONSIVE — MÓVIL PEQUEÑO (max 400px) ===== */
+@media (max-width: 400px) {
+    body {
+        padding: 5px;
+    }
+
+    .header h1 {
+        font-size: 11px;
+    }
+
+    .header h2 {
+        font-size: 10px;
+    }
+
+    .form-container {
+        padding: 15px 10px;
+    }
+
+    .empresa-section h2 {
+        font-size: 15px;
+    }
+
+    .nota-legal p {
+        font-size: 12px;
+    }
 }
 
-.verificacion-edad-container h2 {
+/* ===== INFO BENEFICIARIOS ===== */
+.info-beneficiarios {
+    background-color: #fdf0ff;
+    border: 1px solid #e8c3f5;
+    border-left: 4px solid #4b134f;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 0 0 20px;
+}
+
+.info-beneficiarios-titulo {
+    font-size: 14px;
+    font-weight: bold;
     color: #4b134f;
-    font-size: 22px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
-.verificacion-edad-container p {
-    color: #555;
-    font-size: 15px;
-    line-height: 1.7;
-    margin-bottom: 30px;
-}
-
-.verificacion-icono {
-    font-size: 60px;
-    margin-bottom: 20px;
-}
-
-.verificacion-campo {
+.info-beneficiarios-lista {
+    list-style: none;
+    padding: 0;
+    margin: 0;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 15px;
+    gap: 6px;
 }
 
-.verificacion-campo label {
-    font-size: 15px;
-    font-weight: bold;
-    color: #333;
-}
-
-.verificacion-campo input[type="date"] {
-    padding: 12px 18px;
-    font-size: 16px;
-    border: 2px solid #ccc;
-    border-radius: 8px;
-    outline: none;
-    cursor: pointer;
-    transition: border-color 0.3s;
-    width: 220px;
-}
-
-.verificacion-campo input[type="date"]:focus {
-    border-color: #4b134f;
-}
-
-.edad-calculada {
-    font-size: 15px;
-    color: #27ae60;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.error-edad {
-    font-size: 14px;
-    color: #e74c3c;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.btn-verificar {
-    background: linear-gradient(135deg, #c94b4b 0%, #4b134f 100%);
-    color: white;
-    border: none;
-    padding: 14px 45px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    margin-top: 15px;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.btn-verificar:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 18px rgba(75, 19, 79, 0.4);
-}
-
-/* ===== PANTALLA BLOQUEADO MENOR DE EDAD ===== */
-.bloqueado-container {
-    padding: 60px 40px;
-    text-align: center;
-}
-
-.bloqueado-icono {
-    font-size: 70px;
-    margin-bottom: 20px;
-}
-
-.bloqueado-container h2 {
-    color: #e74c3c;
-    font-size: 28px;
-    margin-bottom: 15px;
-}
-
-.bloqueado-mensaje {
-    font-size: 18px;
-    color: #333;
-    line-height: 1.7;
-    margin-bottom: 10px;
-}
-
-.bloqueado-sub {
+.info-beneficiarios-lista li {
     font-size: 13px;
-    color: #999;
-    margin-bottom: 30px;
+    color: #444;
+    padding-left: 20px;
+    position: relative;
+    line-height: 1.5;
 }
 
-.btn-reintentar {
-    background: linear-gradient(135deg, #7f8c8d 0%, #95a5a6 100%);
-    margin-top: 10px;
+.info-beneficiarios-lista li::before {
+    content: "✔";
+    position: absolute;
+    left: 0;
+    color: #27ae60;
+    font-size: 12px;
+    top: 1px;
 }
 
-.btn-reintentar:hover {
-    box-shadow: 0 5px 18px rgba(127, 140, 141, 0.4);
+@media (max-width: 768px) {
+    .info-beneficiarios {
+        padding: 14px 15px;
+    }
+    .info-beneficiarios-titulo {
+        font-size: 13px;
+    }
+    .info-beneficiarios-lista li {
+        font-size: 13px;
+    }
 }
