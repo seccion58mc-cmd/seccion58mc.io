@@ -2,25 +2,101 @@ import { collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/fi
 
 // Variables globales
 let beneficiariosCount = 0;
+let edadVerificada = 0;
+let fechaNacimientoVerificada = '';
 
 // Inicializar al cargar
 document.addEventListener('DOMContentLoaded', () => {
-    inicializarFormulario();
-    configurarEventos();
-    agregarFilaBeneficiario(); // Agregar 3 filas iniciales
-    agregarFilaBeneficiario();
-    agregarFilaBeneficiario();
+    configurarVerificacionEdad();
 });
 
+// ============================================================
+// VERIFICACIÓN DE EDAD AL INICIO
+// ============================================================
+function configurarVerificacionEdad() {
+    // Limitar el max del datepicker a hoy
+    const hoy = new Date().toISOString().split('T')[0];
+    document.getElementById('fechaNacimiento').setAttribute('max', hoy);
+
+    // Mostrar edad calculada en tiempo real al cambiar la fecha
+    document.getElementById('fechaNacimiento').addEventListener('change', function() {
+        const edad = calcularEdad(this.value);
+        const edadDiv = document.getElementById('edadCalculada');
+        const errorDiv = document.getElementById('errorEdad');
+
+        if (this.value) {
+            edadDiv.style.display = 'block';
+            edadDiv.textContent = `Tu edad: ${edad} años`;
+            errorDiv.style.display = 'none';
+        } else {
+            edadDiv.style.display = 'none';
+        }
+    });
+
+    // Botón continuar
+    document.getElementById('btnVerificarEdad').addEventListener('click', verificarEdad);
+
+    // Botón regresar desde pantalla bloqueada
+    document.getElementById('btnReintentar').addEventListener('click', () => {
+        document.getElementById('bloqueadoMenorEdad').style.display = 'none';
+        document.getElementById('verificacionEdad').style.display = 'block';
+        document.getElementById('fechaNacimiento').value = '';
+        document.getElementById('edadCalculada').style.display = 'none';
+    });
+}
+
+function calcularEdad(fechaNac) {
+    const hoy = new Date();
+    const nacimiento = new Date(fechaNac);
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const mes = hoy.getMonth() - nacimiento.getMonth();
+    if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+        edad--;
+    }
+    return edad;
+}
+
+function verificarEdad() {
+    const fechaNac = document.getElementById('fechaNacimiento').value;
+    const errorDiv = document.getElementById('errorEdad');
+
+    if (!fechaNac) {
+        errorDiv.style.display = 'block';
+        errorDiv.textContent = 'Por favor selecciona tu fecha de nacimiento.';
+        return;
+    }
+
+    const edad = calcularEdad(fechaNac);
+
+    if (edad < 18) {
+        // Mostrar pantalla de bloqueado
+        document.getElementById('verificacionEdad').style.display = 'none';
+        document.getElementById('bloqueadoMenorEdad').style.display = 'block';
+    } else {
+        // Mayor o igual a 18 → mostrar formulario
+        edadVerificada = edad;
+        fechaNacimientoVerificada = fechaNac;
+        document.getElementById('verificacionEdad').style.display = 'none';
+        document.getElementById('contenidoFormulario').style.display = 'block';
+        inicializarFormulario();
+        configurarEventosFormulario();
+        agregarFilaBeneficiario();
+        agregarFilaBeneficiario();
+        agregarFilaBeneficiario();
+    }
+}
+
+// ============================================================
+// FORMULARIO
+// ============================================================
 function inicializarFormulario() {
-    // Establecer fecha actual
     const fechaActual = new Date();
     const opciones = { year: 'numeric', month: 'long', day: 'numeric' };
     document.getElementById('fecha').value = fechaActual.toLocaleDateString('es-MX', opciones);
 }
 
-function configurarEventos() {
-    // Convertir a mayúsculas mientras escribe (excepto correo)
+function configurarEventosFormulario() {
+    // Convertir a mayúsculas mientras escribe
     const camposTexto = ['nombreTrabajador', 'numeroEmpleado'];
     camposTexto.forEach(id => {
         const campo = document.getElementById(id);
@@ -91,7 +167,6 @@ function agregarFilaBeneficiario() {
 
     tbody.appendChild(tr);
 
-    // Convertir nombre a mayúsculas
     const inputNombre = tr.querySelector('.beneficiario-nombre');
     inputNombre.addEventListener('input', function() {
         const cursorPos = this.selectionStart;
@@ -100,21 +175,17 @@ function agregarFilaBeneficiario() {
     });
 }
 
-// Hacer la función global para que el onclick funcione
 window.eliminarBeneficiario = function(btn) {
     btn.closest('tr').remove();
-    // Renumerar si es necesario
     beneficiariosCount = document.querySelectorAll('#beneficiariosBody tr').length;
 };
 
 function validarYMostrarConfirmacion(e) {
     e.preventDefault();
 
-    // Limpiar mensajes de error previos
     const erroresAnteriores = document.querySelectorAll('.error-message');
     erroresAnteriores.forEach(error => error.remove());
 
-    // Validar campos básicos
     const nombreTrabajador = document.getElementById('nombreTrabajador').value.trim();
     const numeroEmpleado = document.getElementById('numeroEmpleado').value.trim();
     const telefono = document.getElementById('telefono').value.trim();
@@ -125,7 +196,6 @@ function validarYMostrarConfirmacion(e) {
         return;
     }
 
-    // Validar longitud del número de empleado
     if (numeroEmpleado.length < 8 || numeroEmpleado.length > 10) {
         mostrarError('El número de empleado debe tener entre 8 y 10 dígitos');
         return;
@@ -141,23 +211,20 @@ function validarYMostrarConfirmacion(e) {
         return;
     }
 
-    // Validar beneficiarios
     const beneficiarios = obtenerBeneficiarios();
-    
+
     if (beneficiarios.length === 0) {
         mostrarError('Debe agregar al menos un beneficiario');
         return;
     }
 
-    // Validar que los porcentajes sumen 100
     const totalPorcentaje = beneficiarios.reduce((sum, b) => sum + parseInt(b.porcentaje), 0);
-    
+
     if (totalPorcentaje !== 100) {
         mostrarError(`Los porcentajes deben sumar exactamente 100%. Actualmente suman: ${totalPorcentaje}%`);
         return;
     }
 
-    // Mostrar modal de confirmación
     mostrarResumen(nombreTrabajador, numeroEmpleado, telefono, correo, beneficiarios);
 }
 
@@ -180,9 +247,9 @@ function obtenerBeneficiarios() {
 
 function mostrarResumen(nombre, empleado, telefono, correo, beneficiarios) {
     const resumen = document.getElementById('resumenDatos');
-    
+
     let htmlBeneficiarios = '<ul style="margin: 10px 0; padding-left: 20px;">';
-    beneficiarios.forEach((b, index) => {
+    beneficiarios.forEach(b => {
         htmlBeneficiarios += `<li><strong>${b.nombre}</strong> - ${b.parentesco} - ${b.porcentaje}%</li>`;
     });
     htmlBeneficiarios += '</ul>';
@@ -190,6 +257,7 @@ function mostrarResumen(nombre, empleado, telefono, correo, beneficiarios) {
     resumen.innerHTML = `
         <p><strong>Nombre:</strong> ${nombre}</p>
         <p><strong>Número de empleado:</strong> ${empleado}</p>
+        <p><strong>Fecha de nacimiento:</strong> ${fechaNacimientoVerificada} (${edadVerificada} años)</p>
         <p><strong>Teléfono:</strong> ${telefono}</p>
         <p><strong>Correo:</strong> ${correo}</p>
         <p><strong>Beneficiarios:</strong></p>
@@ -208,11 +276,12 @@ async function enviarFormulario() {
     btnConfirmar.textContent = 'Enviando...';
 
     try {
-        // Recopilar todos los datos
         const datos = {
             fecha: document.getElementById('fecha').value,
             nombreTrabajador: document.getElementById('nombreTrabajador').value.toUpperCase(),
             numeroEmpleado: document.getElementById('numeroEmpleado').value.toUpperCase(),
+            fechaNacimiento: fechaNacimientoVerificada,
+            edad: edadVerificada,
             beneficiarios: obtenerBeneficiarios(),
             firma: document.getElementById('firma').value.toUpperCase(),
             telefono: document.getElementById('telefono').value,
@@ -221,10 +290,8 @@ async function enviarFormulario() {
             timestamp: Date.now()
         };
 
-        // Guardar en Firebase
         await addDoc(collection(window.db, 'ayudaDefuncion'), datos);
 
-        // Cerrar modal de confirmación y mostrar éxito
         document.getElementById('modalConfirmacion').style.display = 'none';
         document.getElementById('modalExito').style.display = 'block';
 
@@ -240,21 +307,18 @@ function mostrarError(mensaje) {
     const errorDiv = document.createElement('div');
     errorDiv.className = 'error-message';
     errorDiv.textContent = mensaje;
-    
+
     const form = document.getElementById('beneficiariosForm');
     form.insertBefore(errorDiv, form.firstChild);
 
-    // Scroll al inicio
     window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    // Remover después de 5 segundos
     setTimeout(() => errorDiv.remove(), 5000);
 }
 
 function cerrarModal() {
     document.getElementById('modalConfirmacion').style.display = 'none';
     document.getElementById('modalExito').style.display = 'none';
-    
+
     const btnConfirmar = document.getElementById('btnConfirmar');
     btnConfirmar.disabled = false;
     btnConfirmar.textContent = 'Confirmar y Enviar';

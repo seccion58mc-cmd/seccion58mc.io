@@ -17,89 +17,114 @@
             <h3>COMITÉ NACIONAL</h3>
         </header>
 
-        <div class="form-container">
-            <form id="beneficiarioEventualForm">
-                <!-- Fecha -->
-                <div class="form-group">
-                    <label class="label-bold">FECHA:</label>
-                    <input type="text" id="fecha" readonly>
-                </div>
+        <!-- PANTALLA DE VERIFICACIÓN DE EDAD -->
+        <div id="verificacionEdad" class="verificacion-edad-container">
+            <div class="verificacion-icono">📋</div>
+            <h2>Verificación de edad requerida</h2>
+            <p>Para acceder a este formulario debes ser mayor de 18 años.<br>Por favor ingresa tu fecha de nacimiento.</p>
+            <div class="verificacion-campo">
+                <label for="fechaNacimiento">Fecha de nacimiento:</label>
+                <input type="date" id="fechaNacimiento" max="">
+            </div>
+            <div id="edadCalculada" class="edad-calculada" style="display:none;"></div>
+            <div id="errorEdad" class="error-edad" style="display:none;">Por favor selecciona tu fecha de nacimiento.</div>
+            <button type="button" id="btnVerificarEdad" class="btn-verificar">Continuar →</button>
+        </div>
 
-                <!-- Nombre del trabajador -->
-                <div class="form-group">
-                    <label class="label-bold">NOMBRE:</label>
-                    <input type="text" id="nombreTrabajador" class="input-large" placeholder="Nombre completo del trabajador" required>
-                </div>
+        <!-- PANTALLA DE MENOR DE EDAD (bloqueado) -->
+        <div id="bloqueadoMenorEdad" class="bloqueado-container" style="display:none;">
+            <div class="bloqueado-icono">🚫</div>
+            <h2>Lo sentimos</h2>
+            <p class="bloqueado-mensaje">Eres menor de 18 años,<br>no puedes llenar este formulario.</p>
+            <p class="bloqueado-sub">Este formulario está disponible únicamente para trabajadores mayores de edad.</p>
+            <button type="button" id="btnReintentar" class="btn-verificar btn-reintentar">← Regresar</button>
+        </div>
 
-                <!-- Empresa -->
-                <div class="section-title">
-                    <p>TRABAJADOR EVENTUAL DE LA EMPRESA:</p>
-                </div>
-
-                <div class="empresa-section">
-                    <h2>COSBEL, S. A. DE C. V. (Sección 58)</h2>
-                </div>
-
-                <!-- Designación de beneficiarios -->
-                <div class="section-title">
-                    <p class="underline">DESIGNO COMO MIS BENEFICIARIOS:</p>
-                </div>
-
-                <!-- Tabla de beneficiarios -->
-                <div class="table-container">
-                    <table id="tablaBeneficiarios">
-                        <thead>
-                            <tr>
-                                <th>NOMBRE</th>
-                                <th>PARENTESCO</th>
-                                <th>PORCENTAJE</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody id="beneficiariosBody">
-                            <!-- Las filas se generarán dinámicamente -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <button type="button" id="agregarBeneficiario" class="btn-agregar">+ Agregar Beneficiario</button>
-
-                <!-- Nota legal -->
-                <div class="nota-legal">
-                    <p>EN CASO DE FALLECER TENIENDO CONTRATO VIGENTE CON LA EMPRESA ANTES MENCIONADA.</p>
-                </div>
-
-                <!-- Firma del trabajador -->
-                <div class="firma-section">
-                    <p class="firma-titulo">FIRMA DEL TRABAJADOR</p>
-                    <div class="firma-linea">
-                        <input type="text" id="firmaTrabajador" readonly>
+        <!-- FORMULARIO (oculto hasta verificar edad) -->
+        <div id="contenidoFormulario" style="display:none;">
+            <div class="form-container">
+                <form id="beneficiarioEventualForm">
+                    <!-- Fecha -->
+                    <div class="form-group">
+                        <label class="label-bold">FECHA:</label>
+                        <input type="text" id="fecha" readonly>
                     </div>
-                </div>
 
-                <!-- Testigos -->
-                <div class="testigos-container">
-                    <div class="testigo">
-                        <p class="testigo-titulo">TESTIGOS</p>
-                        <div class="testigo-info">
-                            <p class="testigo-nombre">MARIA DEL ROSARIO GÓMEZ GONZÁLEZ</p>
-                            <p class="testigo-label">NOMBRE Y FIRMA</p>
+                    <!-- Nombre del trabajador -->
+                    <div class="form-group">
+                        <label class="label-bold">NOMBRE:</label>
+                        <input type="text" id="nombreTrabajador" class="input-large" placeholder="Nombre completo del trabajador" required>
+                    </div>
+
+                    <!-- Empresa -->
+                    <div class="section-title">
+                        <p>TRABAJADOR EVENTUAL DE LA EMPRESA:</p>
+                    </div>
+
+                    <div class="empresa-section">
+                        <h2>COSBEL, S. A. DE C. V. (Sección 58)</h2>
+                    </div>
+
+                    <!-- Designación de beneficiarios -->
+                    <div class="section-title">
+                        <p class="underline">DESIGNO COMO MIS BENEFICIARIOS:</p>
+                    </div>
+
+                    <!-- Tabla de beneficiarios -->
+                    <div class="table-container">
+                        <table id="tablaBeneficiarios">
+                            <thead>
+                                <tr>
+                                    <th>NOMBRE</th>
+                                    <th>PARENTESCO</th>
+                                    <th>PORCENTAJE</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="beneficiariosBody">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <button type="button" id="agregarBeneficiario" class="btn-agregar">+ Agregar Beneficiario</button>
+
+                    <!-- Nota legal -->
+                    <div class="nota-legal">
+                        <p>EN CASO DE FALLECER TENIENDO CONTRATO VIGENTE CON LA EMPRESA ANTES MENCIONADA.</p>
+                    </div>
+
+                    <!-- Firma del trabajador -->
+                    <div class="firma-section">
+                        <p class="firma-titulo">FIRMA DEL TRABAJADOR</p>
+                        <div class="firma-linea">
+                            <input type="text" id="firmaTrabajador" readonly>
                         </div>
                     </div>
 
-                    <div class="testigo">
-                        <p class="testigo-titulo">TESTIGOS</p>
-                        <div class="testigo-info">
-                            <p class="testigo-nombre"> </p>
-                            <p class="testigo-label">NOMBRE Y FIRMA</p>
+                    <!-- Testigos -->
+                    <div class="testigos-container">
+                        <div class="testigo">
+                            <p class="testigo-titulo">TESTIGOS</p>
+                            <div class="testigo-info">
+                                <p class="testigo-nombre">MARIA DEL ROSARIO GÓMEZ GONZÁLEZ</p>
+                                <p class="testigo-label">NOMBRE Y FIRMA</p>
+                            </div>
+                        </div>
+
+                        <div class="testigo">
+                            <p class="testigo-titulo">TESTIGOS</p>
+                            <div class="testigo-info">
+                                <p class="testigo-nombre"> </p>
+                                <p class="testigo-label">NOMBRE Y FIRMA</p>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="button-container">
-                    <button type="submit" class="btn-enviar">Registrar Designación</button>
-                </div>
-            </form>
+                    <div class="button-container">
+                        <button type="submit" class="btn-enviar">Registrar Designación</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 

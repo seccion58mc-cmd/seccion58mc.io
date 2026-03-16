@@ -18,82 +18,106 @@
             <h4>SECCIÓN 58</h4>
         </header>
 
-        <div class="form-container">
-            <h2 class="form-title">CARTA DE DESIGNACIÓN DE BENEFICIARIOS</h2>
+        <!-- PANTALLA DE VERIFICACIÓN DE EDAD -->
+        <div id="verificacionEdad" class="verificacion-edad-container">
+            <div class="verificacion-icono">📋</div>
+            <h2>Verificación de edad requerida</h2>
+            <p>Para acceder a este formulario debes ser mayor de 18 años.<br>Por favor ingresa tu fecha de nacimiento.</p>
+            <div class="verificacion-campo">
+                <label for="fechaNacimiento">Fecha de nacimiento:</label>
+                <input type="date" id="fechaNacimiento" max="">
+            </div>
+            <div id="edadCalculada" class="edad-calculada" style="display:none;"></div>
+            <div id="errorEdad" class="error-edad" style="display:none;">Por favor selecciona tu fecha de nacimiento.</div>
+            <button type="button" id="btnVerificarEdad" class="btn-verificar">Continuar →</button>
+        </div>
 
-            <form id="beneficiariosForm">
-                <!-- Fecha -->
-                <div class="form-group">
-                    <label>Lugar y fecha:</label>
-                    <input type="text" id="fecha" readonly>
-                </div>
+        <!-- PANTALLA DE MENOR DE EDAD (bloqueado) -->
+        <div id="bloqueadoMenorEdad" class="bloqueado-container" style="display:none;">
+            <div class="bloqueado-icono">🚫</div>
+            <h2>Lo sentimos</h2>
+            <p class="bloqueado-mensaje">Eres menor de 18 años,<br>no puedes llenar este formulario.</p>
+            <p class="bloqueado-sub">Este formulario está disponible únicamente para trabajadores mayores de edad.</p>
+            <button type="button" id="btnReintentar" class="btn-verificar btn-reintentar">← Regresar</button>
+        </div>
 
-                <div class="form-group">
-                    <label>A quien corresponda: Sección 58</label>
-                </div>
+        <!-- FORMULARIO (oculto hasta verificar edad) -->
+        <div id="contenidoFormulario" style="display:none;">
+            <div class="form-container">
+                <h2 class="form-title">CARTA DE DESIGNACIÓN DE BENEFICIARIOS</h2>
 
-                <!-- Datos del trabajador -->
-                <div class="form-group">
-                    <label>Por medio de la presente, yo</label>
-                    <input type="text" id="nombreTrabajador" class="input-large" placeholder="Nombre completo" required>
-                    <label>, con número de empleado</label>
-                    <input type="text" id="numeroEmpleado" class="input-medium" placeholder="8-10 dígitos" minlength="8" maxlength="10" required>
-                    <label>, manifiesto de manera libre y voluntaria que designo como beneficiarios a las siguientes personas:</label>
-                </div>
+                <form id="beneficiariosForm">
+                    <!-- Fecha -->
+                    <div class="form-group">
+                        <label>Lugar y fecha:</label>
+                        <input type="text" id="fecha" readonly>
+                    </div>
 
-                <!-- Tabla de beneficiarios -->
-                <div class="table-container">
-                    <table id="tablaBeneficiarios">
-                        <thead>
-                            <tr>
-                                <th>Nombre del beneficiario.</th>
-                                <th>Parentesco</th>
-                                <th>Porcentaje asignado</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody id="beneficiariosBody">
-                            <!-- Las filas se generarán dinámicamente -->
-                        </tbody>
-                    </table>
-                </div>
+                    <div class="form-group">
+                        <label>A quien corresponda: Sección 58</label>
+                    </div>
 
-                <button type="button" id="agregarBeneficiario" class="btn-agregar">+ Agregar Beneficiario</button>
+                    <!-- Datos del trabajador -->
+                    <div class="form-group">
+                        <label>Por medio de la presente, yo</label>
+                        <input type="text" id="nombreTrabajador" class="input-large" placeholder="Nombre completo" required>
+                        <label>, con número de empleado</label>
+                        <input type="text" id="numeroEmpleado" class="input-medium" placeholder="8-10 dígitos" minlength="8" maxlength="10" required>
+                        <label>, manifiesto de manera libre y voluntaria que designo como beneficiarios a las siguientes personas:</label>
+                    </div>
 
-                <div class="declaracion">
-                    <p>Declaro que los porcentajes asignados suman el 100% del beneficio correspondiente.</p>
-                    <p>Esta designación aplica para la <strong>Ayuda de Defunción de trabajador</strong> (tendrá validez a partir de la fecha de firma del presente documento.)</p>
-                </div>
+                    <!-- Tabla de beneficiarios -->
+                    <div class="table-container">
+                        <table id="tablaBeneficiarios">
+                            <thead>
+                                <tr>
+                                    <th>Nombre del beneficiario.</th>
+                                    <th>Parentesco</th>
+                                    <th>Porcentaje asignado</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="beneficiariosBody">
+                            </tbody>
+                        </table>
+                    </div>
 
-                <div class="declaracion">
-                    <p>Asimismo, manifiesto que esta designación revoca y sustituye cualquier designación de beneficiarios realizada con anterioridad.</p>
-                    <p>Para los efectos legales correspondientes, firmo la presente en pleno uso de mis facultades.</p>
-                </div>
+                    <button type="button" id="agregarBeneficiario" class="btn-agregar">+ Agregar Beneficiario</button>
 
-                <!-- Datos finales -->
-                <div class="form-group">
-                    <label>Atentamente,</label>
-                </div>
+                    <div class="declaracion">
+                        <p>Declaro que los porcentajes asignados suman el 100% del beneficio correspondiente.</p>
+                        <p>Esta designación aplica para la <strong>Ayuda de Defunción de trabajador</strong> (tendrá validez a partir de la fecha de firma del presente documento.)</p>
+                    </div>
 
-                <div class="form-group">
-                    <label>Firma:</label>
-                    <input type="text" id="firma" readonly>
-                </div>
+                    <div class="declaracion">
+                        <p>Asimismo, manifiesto que esta designación revoca y sustituye cualquier designación de beneficiarios realizada con anterioridad.</p>
+                        <p>Para los efectos legales correspondientes, firmo la presente en pleno uso de mis facultades.</p>
+                    </div>
 
-                <div class="form-group">
-                    <label>Teléfono:</label>
-                    <input type="tel" id="telefono" maxlength="10" placeholder="10 dígitos" required>
-                </div>
+                    <div class="form-group">
+                        <label>Atentamente,</label>
+                    </div>
 
-                <div class="form-group">
-                    <label>Correo electrónico:</label>
-                    <input type="email" id="correo" placeholder="correo@ejemplo.com" required>
-                </div>
+                    <div class="form-group">
+                        <label>Firma:</label>
+                        <input type="text" id="firma" readonly>
+                    </div>
 
-                <div class="button-container">
-                    <button type="submit" class="btn-enviar">Enviar Designación</button>
-                </div>
-            </form>
+                    <div class="form-group">
+                        <label>Teléfono:</label>
+                        <input type="tel" id="telefono" maxlength="10" placeholder="10 dígitos" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Correo electrónico:</label>
+                        <input type="email" id="correo" placeholder="correo@ejemplo.com" required>
+                    </div>
+
+                    <div class="button-container">
+                        <button type="submit" class="btn-enviar">Enviar Designación</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 

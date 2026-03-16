@@ -346,6 +346,34 @@ tbody select:focus {
     margin: 20px 0;
 }
 
+/* Modal menor de edad */
+.modal-menor-edad {
+    text-align: center;
+}
+
+.modal-menor-edad h3 {
+    color: #e74c3c;
+    font-size: 26px;
+    margin-bottom: 15px;
+}
+
+.modal-menor-edad p {
+    font-size: 17px;
+    color: #333;
+    margin: 10px 0;
+    line-height: 1.6;
+}
+
+.menor-edad-sub {
+    font-size: 13px !important;
+    color: #888 !important;
+}
+
+.menor-edad-icon {
+    font-size: 50px;
+    margin-bottom: 15px;
+}
+
 /* Alertas */
 .error-message {
     background-color: #fee;
@@ -398,4 +426,127 @@ tbody select:focus {
     .modal-buttons {
         flex-direction: column;
     }
+}
+/* ===== VERIFICACIÓN DE EDAD ===== */
+.verificacion-edad-container {
+    padding: 50px 40px;
+    text-align: center;
+}
+
+.verificacion-edad-container h2 {
+    color: #1e3c72;
+    font-size: 22px;
+    margin-bottom: 15px;
+}
+
+.verificacion-edad-container p {
+    color: #555;
+    font-size: 15px;
+    line-height: 1.7;
+    margin-bottom: 30px;
+}
+
+.verificacion-icono {
+    font-size: 60px;
+    margin-bottom: 20px;
+}
+
+.verificacion-campo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.verificacion-campo label {
+    font-size: 15px;
+    font-weight: bold;
+    color: #333;
+}
+
+.verificacion-campo input[type="date"] {
+    padding: 12px 18px;
+    font-size: 16px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.3s;
+    width: 220px;
+}
+
+.verificacion-campo input[type="date"]:focus {
+    border-color: #1e3c72;
+}
+
+.edad-calculada {
+    font-size: 15px;
+    color: #27ae60;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.error-edad {
+    font-size: 14px;
+    color: #e74c3c;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.btn-verificar {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    border: none;
+    padding: 14px 45px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 15px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-verificar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 18px rgba(30, 60, 114, 0.4);
+}
+
+/* ===== PANTALLA BLOQUEADO MENOR DE EDAD ===== */
+.bloqueado-container {
+    padding: 60px 40px;
+    text-align: center;
+}
+
+.bloqueado-icono {
+    font-size: 70px;
+    margin-bottom: 20px;
+}
+
+.bloqueado-container h2 {
+    color: #e74c3c;
+    font-size: 28px;
+    margin-bottom: 15px;
+}
+
+.bloqueado-mensaje {
+    font-size: 18px;
+    color: #333;
+    line-height: 1.7;
+    margin-bottom: 10px;
+}
+
+.bloqueado-sub {
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 30px;
+}
+
+.btn-reintentar {
+    background: linear-gradient(135deg, #7f8c8d 0%, #95a5a6 100%);
+    margin-top: 10px;
+}
+
+.btn-reintentar:hover {
+    box-shadow: 0 5px 18px rgba(127, 140, 141, 0.4);
 }
