@@ -80,7 +80,7 @@ function mostrarRegistros(data) {
     tbody.innerHTML = data.map((registro, index) => {
         const badgeClass  = registro.contrato === 'PLANTA' ? 'badge-planta' : 'badge-eventual';
         const hijosTexto  = registro.hijos && registro.hijos.length > 0
-            ? registro.hijos.map(h => `${h.nombre ? h.nombre + ' — ' : ''}${h.edad} ${h.unidad}`).join('<br>')
+            ? registro.hijos.map(h => `${h.edad} ${h.unidad}`).join('<br>')
             : 'Sin hijos registrados';
 
         return `
@@ -242,7 +242,7 @@ async function imprimirListado(tipo) {
 
         const filas = lista.map((r, i) => {
             const hijosDetalle = r.hijos && r.hijos.length > 0
-                ? r.hijos.map(h => `${h.nombre ? h.nombre + ' - ' : ''}${h.edad} ${h.unidad}`).join('\n')
+                ? r.hijos.map(h => `${h.edad} ${h.unidad}`).join('\n')
                 : '—';
 
             const fila = {

@@ -50,10 +50,6 @@ function agregarHijo() {
     div.innerHTML = `
         <div class="hijo-numero">${hijosCount}</div>
         <div class="hijo-fields">
-            <div class="hijo-field" style="flex:1; min-width:160px;">
-                <label>Nombre (opcional)</label>
-                <input type="text" class="hijo-nombre" placeholder="Nombre del hijo/a">
-            </div>
             <div class="hijo-field">
                 <label>Edad</label>
                 <div class="hijo-field-edad">
@@ -69,13 +65,6 @@ function agregarHijo() {
     `;
 
     lista.appendChild(div);
-
-    // Nombre hijo → mayúsculas, solo letras
-    div.querySelector('.hijo-nombre').addEventListener('input', function () {
-        const pos = this.selectionStart;
-        this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '').toUpperCase();
-        this.setSelectionRange(pos, pos);
-    });
 
     // Edad hijo → no negativos
     div.querySelector('.hijo-edad-valor').addEventListener('input', function () {
@@ -136,7 +125,6 @@ function obtenerHijos() {
     const hijos = [];
     document.querySelectorAll('#hijosLista .hijo-card').forEach(card => {
         hijos.push({
-            nombre:  card.querySelector('.hijo-nombre').value.trim().toUpperCase() || '',
             edad:    parseInt(card.querySelector('.hijo-edad-valor').value),
             unidad:  card.querySelector('.hijo-edad-unidad').value
         });
@@ -147,7 +135,7 @@ function obtenerHijos() {
 function mostrarResumen(nombre, edad, contrato, hijos) {
     let htmlHijos = '<ul style="margin:8px 0 0; padding-left:20px;">';
     hijos.forEach(h => {
-        htmlHijos += `<li>${h.nombre ? '<strong>' + h.nombre + '</strong> — ' : ''}${h.edad} ${h.unidad}</li>`;
+        htmlHijos += `<li>${h.edad} ${h.unidad}</li>`;
     });
     htmlHijos += '</ul>';
 
