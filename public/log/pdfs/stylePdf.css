@@ -137,6 +137,25 @@ h2 {
     background-color: #ffebee;
 }
 
+/* Boton Dia de las Madres */
+.service-btn.btn-madres {
+    background: linear-gradient(135deg, #fdf8ff 0%, #fce4ef 100%);
+    border: 2px solid #f8b4d0;
+}
+
+.service-btn.btn-madres:hover {
+    border-color: #d63384;
+    background: linear-gradient(135deg, #f3f0ff 0%, #fce4ef 100%);
+}
+
+.service-btn.btn-madres .btn-text {
+    color: #9b1b5a;
+}
+
+.service-btn.btn-madres .btn-desc {
+    color: #c084fc;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .admin-panel {
