@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Día del Padre</title>
+    <link rel="stylesheet" href="admindiapadres.css">
+</head>
+<body>
+    <div class="admin-container">
+        <header>
+            <button class="back-btn" onclick="window.location.href='../index.html'">
+                ← Volver
+            </button>
+            <div class="header-text">
+                <h1>Administración — Día del Padre</h1>
+                <p>Gestionar registros del 18 de Junio</p>
+            </div>
+        </header>
+
+        <!-- Estadisticas -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <span class="stat-number" id="totalRegistros">0</span>
+                <span class="stat-label">Total de Registros</span>
+            </div>
+            <div class="stat-card stat-planta">
+                <span class="stat-number" id="totalPlanta">0</span>
+                <span class="stat-label">Planta</span>
+            </div>
+            <div class="stat-card stat-eventual">
+                <span class="stat-number" id="totalEventual">0</span>
+                <span class="stat-label">Eventual</span>
+            </div>
+        </div>
+
+        <!-- Seccion de impresion por listado -->
+        <div class="print-section">
+            <h3 class="print-section-title">Imprimir listado de registrados</h3>
+            <div class="print-buttons">
+                <button class="btn-print btn-print-planta" id="btnImprimirPlanta">
+                    Imprimir Listado Planta
+                </button>
+                <button class="btn-print btn-print-eventual" id="btnImprimirEventual">
+                    Imprimir Listado Eventual
+                </button>
+                <button class="btn-print btn-print-todos" id="btnImprimirTodos">
+                    Imprimir Todos
+                </button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="table-header">
+                <h2>Registros del Día del Padre</h2>
+                <div class="table-controls">
+                    <select id="filtroContrato" class="filter-select">
+                        <option value="">Todos los contratos</option>
+                        <option value="PLANTA">Planta</option>
+                        <option value="EVENTUAL">Eventual</option>
+                    </select>
+                    <input type="text" id="searchInput" placeholder="Buscar por nombre..." class="search-input">
+                </div>
+            </div>
+
+            <div id="loadingSpinner" class="loading">Cargando registros...</div>
+
+            <table id="registrosTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Fecha</th>
+                        <th>Nombre</th>
+                        <th>Edad</th>
+                        <th>Contrato</th>
+                        <th>Hijos</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <p>No hay registros disponibles</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Eliminar -->
+    <div id="modalEliminar" class="modal">
+        <div class="modal-content">
+            <h2>Confirmar Eliminación</h2>
+            <p>¿Está seguro de que desea eliminar el registro de:</p>
+            <p><strong id="nombreEliminar"></strong></p>
+            <p class="warning-text">Esta acción no se puede deshacer.</p>
+            <div class="modal-buttons">
+                <button class="btn-delete" id="btnConfirmarEliminar">Eliminar</button>
+                <button class="btn-cancel" id="btnCancelarEliminar">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { db } from '../../../firebase-config.js';
+        window.db = db;
+    </script>
+
+    <!-- jsPDF + autoTable para tablas en PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <script type="module" src="admindiapadres.js"></script>
+</body>
+</html>
