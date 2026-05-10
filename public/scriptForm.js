@@ -404,7 +404,7 @@ async function selectDay(mesKey, day, element) {
 
     const count = await getSelectedDateCount(carpeta, departamento, mesKey, day);
     if (count > 0) {
-        showDayInfo(`${count} persona(s) de su area y departamento ya han registrado esta fecha`);
+        showNotification(`${count} persona(s) de su área y departamento ya registraron esta fecha en este período`, 'error');
     }
 
     if (element.classList.contains('selected')) {
@@ -421,7 +421,8 @@ async function getSelectedDateCount(carpeta, departamento, mesKey, day) {
         const q = query(
             collection(db, 'vacaciones'),
             where('carpeta', '==', carpeta),
-            where('depto', '==', departamento)
+            where('depto', '==', departamento),
+            where('cuatrimestre', '==', currentCuatrimestre)
         );
         const snapshot = await getDocs(q);
         const mesNum = getMonthNumber(mesKey);
