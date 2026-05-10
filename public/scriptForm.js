@@ -170,7 +170,7 @@ window.selectCuatrimestre = function (key) {
     if (carpetaActual) updateSupervisorOptions(carpetaActual);
 
     // Recargar folio para el cuatrimestre actual
-    if (currentCarpeta) loadNextFolioForCarpeta(currentCarpeta);
+    if (currentCarpeta) loadNextFolioForCarpeta(currentCarpeta, document.getElementById('departamento').value);
 
     renderHolidayEditor();
     document.getElementById('holiday-editor').style.display = 'block';
@@ -259,7 +259,7 @@ window.borrarRegistrosAnteriores = async function () {
         const snapshot = await getDocs(collection(db, 'vacaciones'));
         await Promise.all(snapshot.docs.map(d => deleteDoc(d.ref)));
         showNotification(`${snapshot.docs.length} registros eliminados correctamente`, 'success');
-        if (currentCarpeta) loadNextFolioForCarpeta(currentCarpeta);
+        if (currentCarpeta) loadNextFolioForCarpeta(currentCarpeta, document.getElementById('departamento').value);
     } catch (error) {
         showNotification('Error al eliminar registros: ' + error.message, 'error');
     }
@@ -270,7 +270,11 @@ function setupEventListeners() {
         currentCarpeta = this.value;
         updateDepartmentOptions(this.value);
         updateSupervisorOptions(this.value);
-        loadNextFolioForCarpeta(this.value);
+        loadNextFolioForCarpeta(this.value, document.getElementById('departamento').value);
+    });
+
+    document.getElementById('departamento').addEventListener('change', function () {
+        loadNextFolioForCarpeta(document.getElementById('carpeta').value, this.value);
     });
 
     document.getElementById('vacations-form').addEventListener('submit', function (e) {
@@ -283,8 +287,8 @@ function setupEventListeners() {
     });
 }
 
-async function loadNextFolioForCarpeta(carpeta) {
-    if (!carpeta) {
+async function loadNextFolioForCarpeta(carpeta, departamento) {
+    if (!carpeta || !departamento) {
         document.getElementById('folio-number').textContent = '001';
         return;
     }
@@ -292,6 +296,7 @@ async function loadNextFolioForCarpeta(carpeta) {
         const q = query(
             collection(db, 'vacaciones'),
             where('carpeta', '==', carpeta),
+            where('depto', '==', departamento),
             where('cuatrimestre', '==', currentCuatrimestre),
             orderBy('folioFormulario', 'desc'),
             limit(1)
@@ -303,13 +308,13 @@ async function loadNextFolioForCarpeta(carpeta) {
         try {
             const q = query(
                 collection(db, 'vacaciones'),
-                where('carpeta', '==', carpeta)
+                where('carpeta', '==', carpeta),
+                where('depto', '==', departamento)
             );
             const snapshot = await getDocs(q);
             let maxFolio = 0;
             snapshot.forEach(d => {
                 const data = d.data();
-                // Solo contar registros del mismo cuatrimestre
                 if ((data.cuatrimestre || '1er') === currentCuatrimestre && data.folioFormulario > maxFolio) {
                     maxFolio = data.folioFormulario;
                 }
@@ -541,7 +546,7 @@ async function confirmSubmission() {
             generateCalendar(`mes${i + 1}`, mes.year, mes.monthNum - 1, mes.monthNum);
         });
 
-        loadNextFolioForCarpeta(currentCarpeta);
+        loadNextFolioForCarpeta(currentCarpeta, document.getElementById('departamento').value);
 
     } catch (error) {
         console.error('Error submitting form:', error);
