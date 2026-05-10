@@ -69,15 +69,39 @@ const departmentConfig = {
 };
 
 const supervisorConfig = {
-    'FLUJOS': ['RAQUEL FALCON', 'IVAN CONTRERAS', 'DAVID MORALES'],
-    'FABRICACION': ['DAVID BUCIO', 'AIDA NAVARRO', 'PATRICIA DAVILA', 'BRENDA PALACIOS'],
-    'SERVICIOS': ['MIGUEL GONZALEZ'],
-    'MECANICO ACONDICIONAMIENTO': ['ANTONIO HERNANDEZ', 'ALBERTO SOLIS'],
-    'ACONDICIONAMIENTO A': ['GILBERTO CRUZ'],
-    'ACONDICIONAMIENTO B': ['CARINA ROJAS'],
-    'ACONDICIONAMIENTO C': ['PERLA GARCIA', 'ANAITH POBLANO'],
-    'ACONDICIONAMIENTO D': ['LUIS SOTO'],
-    'MECANICO FABRICACION': ['FERNANADO HERNANDEZ']
+    '1er': {
+        'FLUJOS': ['RAQUEL FALCON', 'IVAN CONTRERAS', 'DAVID MORALES'],
+        'FABRICACION': ['DAVID BUCIO', 'AIDA NAVARRO', 'PATRICIA DAVILA', 'BRENDA PALACIOS'],
+        'SERVICIOS': ['MIGUEL GONZALEZ'],
+        'MECANICO ACONDICIONAMIENTO': ['ANTONIO HERNANDEZ', 'ALBERTO SOLIS'],
+        'ACONDICIONAMIENTO A': ['GILBERTO CRUZ'],
+        'ACONDICIONAMIENTO B': ['CARINA ROJAS'],
+        'ACONDICIONAMIENTO C': ['PERLA GARCIA', 'ANAITH POBLANO'],
+        'ACONDICIONAMIENTO D': ['LUIS SOTO'],
+        'MECANICO FABRICACION': ['FERNANADO HERNANDEZ']
+    },
+    '2do': {
+        'FLUJOS': ['DAVID MORALES', 'MARÍA DE LA LUZ PÉREZ', 'IVAN CONTRERAS'],
+        'FABRICACION': ['DAVID BUCIO', 'AIDA NAVARRO', 'PATRICIA DAVILA', 'BRENDA PALACIOS'],
+        'SERVICIOS': ['MIGUEL GONZALEZ'],
+        'MECANICO ACONDICIONAMIENTO': ['ANTONIO HERNANDEZ', 'ALBERTO SOLIS'],
+        'ACONDICIONAMIENTO A': ['GERARDO SOTO', 'ARTURO FERNÁNDEZ'],
+        'ACONDICIONAMIENTO B': ['CARINA ROJAS', 'PABLO HERNÁNDEZ'],
+        'ACONDICIONAMIENTO C': ['ANAITH POBLANO', 'PERLA GARCÍA'],
+        'ACONDICIONAMIENTO D': ['ÁNGEL MONROY'],
+        'MECANICO FABRICACION': ['FERNANADO HERNANDEZ']
+    },
+    '3er': {
+        'FLUJOS': ['DAVID MORALES', 'MARÍA DE LA LUZ PÉREZ', 'IVAN CONTRERAS'],
+        'FABRICACION': ['DAVID BUCIO', 'AIDA NAVARRO', 'PATRICIA DAVILA', 'BRENDA PALACIOS'],
+        'SERVICIOS': ['MIGUEL GONZALEZ'],
+        'MECANICO ACONDICIONAMIENTO': ['ANTONIO HERNANDEZ', 'ALBERTO SOLIS'],
+        'ACONDICIONAMIENTO A': ['GERARDO SOTO', 'ARTURO FERNÁNDEZ'],
+        'ACONDICIONAMIENTO B': ['CARINA ROJAS', 'PABLO HERNÁNDEZ'],
+        'ACONDICIONAMIENTO C': ['ANAITH POBLANO', 'PERLA GARCÍA'],
+        'ACONDICIONAMIENTO D': ['ÁNGEL MONROY'],
+        'MECANICO FABRICACION': ['FERNANADO HERNANDEZ']
+    }
 };
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -140,6 +164,13 @@ window.selectCuatrimestre = function (key) {
     info.meses.forEach((mes, i) => {
         generateCalendar(`mes${i + 1}`, mes.year, mes.monthNum - 1, mes.monthNum);
     });
+
+    // Actualizar supervisores si ya hay un área seleccionada
+    const carpetaActual = document.getElementById('carpeta')?.value;
+    if (carpetaActual) updateSupervisorOptions(carpetaActual);
+
+    // Recargar folio para el cuatrimestre actual
+    if (currentCarpeta) loadNextFolioForCarpeta(currentCarpeta);
 
     renderHolidayEditor();
     document.getElementById('holiday-editor').style.display = 'block';
@@ -261,6 +292,7 @@ async function loadNextFolioForCarpeta(carpeta) {
         const q = query(
             collection(db, 'vacaciones'),
             where('carpeta', '==', carpeta),
+            where('cuatrimestre', '==', currentCuatrimestre),
             orderBy('folioFormulario', 'desc'),
             limit(1)
         );
@@ -269,12 +301,18 @@ async function loadNextFolioForCarpeta(carpeta) {
         document.getElementById('folio-number').textContent = String(currentFolio).padStart(3, '0');
     } catch {
         try {
-            const q = query(collection(db, 'vacaciones'), where('carpeta', '==', carpeta));
+            const q = query(
+                collection(db, 'vacaciones'),
+                where('carpeta', '==', carpeta)
+            );
             const snapshot = await getDocs(q);
             let maxFolio = 0;
             snapshot.forEach(d => {
-                const f = d.data().folioFormulario;
-                if (f > maxFolio) maxFolio = f;
+                const data = d.data();
+                // Solo contar registros del mismo cuatrimestre
+                if ((data.cuatrimestre || '1er') === currentCuatrimestre && data.folioFormulario > maxFolio) {
+                    maxFolio = data.folioFormulario;
+                }
             });
             currentFolio = maxFolio + 1;
             document.getElementById('folio-number').textContent = String(currentFolio).padStart(3, '0');
@@ -300,8 +338,9 @@ function updateDepartmentOptions(carpeta) {
 function updateSupervisorOptions(carpeta) {
     const select = document.getElementById('supervisor');
     select.innerHTML = '<option value="">Seleccione un supervisor</option>';
-    if (carpeta && supervisorConfig[carpeta]) {
-        supervisorConfig[carpeta].forEach(sup => {
+    const config = supervisorConfig[currentCuatrimestre] || supervisorConfig['1er'];
+    if (carpeta && config[carpeta]) {
+        config[carpeta].forEach(sup => {
             const opt = document.createElement('option');
             opt.value = sup;
             opt.textContent = sup;
