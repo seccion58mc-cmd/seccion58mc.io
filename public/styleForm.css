@@ -28,7 +28,12 @@ body {
     min-width: 300px;
     max-width: 90%;
     opacity: 0;
+    pointer-events: none;
     transition: opacity 0.3s ease;
+}
+
+.notification.show {
+    pointer-events: auto;
 }
 
 .notification.success {
@@ -220,6 +225,7 @@ body {
     padding: 20px;
     border: 1px solid #888;
     width: 400px;
+    max-width: 92%;
     border-radius: 5px;
 }
 

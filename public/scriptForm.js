@@ -110,13 +110,14 @@ document.addEventListener('DOMContentLoaded', function () {
     setupNotificationClose();
 });
 
+let _notifTimer = null;
 function showNotification(message, type = 'success') {
     const notification = document.getElementById('notification');
     const messageElement = document.getElementById('notification-message');
-    notification.className = `notification ${type}`;
+    if (_notifTimer) { clearTimeout(_notifTimer); _notifTimer = null; }
+    notification.className = `notification ${type} show`;
     messageElement.textContent = message;
-    notification.classList.add('show');
-    setTimeout(() => notification.classList.remove('show'), 5000);
+    _notifTimer = setTimeout(() => { notification.classList.remove('show'); _notifTimer = null; }, 5000);
 }
 
 function setupNotificationClose() {
