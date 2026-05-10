@@ -42,16 +42,23 @@ function truncateText(text, maxLength) {
     return text.substring(0, maxLength - 3) + '...';
 }
 
-// Función para obtener días festivos como string
-function getHolidaysString(month) {
-    const holidays2026 = {
-        2: ['2 - Día de la Candelaria'],           // Febrero
-        3: ['16 - Natalicio de Benito Juárez'],    // Marzo
-        4: ['2 - Jueves Santo', '3 - Viernes Santo'], // Abril
-        5: ['1 - Día del Trabajo', '10 - Día de la Madre'] // Mayo
-    };
-    return holidays2026[month] ? holidays2026[month].join(', ') : '-';
-}
+const CUATRIMESTRES_PDF = {
+    '1er': {
+        titulo: 'SOLICITUD DE VACACIONES 1ER CUATRIMESTRE 2026',
+        subtitulo: 'FEBRERO, MARZO, ABRIL, MAYO',
+        meses: ['FEBRERO', 'MARZO', 'ABRIL', 'MAYO']
+    },
+    '2do': {
+        titulo: 'SOLICITUD DE VACACIONES 2DO CUATRIMESTRE 2026',
+        subtitulo: 'JUNIO, JULIO, AGOSTO, SEPTIEMBRE',
+        meses: ['JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE']
+    },
+    '3er': {
+        titulo: 'SOLICITUD DE VACACIONES 3ER CUATRIMESTRE 2026-2027',
+        subtitulo: 'OCTUBRE, NOVIEMBRE, DICIEMBRE, ENERO',
+        meses: ['OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE', 'ENERO']
+    }
+};
 
 // Cargar jsPDF dinámicamente
 async function loadJsPDF() {
@@ -247,233 +254,163 @@ async function generarPDFCena(tipoCena) {
 
 
 // Función para generar PDF de vacaciones
-async function generatePDF(servicio) {
-       try {
-        // Mostrar mensaje de carga
+async function generatePDF(servicio, cuatrimestre = '1er') {
+    try {
+        const cuatriInfo = CUATRIMESTRES_PDF[cuatrimestre] || CUATRIMESTRES_PDF['1er'];
+
         const loadingMsg = document.createElement('div');
-        loadingMsg.textContent = `Generando PDF para ${servicio}...`;
-        loadingMsg.style.position = 'fixed';
-        loadingMsg.style.top = '20px';
-        loadingMsg.style.left = '50%';
-        loadingMsg.style.transform = 'translateX(-50%)';
-        loadingMsg.style.background = '#4CAF50';
-        loadingMsg.style.color = 'white';
-        loadingMsg.style.padding = '10px 20px';
-        loadingMsg.style.borderRadius = '5px';
-        loadingMsg.style.zIndex = '1000';
+        loadingMsg.textContent = `Generando PDF para ${servicio} - ${cuatriInfo.subtitulo}...`;
+        loadingMsg.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#4CAF50;color:white;padding:10px 20px;border-radius:5px;z-index:1000;';
         document.body.appendChild(loadingMsg);
-        
-        // Consultar datos de Firebase
+
+        // Consultar datos de Firebase y filtrar por carpeta + cuatrimestre
         let data = [];
         try {
-            const q = query(
-                collection(db, 'vacaciones'), 
-                where('carpeta', '==', servicio)
-            );
-            
-            const querySnapshot = await getDocs(q);
-            
-            querySnapshot.forEach((doc) => {
-                data.push({ id: doc.id, ...doc.data() });
+            const q = query(collection(db, 'vacaciones'), where('carpeta', '==', servicio));
+            const snapshot = await getDocs(q);
+            snapshot.forEach(doc => {
+                const r = { id: doc.id, ...doc.data() };
+                // Registros sin campo cuatrimestre se tratan como 1er (retrocompatibilidad)
+                const rCuatri = r.cuatrimestre || '1er';
+                if (rCuatri === cuatrimestre) data.push(r);
             });
-            
-            // Ordenar localmente
             data = sortRecords(data);
-            
-        } catch (firestoreError) {
-            console.error('Error en consulta Firestore:', firestoreError);
-            try {
-                const q = query(collection(db, 'vacaciones'));
-                const querySnapshot = await getDocs(q);
-                
-                querySnapshot.forEach((doc) => {
-                    const record = doc.data();
-                    if (record.carpeta === servicio) {
-                        data.push({ id: doc.id, ...record });
-                    }
-                });
-                
-                data = sortRecords(data);
-                
-            } catch (alternativeError) {
-                console.error('Error en consulta alternativa:', alternativeError);
-                throw new Error('No se pudieron obtener los datos');
-            }
+        } catch (err) {
+            console.error('Error en consulta Firestore:', err);
+            throw new Error('No se pudieron obtener los datos');
         }
 
         if (data.length === 0) {
-            alert(`No se encontraron registros para ${servicio}`);
+            alert(`No se encontraron registros para ${servicio} - ${cuatriInfo.subtitulo}`);
             document.body.removeChild(loadingMsg);
             return;
         }
 
-        // Cargar jsPDF
         const jsPDFLoaded = await loadJsPDF();
-        if (!jsPDFLoaded) {
-            document.body.removeChild(loadingMsg);
-            return;
-        }
+        if (!jsPDFLoaded) { document.body.removeChild(loadingMsg); return; }
 
-        // Crear PDF
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        
-        // Configuración inicial
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
         const margin = 20;
         let yPosition = margin;
         let currentPage = 1;
 
-        // Título principal (solo en primera página)
         doc.setFontSize(16);
         doc.setFont(undefined, 'bold');
         doc.setTextColor(40, 40, 40);
-        doc.text('SOLICITUD DE VACACIONES 1er CUATRIMESTRE 2026', pageWidth / 2, yPosition, { align: 'center' });
+        doc.text(cuatriInfo.titulo, pageWidth / 2, yPosition, { align: 'center' });
         doc.setFontSize(14);
-        doc.text('FEBRERO, MARZO, ABRIL, MAYO', pageWidth / 2, yPosition + 7, { align: 'center' });
+        doc.text(cuatriInfo.subtitulo, pageWidth / 2, yPosition + 7, { align: 'center' });
         yPosition += 20;
-        
-        // Línea decorativa
+
         doc.setDrawColor(150, 150, 150);
         doc.line(margin, yPosition, pageWidth - margin, yPosition);
         yPosition += 15;
 
-        // Procesar cada registro
         for (let i = 0; i < data.length; i++) {
             const record = data[i];
-            
-            // Verificar si necesitamos nueva página
+
             if (yPosition > pageHeight - 100 && i > 0) {
                 doc.addPage();
                 currentPage++;
                 yPosition = margin;
             }
 
-            // Folio
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
             doc.setTextColor(0, 0, 0);
             doc.text(`FOLIO: ${servicio} ${String(record.folioFormulario || (i + 1)).padStart(3, '0')}`, margin, yPosition);
             yPosition += 8;
 
-            // Información del empleado - Formato vertical
             doc.setFontSize(11);
             doc.setFont(undefined, 'normal');
-            
-            // Número de empleado
+
             doc.text('Nº DE EMPLEADO:', margin, yPosition);
             doc.setFont(undefined, 'bold');
             doc.text(`${record.numEmpleado || 'N/A'}`, margin + 40, yPosition);
             yPosition += 6;
 
-            // Supervisor
             doc.setFont(undefined, 'normal');
             doc.text('SUPERVISOR:', margin, yPosition);
             doc.setFont(undefined, 'bold');
             doc.text(`${record.supervisor || 'N/A'}`, margin + 32, yPosition);
             yPosition += 6;
 
-            // Departamento
             doc.setFont(undefined, 'normal');
             doc.text('DEPARTAMENTO:', margin, yPosition);
             doc.setFont(undefined, 'bold');
             doc.text(`${record.depto || 'N/A'}`, margin + 37, yPosition);
             yPosition += 6;
 
-            // Fecha
             doc.setFont(undefined, 'normal');
             doc.text('FECHA:', margin, yPosition);
             doc.setFont(undefined, 'bold');
             doc.text(`${formatDate(record.fechaEnvio) || 'N/A'}`, margin + 22, yPosition);
             yPosition += 6;
 
-            // Nombre completo
             doc.setFont(undefined, 'normal');
             doc.text('NOMBRE COMPLETO:', margin, yPosition);
             doc.setFont(undefined, 'bold');
             doc.text(`${record.nombreCompleto || 'N/A'}`, margin + 45, yPosition);
             yPosition += 10;
 
-            // Tabla de días - Encabezado
             const tableTop = yPosition;
             const tableWidth = pageWidth - margin * 2;
-            const col1Width = 30; // MES
-            const col2Width = 90; // DÍAS (aumentado para mostrar todos los días)
-            const col3Width = tableWidth - col1Width - col2Width; // FESTIVOS
-            
-            // Encabezados de tabla
+            const col1Width = 30;
+            const col2Width = 90;
+            const col3Width = tableWidth - col1Width - col2Width;
+
             doc.setFont(undefined, 'bold');
             doc.setTextColor(255, 255, 255);
             doc.setFillColor(60, 60, 60);
             doc.rect(margin, tableTop, tableWidth, 8, 'F');
-            
-            // Encabezados centrados
             doc.text('MES', margin + col1Width / 2, tableTop + 5, { align: 'center' });
             doc.text('DÍAS', margin + col1Width + col2Width / 2, tableTop + 5, { align: 'center' });
             doc.text('FESTIVOS', margin + col1Width + col2Width + col3Width / 2, tableTop + 5, { align: 'center' });
-            
             yPosition += 10;
 
-            // Datos de la tabla
             doc.setFont(undefined, 'normal');
             doc.setTextColor(0, 0, 0);
-            
-            // Función para agregar fila de tabla
+
             const addTableRow = (mes, diasSolicitados, diasFestivos) => {
-                // Fondo gris claro para filas
                 if ((yPosition - tableTop) % 2 === 0) {
                     doc.setFillColor(240, 240, 240);
                     doc.rect(margin, yPosition - 2, tableWidth, 8, 'F');
                 }
-                
-                // Mes (centrado)
                 doc.text(mes, margin + col1Width / 2, yPosition + 4, { align: 'center' });
-                
-                // Días solicitados (sin truncar para mostrar todos los días)
-                const diasText = diasSolicitados || '-';
-                doc.text(diasText, margin + col1Width + col2Width / 2, yPosition + 4, { align: 'center' });
-                
-                // Días festivos (centrado)
-                const festivosText = diasFestivos || '-';
-                doc.text(truncateText(festivosText, 25), margin + col1Width + col2Width + col3Width / 2, yPosition + 4, { align: 'center' });
-                
+                doc.text(diasSolicitados || '-', margin + col1Width + col2Width / 2, yPosition + 4, { align: 'center' });
+                doc.text(truncateText(diasFestivos || '-', 25), margin + col1Width + col2Width + col3Width / 2, yPosition + 4, { align: 'center' });
                 yPosition += 8;
             };
 
-            // Filas de la tabla para el 1er cuatrimestre 2026
-            addTableRow('FEBRERO', record.diasMes1?.join(', ') || '-', '2 - Día de la Candelaria');
-            addTableRow('MARZO', record.diasMes2?.join(', ') || '-', '16 - Natalicio de Benito Juárez');
-            addTableRow('ABRIL', record.diasMes3?.join(', ') || '-', '2-3 - Jueves y Viernes Santo');
-            addTableRow('MAYO', record.diasMes4?.join(', ') || '-', '1 - Día del Trabajo, 10 - Día de la Madre');
+            const meses = cuatriInfo.meses;
+            addTableRow(meses[0], record.diasMes1?.join(', ') || '-', record.festivosMes1?.join(', ') || '-');
+            addTableRow(meses[1], record.diasMes2?.join(', ') || '-', record.festivosMes2?.join(', ') || '-');
+            addTableRow(meses[2], record.diasMes3?.join(', ') || '-', record.festivosMes3?.join(', ') || '-');
+            addTableRow(meses[3], record.diasMes4?.join(', ') || '-', record.festivosMes4?.join(', ') || '-');
 
-            // Borde de la tabla
             doc.setDrawColor(0, 0, 0);
             doc.rect(margin, tableTop, tableWidth, yPosition - tableTop);
-
-            // Espacio entre registros
             yPosition += 15;
 
-            // Línea separadora entre registros (excepto el último)
             if (i < data.length - 1) {
                 doc.setDrawColor(200, 200, 200);
                 doc.line(margin, yPosition, pageWidth - margin, yPosition);
                 yPosition += 10;
             }
 
-            // Número de página
             doc.setFontSize(8);
             doc.setTextColor(100, 100, 100);
             doc.text(`Página ${currentPage}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
         }
 
-        // Guardar PDF
-        const fileName = `vacaciones_${servicio}_${new Date().toISOString().slice(0, 10)}.pdf`;
+        const cuatriSlug = cuatrimestre.replace(/[^a-z0-9]/gi, '');
+        const fileName = `vacaciones_${servicio}_${cuatriSlug}_${new Date().toISOString().slice(0, 10)}.pdf`;
         doc.save(fileName);
-        
-        // Eliminar mensaje de carga
         document.body.removeChild(loadingMsg);
-        
+
     } catch (error) {
         console.error('Error generando PDF:', error);
         alert('Error al generar el PDF: ' + error.message);
@@ -1044,7 +981,8 @@ function initApp() {
             } else if (service === 'LISTADO_CORREOS') {
                 abrirPanelCorreos();
             } else {
-                generatePDF(service);
+                const cuatrimestre = document.querySelector('input[name="cuatrimestre-pdf"]:checked')?.value || '1er';
+                generatePDF(service, cuatrimestre);
             }
         });
     });

@@ -1,6 +1,5 @@
-// Firebase configuration
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
-import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyCcBqpSXsz_wqm3xyg0NSJYnvQTK0NhkXg",
@@ -15,31 +14,51 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Global variables
-let selectedDays = {
-    febrero: [],
-    marzo: [],
-    abril: [],
-    mayo: []
-};
-
-let currentFolio = 1;
-let currentCarpeta = '';
-
-// Holidays configuration
-const holidays = {
-    2026: {
-        2: [2],    // 2 de febrero
-        3: [16],   // 16 de marzo
-        4: [2, 3], // 2 y 3 de abril (Semana Santa)
-        5: [1, 10] // 1 y 10 de mayo
+const CUATRIMESTRES = {
+    '1er': {
+        label: '1ER CUATRIMESTRE 2026',
+        mesesLabel: 'FEBRERO, MARZO, ABRIL, MAYO',
+        meses: [
+            { nombre: 'FEBRERO', year: 2026, monthNum: 2 },
+            { nombre: 'MARZO',   year: 2026, monthNum: 3 },
+            { nombre: 'ABRIL',   year: 2026, monthNum: 4 },
+            { nombre: 'MAYO',    year: 2026, monthNum: 5 }
+        ],
+        festivosDefault: { 2: [2], 3: [16], 4: [2, 3], 5: [1, 10] }
+    },
+    '2do': {
+        label: '2DO CUATRIMESTRE 2026',
+        mesesLabel: 'JUNIO, JULIO, AGOSTO, SEPTIEMBRE',
+        meses: [
+            { nombre: 'JUNIO',      year: 2026, monthNum: 6 },
+            { nombre: 'JULIO',      year: 2026, monthNum: 7 },
+            { nombre: 'AGOSTO',     year: 2026, monthNum: 8 },
+            { nombre: 'SEPTIEMBRE', year: 2026, monthNum: 9 }
+        ],
+        festivosDefault: { 6: [], 7: [], 8: [], 9: [16] }
+    },
+    '3er': {
+        label: '3ER CUATRIMESTRE 2026-2027',
+        mesesLabel: 'OCTUBRE, NOVIEMBRE, DICIEMBRE, ENERO',
+        meses: [
+            { nombre: 'OCTUBRE',   year: 2026, monthNum: 10 },
+            { nombre: 'NOVIEMBRE', year: 2026, monthNum: 11 },
+            { nombre: 'DICIEMBRE', year: 2026, monthNum: 12 },
+            { nombre: 'ENERO',     year: 2027, monthNum: 1  }
+        ],
+        festivosDefault: { 10: [12], 11: [2, 16], 12: [12, 25], 1: [1] }
     }
 };
 
-// Department configuration
+let selectedDays = { mes1: [], mes2: [], mes3: [], mes4: [] };
+let currentFolio = 1;
+let currentCarpeta = '';
+let currentCuatrimestre = '1er';
+let festivosActuales = {};
+
 const departmentConfig = {
-    'FLUJOS': ['AC´S','MP´S','PT'],
-    'FABRICACION': ['FABRICACION UP1', 'FABRICACION UP2','PESADAS'],
+    'FLUJOS': ['AC´S', 'MP´S', 'PT'],
+    'FABRICACION': ['FABRICACION UP1', 'FABRICACION UP2', 'PESADAS'],
     'SERVICIOS': ['ETN'],
     'MECANICO ACONDICIONAMIENTO': ['MANTENIMIENTO UP1', 'MANTENIMIENTO UP2'],
     'ACONDICIONAMIENTO A': ['ACONDICIONAMIENTO UP1', 'ACONDICIONAMIENTO UP2'],
@@ -50,108 +69,186 @@ const departmentConfig = {
 };
 
 const supervisorConfig = {
-    'FLUJOS': ['RAQUEL FALCON', 'IVAN CONTRERAS','DAVID MORALES'],
-    'FABRICACION': ['DAVID BUCIO', 'AIDA NAVARRO','PATRICIA DAVILA','BRENDA PALACIOS'],
+    'FLUJOS': ['RAQUEL FALCON', 'IVAN CONTRERAS', 'DAVID MORALES'],
+    'FABRICACION': ['DAVID BUCIO', 'AIDA NAVARRO', 'PATRICIA DAVILA', 'BRENDA PALACIOS'],
     'SERVICIOS': ['MIGUEL GONZALEZ'],
     'MECANICO ACONDICIONAMIENTO': ['ANTONIO HERNANDEZ', 'ALBERTO SOLIS'],
     'ACONDICIONAMIENTO A': ['GILBERTO CRUZ'],
     'ACONDICIONAMIENTO B': ['CARINA ROJAS'],
-    'ACONDICIONAMIENTO C': ['PERLA GARCIA','ANAITH POBLANO'],
+    'ACONDICIONAMIENTO C': ['PERLA GARCIA', 'ANAITH POBLANO'],
     'ACONDICIONAMIENTO D': ['LUIS SOTO'],
     'MECANICO FABRICACION': ['FERNANADO HERNANDEZ']
 };
 
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initializePage();
     setupEventListeners();
     setupNotificationClose();
 });
 
-// Función para mostrar notificaciones
 function showNotification(message, type = 'success') {
     const notification = document.getElementById('notification');
     const messageElement = document.getElementById('notification-message');
-    
     notification.className = `notification ${type}`;
     messageElement.textContent = message;
     notification.classList.add('show');
-    
-    // Ocultar automáticamente después de 5 segundos
-    setTimeout(() => {
-        notification.classList.remove('show');
-    }, 5000);
+    setTimeout(() => notification.classList.remove('show'), 5000);
 }
 
-// Configurar cierre de notificaciones
 function setupNotificationClose() {
-    document.querySelector('.notification-close').addEventListener('click', function() {
+    document.querySelector('.notification-close').addEventListener('click', function () {
         document.getElementById('notification').classList.remove('show');
     });
 }
 
 async function initializePage() {
-    // Set current date in UTC
     const now = new Date();
-    const utcDate = new Date(Date.UTC(
-        now.getUTCFullYear(),
-        now.getUTCMonth(),
-        now.getUTCDate()
-    ));
-    
-    // Formatear la fecha para mostrar
+    const utcDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
     const formattedDate = utcDate.toISOString().split('T')[0];
-    
-    // Mostrar en pantalla
-    document.getElementById('fecha-display').textContent = formattedDate;
-    document.getElementById('fecha-display').style.padding = '5px';
-    document.getElementById('fecha-display').style.backgroundColor = '#f0f0f0';
-    document.getElementById('fecha-display').style.border = '1px solid #ccc';
-    document.getElementById('fecha-display').style.borderRadius = '3px';
-    
-    // Guardar en campo oculto para el envío
-    document.getElementById('fecha').value = formattedDate;
-    
-    // Generate calendars for 2026
-    generateCalendar('febrero', 2026, 1);
-    generateCalendar('marzo', 2026, 2);
-    generateCalendar('abril', 2026, 3);
-    generateCalendar('mayo', 2026, 4);
 
-    // Check URL for admin access
-    if (window.location.pathname.includes('/log')) {
-        showLoginPage();
-    }
+    document.getElementById('fecha-display').textContent = formattedDate;
+    document.getElementById('fecha-display').style.cssText =
+        'padding:5px;background:#f0f0f0;border:1px solid #ccc;border-radius:3px;';
+    document.getElementById('fecha').value = formattedDate;
+
+    selectCuatrimestre('1er');
 }
 
+window.selectCuatrimestre = function (key) {
+    currentCuatrimestre = key;
+    const info = CUATRIMESTRES[key];
+
+    document.querySelectorAll('.cuatri-btn').forEach(btn => btn.classList.remove('cuatri-btn-active'));
+    const activeBtn = document.getElementById(`cuatri-btn-${key}`);
+    if (activeBtn) activeBtn.classList.add('cuatri-btn-active');
+
+    festivosActuales = {};
+    info.meses.forEach(mes => {
+        festivosActuales[mes.monthNum] = [...(info.festivosDefault[mes.monthNum] || [])];
+    });
+
+    document.getElementById('main-title').textContent =
+        `FORMATO DE VACACIONES ${info.label} ${info.mesesLabel}`;
+
+    info.meses.forEach((mes, i) => {
+        const header = document.getElementById(`month-header-${i + 1}`);
+        if (header) header.textContent = mes.nombre;
+    });
+
+    selectedDays = { mes1: [], mes2: [], mes3: [], mes4: [] };
+
+    info.meses.forEach((mes, i) => {
+        generateCalendar(`mes${i + 1}`, mes.year, mes.monthNum - 1, mes.monthNum);
+    });
+
+    renderHolidayEditor();
+    document.getElementById('holiday-editor').style.display = 'block';
+};
+
+function renderHolidayEditor() {
+    const info = CUATRIMESTRES[currentCuatrimestre];
+    const container = document.getElementById('holiday-months-container');
+    container.innerHTML = '';
+
+    info.meses.forEach((mes, i) => {
+        const monthNum = mes.monthNum;
+        const dias = festivosActuales[monthNum] || [];
+
+        const tagsHtml = dias.length > 0
+            ? dias.map(d => `
+                <span style="display:inline-flex;align-items:center;gap:3px;background:#c62828;color:#fff;
+                    border-radius:4px;padding:2px 7px;font-size:12px;font-weight:600;margin:2px;">
+                    ${d}
+                    <button onclick="removeFestivo(${monthNum},${d})"
+                        style="background:none;border:none;color:#fff;cursor:pointer;padding:0;font-size:13px;line-height:1;
+                        display:flex;align-items:center;">&times;</button>
+                </span>`).join('')
+            : '<span style="color:#999;font-size:12px;">Sin dias festivos</span>';
+
+        const monthDiv = document.createElement('div');
+        monthDiv.style.cssText =
+            'border:1px solid #ddd;border-radius:8px;padding:10px 14px;flex:1;min-width:140px;background:#fff;';
+        monthDiv.innerHTML = `
+            <div style="font-weight:700;font-size:13px;color:#333;margin-bottom:6px;">${mes.nombre}</div>
+            <div id="festivos-tags-${monthNum}"
+                style="display:flex;flex-wrap:wrap;gap:2px;margin-bottom:8px;min-height:24px;">
+                ${tagsHtml}
+            </div>
+            <div style="display:flex;gap:4px;">
+                <input type="number" id="festivo-input-${monthNum}" min="1" max="31" placeholder="Dia"
+                    style="width:60px;padding:4px 6px;border:1px solid #ccc;border-radius:4px;font-size:13px;">
+                <button onclick="addFestivo(${monthNum})"
+                    style="background:#1565c0;color:#fff;border:none;border-radius:4px;
+                    padding:4px 10px;cursor:pointer;font-size:16px;font-weight:700;line-height:1;">+</button>
+            </div>
+        `;
+        container.appendChild(monthDiv);
+    });
+}
+
+window.addFestivo = function (monthNum) {
+    const input = document.getElementById(`festivo-input-${monthNum}`);
+    const day = parseInt(input.value);
+    if (!day || day < 1 || day > 31) return;
+    if (!festivosActuales[monthNum]) festivosActuales[monthNum] = [];
+    if (festivosActuales[monthNum].includes(day)) { input.value = ''; return; }
+
+    festivosActuales[monthNum].push(day);
+    festivosActuales[monthNum].sort((a, b) => a - b);
+    input.value = '';
+
+    renderHolidayEditor();
+    const info = CUATRIMESTRES[currentCuatrimestre];
+    const idx = info.meses.findIndex(m => m.monthNum === monthNum);
+    if (idx !== -1) {
+        const mes = info.meses[idx];
+        generateCalendar(`mes${idx + 1}`, mes.year, mes.monthNum - 1, mes.monthNum);
+    }
+};
+
+window.removeFestivo = function (monthNum, day) {
+    if (!festivosActuales[monthNum]) return;
+    festivosActuales[monthNum] = festivosActuales[monthNum].filter(d => d !== day);
+
+    renderHolidayEditor();
+    const info = CUATRIMESTRES[currentCuatrimestre];
+    const idx = info.meses.findIndex(m => m.monthNum === monthNum);
+    if (idx !== -1) {
+        const mes = info.meses[idx];
+        generateCalendar(`mes${idx + 1}`, mes.year, mes.monthNum - 1, mes.monthNum);
+    }
+};
+
+window.borrarRegistrosAnteriores = async function () {
+    if (!confirm('¿Estas seguro de que deseas borrar TODOS los registros de vacaciones?\n\nEsta accion no se puede deshacer.')) return;
+    if (!confirm('Confirma una vez mas: ¿Borrar TODOS los registros de vacaciones?')) return;
+
+    try {
+        showNotification('Eliminando registros...', 'success');
+        const snapshot = await getDocs(collection(db, 'vacaciones'));
+        await Promise.all(snapshot.docs.map(d => deleteDoc(d.ref)));
+        showNotification(`${snapshot.docs.length} registros eliminados correctamente`, 'success');
+        if (currentCarpeta) loadNextFolioForCarpeta(currentCarpeta);
+    } catch (error) {
+        showNotification('Error al eliminar registros: ' + error.message, 'error');
+    }
+};
+
 function setupEventListeners() {
-    // Area selection (previously service)
-    document.getElementById('carpeta').addEventListener('change', function() {
+    document.getElementById('carpeta').addEventListener('change', function () {
         currentCarpeta = this.value;
         updateDepartmentOptions(this.value);
         updateSupervisorOptions(this.value);
         loadNextFolioForCarpeta(this.value);
     });
 
-    // Form submission
-    document.getElementById('vacations-form').addEventListener('submit', function(e) {
+    document.getElementById('vacations-form').addEventListener('submit', function (e) {
         e.preventDefault();
         showConfirmationModal();
     });
 
-    // Login form
-    if (document.getElementById('login-form')) {
-        document.getElementById('login-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            handleLogin();
-        });
-    }
-
-    // Employee number validation
-    document.getElementById('empleado-num').addEventListener('input', function() {
-        if (this.value.length > 8) {
-            this.value = this.value.slice(0, 8);
-        }
+    document.getElementById('empleado-num').addEventListener('input', function () {
+        if (this.value.length > 8) this.value = this.value.slice(0, 8);
     });
 }
 
@@ -160,130 +257,101 @@ async function loadNextFolioForCarpeta(carpeta) {
         document.getElementById('folio-number').textContent = '001';
         return;
     }
-    
     try {
         const q = query(
-            collection(db, 'vacaciones'), 
+            collection(db, 'vacaciones'),
             where('carpeta', '==', carpeta),
-            orderBy('folioFormulario', 'desc'), 
+            orderBy('folioFormulario', 'desc'),
             limit(1)
         );
-        
-        const querySnapshot = await getDocs(q);
-        
-        if (!querySnapshot.empty) {
-            const lastDoc = querySnapshot.docs[0].data();
-            currentFolio = lastDoc.folioFormulario + 1;
-        } else {
-            currentFolio = 1;
-        }
-        
+        const snapshot = await getDocs(q);
+        currentFolio = snapshot.empty ? 1 : snapshot.docs[0].data().folioFormulario + 1;
         document.getElementById('folio-number').textContent = String(currentFolio).padStart(3, '0');
-    } catch (error) {
-        console.error('Error loading folio for carpeta:', error);
-        
-        // En caso de error, intentamos una solución alternativa
+    } catch {
         try {
-            // Consulta general para obtener todos los registros de la carpeta
-            const q = query(
-                collection(db, 'vacaciones'), 
-                where('carpeta', '==', carpeta)
-            );
-            
-            const querySnapshot = await getDocs(q);
+            const q = query(collection(db, 'vacaciones'), where('carpeta', '==', carpeta));
+            const snapshot = await getDocs(q);
             let maxFolio = 0;
-            
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                if (data.folioFormulario > maxFolio) {
-                    maxFolio = data.folioFormulario;
-                }
+            snapshot.forEach(d => {
+                const f = d.data().folioFormulario;
+                if (f > maxFolio) maxFolio = f;
             });
-            
             currentFolio = maxFolio + 1;
             document.getElementById('folio-number').textContent = String(currentFolio).padStart(3, '0');
-        } catch (fallbackError) {
-            console.error('Fallback method also failed:', fallbackError);
-            showNotification('Error al cargar el número de folio', 'error');
+        } catch {
             document.getElementById('folio-number').textContent = '001';
         }
     }
 }
 
 function updateDepartmentOptions(carpeta) {
-    const departamentoSelect = document.getElementById('departamento');
-    departamentoSelect.innerHTML = '<option value="">Seleccione un departamento</option>';
-    
+    const select = document.getElementById('departamento');
+    select.innerHTML = '<option value="">Seleccione un departamento</option>';
     if (carpeta && departmentConfig[carpeta]) {
         departmentConfig[carpeta].forEach(dept => {
-            const option = document.createElement('option');
-            option.value = dept;
-            option.textContent = dept;
-            departamentoSelect.appendChild(option);
+            const opt = document.createElement('option');
+            opt.value = dept;
+            opt.textContent = dept;
+            select.appendChild(opt);
         });
     }
 }
 
 function updateSupervisorOptions(carpeta) {
-    const supervisorSelect = document.getElementById('supervisor');
-    supervisorSelect.innerHTML = '<option value="">Seleccione un supervisor</option>';
-    
+    const select = document.getElementById('supervisor');
+    select.innerHTML = '<option value="">Seleccione un supervisor</option>';
     if (carpeta && supervisorConfig[carpeta]) {
-        supervisorConfig[carpeta].forEach(supervisor => {
-            const option = document.createElement('option');
-            option.value = supervisor;
-            option.textContent = supervisor;
-            supervisorSelect.appendChild(option);
+        supervisorConfig[carpeta].forEach(sup => {
+            const opt = document.createElement('option');
+            opt.value = sup;
+            opt.textContent = sup;
+            select.appendChild(opt);
         });
     }
 }
 
-function generateCalendar(monthId, year, month) {
-    const calendar = document.getElementById(`calendar-${monthId}`);
+// month is 0-indexed (JS Date convention), monthNum is 1-indexed (actual month)
+function generateCalendar(mesKey, year, month, monthNum) {
+    const calendar = document.getElementById(`calendar-${mesKey}`);
+    if (!calendar) return;
     calendar.innerHTML = '';
 
-    // Headers
-    const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-    days.forEach(day => {
+    ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'].forEach(day => {
         const header = document.createElement('div');
         header.className = 'calendar-header';
         header.textContent = day;
         calendar.appendChild(header);
     });
 
-    // Days
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const monthFestivos = festivosActuales[monthNum] || [];
 
-    // Empty cells for days before month starts
     for (let i = 0; i < firstDay; i++) {
-        const emptyDay = document.createElement('div');
-        emptyDay.className = 'calendar-day disabled';
-        calendar.appendChild(emptyDay);
+        const empty = document.createElement('div');
+        empty.className = 'calendar-day disabled';
+        calendar.appendChild(empty);
     }
 
-    // Month days
     for (let day = 1; day <= daysInMonth; day++) {
-        const dayElement = document.createElement('div');
-        dayElement.className = 'calendar-day';
-        dayElement.textContent = day;
+        const dayEl = document.createElement('div');
+        dayEl.className = 'calendar-day';
+        dayEl.textContent = day;
 
-        // Check if it's a holiday
-        const monthHolidays = holidays[year] && holidays[year][month + 1];
-        if (monthHolidays && monthHolidays.includes(day)) {
-            dayElement.className += ' holiday';
-            dayElement.title = 'Día festivo';
+        if (monthFestivos.includes(day)) {
+            dayEl.classList.add('holiday');
+            dayEl.title = 'Dia festivo';
         } else {
-            dayElement.addEventListener('click', () => selectDay(monthId, day, dayElement));
+            if (selectedDays[mesKey]?.includes(day)) dayEl.classList.add('selected');
+            dayEl.addEventListener('click', () => selectDay(mesKey, day, dayEl));
         }
-
-        calendar.appendChild(dayElement);
+        calendar.appendChild(dayEl);
     }
 }
 
-async function selectDay(month, day, element) {
+async function selectDay(mesKey, day, element) {
     if (element.classList.contains('holiday')) {
-        showDayInfo('Este es un día festivo y no se puede seleccionar');
+        showDayInfo('Este es un dia festivo y no se puede seleccionar');
         return;
     }
 
@@ -291,62 +359,45 @@ async function selectDay(month, day, element) {
     const departamento = document.getElementById('departamento').value;
 
     if (!carpeta || !departamento) {
-        showNotification('Por favor seleccione primero el área y departamento', 'error');
+        showNotification('Por favor seleccione primero el area y departamento', 'error');
         return;
     }
 
-    // Check how many people have selected this date
-    const count = await getSelectedDateCount(carpeta, departamento, month, day);
-    
+    const count = await getSelectedDateCount(carpeta, departamento, mesKey, day);
     if (count > 0) {
-        showDayInfo(`${count} persona(s) de su área y departamento ya han registrado esta fecha`);
+        showDayInfo(`${count} persona(s) de su area y departamento ya han registrado esta fecha`);
     }
 
-    // Toggle selection
     if (element.classList.contains('selected')) {
         element.classList.remove('selected');
-        selectedDays[month] = selectedDays[month].filter(d => d !== day);
+        selectedDays[mesKey] = selectedDays[mesKey].filter(d => d !== day);
     } else {
         element.classList.add('selected');
-        selectedDays[month].push(day);
-        selectedDays[month].sort((a, b) => a - b);
+        selectedDays[mesKey] = [...(selectedDays[mesKey] || []), day].sort((a, b) => a - b);
     }
 }
 
-
-async function getSelectedDateCount(carpeta, departamento, month, day) {
+async function getSelectedDateCount(carpeta, departamento, mesKey, day) {
     try {
         const q = query(
             collection(db, 'vacaciones'),
             where('carpeta', '==', carpeta),
             where('depto', '==', departamento)
         );
-        const querySnapshot = await getDocs(q);
-        
+        const snapshot = await getDocs(q);
+        const mesNum = getMonthNumber(mesKey);
         let count = 0;
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            const monthField = `diasMes${getMonthNumber(month)}`;
-            if (data[monthField] && data[monthField].includes(day)) {
-                count++;
-            }
+        snapshot.forEach(d => {
+            if (d.data()[`diasMes${mesNum}`]?.includes(day)) count++;
         });
-        
         return count;
-    } catch (error) {
-        console.error('Error checking selected dates:', error);
+    } catch {
         return 0;
     }
 }
 
-function getMonthNumber(month) {
-    const months = {
-        'febrero': 1,
-        'marzo': 2,
-        'abril': 3,
-        'mayo': 4
-    };
-    return months[month] || 1;
+function getMonthNumber(mesKey) {
+    return { mes1: 1, mes2: 2, mes3: 3, mes4: 4 }[mesKey] || 1;
 }
 
 function showDayInfo(message) {
@@ -361,41 +412,33 @@ function closeDayInfoModal() {
 async function showConfirmationModal() {
     const empleadoNum = document.getElementById('empleado-num').value;
     const carpeta = document.getElementById('carpeta').value;
-    
-    // Validar que se haya ingresado un número de empleado
+
     if (!empleadoNum) {
-        showNotification('Por favor ingresa tu número de empleado', 'error');
+        showNotification('Por favor ingresa tu numero de empleado', 'error');
         return;
     }
-    
-    // Validar que se haya seleccionado un área
     if (!carpeta) {
-        showNotification('Por favor selecciona un área', 'error');
-        return;
-    }
-    
-    // Check if employee has already submitted
-    const existingSubmission = await checkExistingSubmission(empleadoNum);
-    if (existingSubmission) {
-        showNotification('Ya has solicitado tus vacaciones para este cuatrimestre. Espera al siguiente período.', 'error');
+        showNotification('Por favor selecciona un area', 'error');
         return;
     }
 
-    // Validar que se hayan seleccionado días
-    const totalDays = [...selectedDays.febrero, ...selectedDays.marzo, 
-                      ...selectedDays.abril, ...selectedDays.mayo].length;
-    
+    const existing = await checkExistingSubmission(empleadoNum);
+    if (existing) {
+        showNotification('Ya has solicitado tus vacaciones para este cuatrimestre. Espera al siguiente periodo.', 'error');
+        return;
+    }
+
+    const totalDays = Object.values(selectedDays).flat().length;
     if (totalDays === 0) {
-        showNotification('Por favor selecciona al menos un día de vacaciones', 'error');
+        showNotification('Por favor selecciona al menos un dia de vacaciones', 'error');
         return;
     }
 
-    // Show selected days
+    const info = CUATRIMESTRES[currentCuatrimestre];
     let selectedDaysText = '';
-    Object.keys(selectedDays).forEach(month => {
-        if (selectedDays[month].length > 0) {
-            const monthName = month.charAt(0).toUpperCase() + month.slice(1);
-            selectedDaysText += `${monthName}: ${selectedDays[month].join(', ')}\n`;
+    ['mes1', 'mes2', 'mes3', 'mes4'].forEach((key, i) => {
+        if (selectedDays[key]?.length > 0) {
+            selectedDaysText += `${info.meses[i].nombre}: ${selectedDays[key].join(', ')}\n`;
         }
     });
 
@@ -405,83 +448,77 @@ async function showConfirmationModal() {
 
 async function checkExistingSubmission(empleadoNum) {
     try {
-        const q = query(collection(db, 'vacaciones'), where('numEmpleado', '==', parseInt(empleadoNum)));
-        const querySnapshot = await getDocs(q);
-        return !querySnapshot.empty;
-    } catch (error) {
-        console.error('Error checking existing submission:', error);
+        const q = query(
+            collection(db, 'vacaciones'),
+            where('numEmpleado', '==', parseInt(empleadoNum)),
+            where('cuatrimestre', '==', currentCuatrimestre)
+        );
+        const snapshot = await getDocs(q);
+        return !snapshot.empty;
+    } catch {
         return false;
     }
 }
 
 async function confirmSubmission() {
     try {
-            // Obtener fecha UTC actual
         const now = new Date();
         const utcDate = new Date(Date.UTC(
-            now.getUTCFullYear(),
-            now.getUTCMonth(),
-            now.getUTCDate(),
-            now.getUTCHours(),
-            now.getUTCMinutes(),
-            now.getUTCSeconds()
+            now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
+            now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds()
         ));
-        
+
+        const info = CUATRIMESTRES[currentCuatrimestre];
+
         const formData = {
             folioFormulario: currentFolio,
             numEmpleado: parseInt(document.getElementById('empleado-num').value),
             depto: document.getElementById('departamento').value,
             nombreCompleto: document.getElementById('nombre-completo').value.toUpperCase(),
             supervisor: document.getElementById('supervisor').value,
-            fechaEnvio: utcDate.toISOString(), // Esto asegura UTC
-            diasMes1: selectedDays.febrero,
-            diasMes2: selectedDays.marzo,
-            diasMes3: selectedDays.abril,
-            diasMes4: selectedDays.mayo,
-            carpeta: document.getElementById('carpeta').value
+            fechaEnvio: utcDate.toISOString(),
+            diasMes1: selectedDays.mes1,
+            diasMes2: selectedDays.mes2,
+            diasMes3: selectedDays.mes3,
+            diasMes4: selectedDays.mes4,
+            carpeta: document.getElementById('carpeta').value,
+            cuatrimestre: currentCuatrimestre,
+            festivosMes1: [...(festivosActuales[info.meses[0].monthNum] || [])],
+            festivosMes2: [...(festivosActuales[info.meses[1].monthNum] || [])],
+            festivosMes3: [...(festivosActuales[info.meses[2].monthNum] || [])],
+            festivosMes4: [...(festivosActuales[info.meses[3].monthNum] || [])]
         };
 
         await addDoc(collection(db, 'vacaciones'), formData);
-        
+
         showNotification('Solicitud enviada correctamente. Tu folio es: ' + String(currentFolio).padStart(3, '0'));
         document.getElementById('confirmation-modal').style.display = 'none';
-        
-        // Reset form
+
         document.getElementById('vacations-form').reset();
-        selectedDays = { febrero: [], marzo: [], abril: [], mayo: [] };
-        
-        // Reload calendars
-        generateCalendar('febrero', 2026, 1);
-        generateCalendar('marzo', 2026, 2);
-        generateCalendar('abril', 2026, 3);
-        generateCalendar('mayo', 2026, 4);
-        
-        // Recargar el siguiente folio para la misma carpeta
+        selectedDays = { mes1: [], mes2: [], mes3: [], mes4: [] };
+
+        info.meses.forEach((mes, i) => {
+            generateCalendar(`mes${i + 1}`, mes.year, mes.monthNum - 1, mes.monthNum);
+        });
+
         loadNextFolioForCarpeta(currentCarpeta);
-        
+
     } catch (error) {
         console.error('Error submitting form:', error);
-        
         try {
-            // Primero verificamos si el folio ya existe para esta carpeta
-            const verificationQuery = query(
+            const q = query(
                 collection(db, 'vacaciones'),
                 where('carpeta', '==', document.getElementById('carpeta').value),
                 where('folioFormulario', '==', currentFolio)
             );
-            
-            const verificationSnapshot = await getDocs(verificationQuery);
-            
-            if (!verificationSnapshot.empty) {
-                // Si ya existe, incrementamos el folio y volvemos a intentar
+            const snapshot = await getDocs(q);
+            if (!snapshot.empty) {
                 currentFolio++;
                 await confirmSubmission();
-                return;
             } else {
                 showNotification('Error inesperado al enviar la solicitud. Por favor, intenta nuevamente.', 'error');
             }
-        } catch (retryError) {
-            console.error('Retry also failed:', retryError);
+        } catch {
             showNotification('Error al enviar la solicitud', 'error');
         }
     }
@@ -491,10 +528,6 @@ function editSubmission() {
     document.getElementById('confirmation-modal').style.display = 'none';
 }
 
-// Make functions global for onclick handlers
 window.confirmSubmission = confirmSubmission;
 window.editSubmission = editSubmission;
 window.closeDayInfoModal = closeDayInfoModal;
-window.generatePDF = generatePDF;
-window.logout = logout;
-window.showNotification = showNotification;

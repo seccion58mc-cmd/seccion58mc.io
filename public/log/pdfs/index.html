@@ -37,6 +37,28 @@
         </div>
 
         <h2 style="text-align: center; margin: 40px 0 20px; color: #2c3e50;">Solicitudes de Vacaciones por Área</h2>
+
+        <!-- Selector de cuatrimestre para PDFs de vacaciones -->
+        <div style="background:#e8eaf6;border:2px solid #3949ab;border-radius:10px;padding:16px 20px;margin:0 0 20px;">
+            <div style="font-size:13px;font-weight:700;color:#1a237e;margin-bottom:10px;letter-spacing:.5px;">
+                CUATRIMESTRE A EXPORTAR
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <label style="display:flex;align-items:center;gap:7px;cursor:pointer;padding:8px 16px;
+                    border:2px solid #3949ab;border-radius:6px;background:#fff;font-weight:600;font-size:14px;">
+                    <input type="radio" name="cuatrimestre-pdf" value="1er" checked> 1er &nbsp;(Feb - May)
+                </label>
+                <label style="display:flex;align-items:center;gap:7px;cursor:pointer;padding:8px 16px;
+                    border:2px solid #3949ab;border-radius:6px;background:#fff;font-weight:600;font-size:14px;">
+                    <input type="radio" name="cuatrimestre-pdf" value="2do"> 2do &nbsp;(Jun - Sep)
+                </label>
+                <label style="display:flex;align-items:center;gap:7px;cursor:pointer;padding:8px 16px;
+                    border:2px solid #3949ab;border-radius:6px;background:#fff;font-weight:600;font-size:14px;">
+                    <input type="radio" name="cuatrimestre-pdf" value="3er"> 3er &nbsp;(Oct - Ene)
+                </label>
+            </div>
+        </div>
+
         <div class="service-buttons">
             <button class="service-btn" data-service="FLUJOS">
                 <span class="btn-icon">📊</span>
