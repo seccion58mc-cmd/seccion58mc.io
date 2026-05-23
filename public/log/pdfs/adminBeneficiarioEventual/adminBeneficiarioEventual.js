@@ -83,18 +83,26 @@ function mostrarRegistros(data) {
     emptyState.style.display = 'none';
 
     tbody.innerHTML = data.map(registro => {
-        const beneficiariosHTML = registro.beneficiarios.map(b => 
+        const beneficiariosHTML = registro.beneficiarios.map(b =>
             `<div class="beneficiario-item">${b.nombre} - ${b.parentesco} (${b.porcentaje}%)</div>`
         ).join('');
 
+        const entregado = !!registro.entregado;
+        const rowClass = entregado ? 'row-entregado' : '';
+        const btnEntregadoClass = entregado ? 'btn-entregado-active' : 'btn-entregado';
+        const btnEntregadoTexto = entregado ? '✓ Entregado' : '☐ Marcar entregado';
+
         return `
-            <tr>
+            <tr class="${rowClass}">
                 <td>${registro.fecha || 'N/A'}</td>
                 <td><strong>${registro.nombreTrabajador}</strong></td>
                 <td><div class="beneficiarios-list">${beneficiariosHTML}</div></td>
                 <td>${registro.empresa}</td>
                 <td>
                     <div class="action-buttons">
+                        <button class="btn-action ${btnEntregadoClass}" onclick="toggleEntregado('${registro.id}')">
+                            ${btnEntregadoTexto}
+                        </button>
                         <button class="btn-action btn-edit" onclick="editarRegistro('${registro.id}')">
                             ✏️ Editar
                         </button>
@@ -235,6 +243,32 @@ function cerrarModalEditar() {
     document.getElementById('modalEditar').style.display = 'none';
     registroActual = null;
 }
+
+window.toggleEntregado = async function(id) {
+    const registro = registros.find(r => r.id === id);
+    if (!registro) return;
+
+    const yaEntregado = !!registro.entregado;
+    const mensaje = yaEntregado
+        ? '¿Estás seguro que NO has entregado este PDF? Se deseleccionará.'
+        : '¿Estás seguro que ya entregaste este PDF?';
+
+    if (!confirm(mensaje)) return;
+
+    try {
+        const docRef = doc(window.db, 'beneficiarioEventual', id);
+        await updateDoc(docRef, {
+            entregado: !yaEntregado,
+            fechaEntrega: !yaEntregado ? new Date().toISOString() : null
+        });
+        registro.entregado = !yaEntregado;
+        registro.fechaEntrega = !yaEntregado ? new Date().toISOString() : null;
+        filtrarRegistros();
+    } catch (error) {
+        console.error('Error al actualizar entrega:', error);
+        alert('Error al actualizar el estado de entrega');
+    }
+};
 
 window.eliminarRegistro = function(id) {
     registroActual = registros.find(r => r.id === id);

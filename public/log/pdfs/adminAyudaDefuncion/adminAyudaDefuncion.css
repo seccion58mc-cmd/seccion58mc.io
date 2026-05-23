@@ -219,6 +219,36 @@ td {
     background-color: #229954;
 }
 
+.btn-entregado {
+    background-color: #95a5a6;
+    color: white;
+}
+
+.btn-entregado:hover {
+    background-color: #7f8c8d;
+}
+
+.btn-entregado-active {
+    background-color: #16a085;
+    color: white;
+}
+
+.btn-entregado-active:hover {
+    background-color: #117864;
+}
+
+tbody tr.row-entregado {
+    background-color: #d4edda !important;
+}
+
+tbody tr.row-entregado:hover {
+    background-color: #c3e6cb !important;
+}
+
+tbody tr.row-entregado td {
+    color: #155724;
+}
+
 /* Empty State */
 .empty-state {
     text-align: center;

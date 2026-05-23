@@ -36,6 +36,36 @@ function sortRecords(records) {
     });
 }
 
+// Intercala registros de cada departamento: 1 de UP1, 1 de UP2, 1 de UP3...
+// Dentro de cada depto los registros van ordenados por folio.
+function interleaveByDepto(records) {
+    const groups = {};
+    records.forEach(r => {
+        const key = r.depto || '';
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(r);
+    });
+
+    Object.values(groups).forEach(g =>
+        g.sort((a, b) => (a.folioFormulario || 0) - (b.folioFormulario || 0))
+    );
+
+    const deptKeys = Object.keys(groups).sort();
+    const result = [];
+    let i = 0, hasMore = true;
+    while (hasMore) {
+        hasMore = false;
+        for (const key of deptKeys) {
+            if (i < groups[key].length) {
+                result.push(groups[key][i]);
+                hasMore = true;
+            }
+        }
+        i++;
+    }
+    return result;
+}
+
 // Función para truncar texto si es muy largo
 function truncateText(text, maxLength) {
     if (text.length <= maxLength) return text;
@@ -274,7 +304,24 @@ async function generatePDF(servicio, cuatrimestre = '1er') {
                 const rCuatri = r.cuatrimestre || '1er';
                 if (rCuatri === cuatrimestre) data.push(r);
             });
-            data = sortRecords(data);
+            if (servicio === 'ACONDICIONAMIENTO B') {
+                const supOrder = ['PABLO HERNÁNDEZ', 'CARINA ROJAS'];
+                data.sort((a, b) => {
+                    const si = supOrder.indexOf(a.supervisor || '');
+                    const sj = supOrder.indexOf(b.supervisor || '');
+                    if (si !== sj) return si - sj;
+                    return (a.folioFormulario || 0) - (b.folioFormulario || 0);
+                });
+                // Reasignar folio visual por grupo de supervisor (sin tocar BD)
+                const contadores = {};
+                data.forEach(r => {
+                    const sup = r.supervisor || '';
+                    contadores[sup] = (contadores[sup] || 0) + 1;
+                    r._folioDisplay = contadores[sup];
+                });
+            } else {
+                data = interleaveByDepto(data);
+            }
         } catch (err) {
             console.error('Error en consulta Firestore:', err);
             throw new Error('No se pudieron obtener los datos');
@@ -321,7 +368,7 @@ async function generatePDF(servicio, cuatrimestre = '1er') {
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
             doc.setTextColor(0, 0, 0);
-            doc.text(`FOLIO: ${servicio} ${String(record.folioFormulario || (i + 1)).padStart(3, '0')}`, margin, yPosition);
+            doc.text(`FOLIO: ${servicio} ${String(record._folioDisplay || record.folioFormulario || (i + 1)).padStart(3, '0')}`, margin, yPosition);
             yPosition += 8;
 
             doc.setFontSize(11);

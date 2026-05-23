@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node fix-folios.mjs)",
+      "Bash(firebase projects:list)",
+      "Read(//Users/martinfranciscocortesbuendia/.config/configstore/**)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); tokens=d.get\\('tokens',{}\\); print\\('access_token' in tokens or 'refresh_token' in tokens\\)\")",
+      "Bash(python3 -c ' *)",
+      "Bash(firebase auth:print-access-token)",
+      "Bash(firebase deploy *)"
+    ]
+  }
+}
