@@ -73,19 +73,19 @@ function configurarMayusculas() {
 // CONTACTO 2 (OPCIONAL)
 // ============================================================
 function configurarContacto2() {
-    const placeholder = document.getElementById('contacto2Placeholder');
-    const campos = document.getElementById('contacto2Fields');
+    const prompt = document.getElementById('contacto2Prompt');
+    const contenido = document.getElementById('contacto2Content');
 
     document.getElementById('btnAgregarContacto2').addEventListener('click', () => {
         contacto2Activo = true;
-        placeholder.hidden = true;
-        campos.hidden = false;
+        prompt.hidden = true;
+        contenido.hidden = false;
     });
 
     document.getElementById('btnQuitarContacto2').addEventListener('click', () => {
         contacto2Activo = false;
-        campos.hidden = true;
-        placeholder.hidden = false;
+        contenido.hidden = true;
+        prompt.hidden = false;
         document.getElementById('contacto2Nombres').value = '';
         document.getElementById('contacto2ApellidoPaterno').value = '';
         document.getElementById('contacto2ApellidoMaterno').value = '';

@@ -145,7 +145,8 @@ body {
 .form-section:nth-of-type(2) { animation-delay: 0.12s; }
 .form-section:nth-of-type(3) { animation-delay: 0.19s; }
 
-.form-section legend {
+.form-section legend,
+.form-section .form-section-legend {
     font-family: var(--font-display);
     font-size: 16px;
     font-weight: 700;
@@ -325,9 +326,20 @@ select {
 }
 
 /* ===== CONTACTO 2 (opcional) ===== */
-.contacto2-placeholder {
+.contacto2-prompt {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    text-align: center;
+    padding: 6px 0;
+}
+
+.contacto2-prompt-text {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--azul-900);
 }
 
 .btn-add-contacto {
@@ -338,8 +350,7 @@ select {
     background: var(--naranja-50);
     border: 2px dashed var(--naranja-600);
     border-radius: 12px;
-    padding: 14px 22px;
-    width: 100%;
+    padding: 12px 32px;
     cursor: pointer;
     transition: background 0.2s, transform 0.15s;
 }
@@ -349,7 +360,7 @@ select {
     transform: translateY(-1px);
 }
 
-#contacto2Fields {
+#contacto2Content {
     animation: fadeSlideUp 0.35s ease both;
 }
 

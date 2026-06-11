@@ -104,7 +104,7 @@
                             <option value="MADRE">MADRE</option>
                             <option value="HERMANO(A)">HERMANO(A)</option>
                             <option value="AMIGO(A)">AMIGO(A)</option>
-                            <option value="OTRO">OTRO</option>
+                            <option value="CÓNYUGE">CÓNYUGE</option>
                         </select>
                     </div>
                     <div class="field-group">
@@ -115,15 +115,15 @@
             </fieldset>
 
             <fieldset class="form-section form-section--accent form-section--ghost" id="contacto2Section">
-                <legend><span class="step-num step-num--accent">3</span> Contacto de emergencia 2 <span class="badge badge-optional">Opcional</span></legend>
-
-                <div id="contacto2Placeholder" class="contacto2-placeholder">
-                    <button type="button" id="btnAgregarContacto2" class="btn-add-contacto">
-                        <span aria-hidden="true">+</span> Agregar un segundo contacto
-                    </button>
+                <div id="contacto2Prompt" class="contacto2-prompt">
+                    <p class="contacto2-prompt-text">¿Quieres agregar un contacto opcional?</p>
+                    <button type="button" id="btnAgregarContacto2" class="btn-add-contacto">Sí, agregar</button>
                 </div>
 
-                <div id="contacto2Fields" class="field-grid" hidden>
+                <div id="contacto2Content" hidden>
+                    <div class="form-section-legend"><span class="step-num step-num--accent">3</span> Contacto de emergencia 2 <span class="badge badge-optional">Opcional</span></div>
+
+                <div id="contacto2Fields" class="field-grid">
                     <div class="field-group field-group--full">
                         <label for="contacto2Nombres">Nombre(s)</label>
                         <input type="text" id="contacto2Nombres" autocomplete="off" placeholder="Nombre(s) del contacto">
@@ -146,7 +146,7 @@
                             <option value="MADRE">MADRE</option>
                             <option value="HERMANO(A)">HERMANO(A)</option>
                             <option value="AMIGO(A)">AMIGO(A)</option>
-                            <option value="OTRO">OTRO</option>
+                            <option value="CÓNYUGE">CÓNYUGE</option>
                         </select>
                     </div>
                     <div class="field-group">
@@ -156,6 +156,7 @@
                     <div class="field-group field-group--full field-group--end">
                         <button type="button" id="btnQuitarContacto2" class="btn-remove-contacto">✕ Quitar este contacto</button>
                     </div>
+                </div>
                 </div>
             </fieldset>
 
