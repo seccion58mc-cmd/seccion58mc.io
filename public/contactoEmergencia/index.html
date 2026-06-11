@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacto de Emergencia - Sección 58</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="contactoEmergencia.css">
+</head>
+<body>
+    <!-- Notificación flotante -->
+    <div id="notification" class="notification">
+        <div id="notification-message"></div>
+    </div>
+
+    <header class="header">
+        <h1>SINDICATO NACIONAL DE TRABAJADORES DE LA INDUSTRIA QUÍMICA,</h1>
+        <h2>PETROQUÍMICA, CARBOQUÍMICA, ENERGÍA Y GASES.</h2>
+        <div class="logo-container">
+            <img src="../assets/sindicatoLogo.png" alt="Logo Sindicato" class="logo">
+        </div>
+        <h3>COMITÉ EJECUTIVO LOCAL</h3>
+        <h4>SECCIÓN 58</h4>
+    </header>
+
+    <main class="page">
+        <section class="hero">
+            <span class="hero-badge" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+            </span>
+            <div>
+                <h2 class="hero-title">Contacto de Emergencia</h2>
+                <p class="hero-sub">Esta información solo se usará si ocurre una emergencia dentro de la planta. Llénala con cuidado, son los datos que usaremos para avisar a tu familia.</p>
+            </div>
+        </section>
+
+        <form id="contactoForm" class="form-card" novalidate>
+
+            <fieldset class="form-section">
+                <legend><span class="step-num">1</span> Datos del trabajador</legend>
+
+                <div class="field-group">
+                    <span class="field-label">Tipo de trabajador</span>
+                    <div class="tipo-toggle" id="tipoToggle" role="radiogroup" aria-label="Tipo de trabajador">
+                        <button type="button" class="tipo-btn" data-tipo="PLANTA" role="radio" aria-checked="false">
+                            <span class="tipo-icon">🏭</span> Planta
+                        </button>
+                        <button type="button" class="tipo-btn" data-tipo="EVENTUAL" role="radio" aria-checked="false">
+                            <span class="tipo-icon">📋</span> Eventual
+                        </button>
+                    </div>
+                    <p class="field-hint" id="tipoError">Selecciona si eres trabajador de planta o eventual.</p>
+                </div>
+
+                <div class="field-grid">
+                    <div class="field-group">
+                        <label for="numeroEmpleado">Número de empleado</label>
+                        <input type="text" id="numeroEmpleado" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="Máx. 8 dígitos" required>
+                    </div>
+                    <div class="field-group">
+                        <label for="telefonoEmpleado">Tu teléfono celular</label>
+                        <input type="tel" id="telefonoEmpleado" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="10 dígitos" required>
+                    </div>
+                    <div class="field-group field-group--full">
+                        <label for="nombreEmpleado">Nombre completo</label>
+                        <input type="text" id="nombreEmpleado" autocomplete="off" placeholder="Nombre completo del trabajador" required>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="form-section form-section--accent">
+                <legend><span class="step-num step-num--accent">2</span> Contacto de emergencia 1 <span class="badge badge-required">Obligatorio</span></legend>
+
+                <div class="field-grid">
+                    <div class="field-group field-group--full">
+                        <label for="contacto1Nombre">Nombre completo</label>
+                        <input type="text" id="contacto1Nombre" autocomplete="off" placeholder="Nombre del contacto" required>
+                    </div>
+                    <div class="field-group">
+                        <label for="contacto1Parentesco">Parentesco</label>
+                        <select id="contacto1Parentesco" required>
+                            <option value="">Seleccionar</option>
+                            <option value="ESPOSO(A)">ESPOSO(A)</option>
+                            <option value="HIJO(A)">HIJO(A)</option>
+                            <option value="PADRE">PADRE</option>
+                            <option value="MADRE">MADRE</option>
+                            <option value="HERMANO(A)">HERMANO(A)</option>
+                            <option value="AMIGO(A)">AMIGO(A)</option>
+                            <option value="OTRO">OTRO</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label for="contacto1Telefono">Teléfono</label>
+                        <input type="tel" id="contacto1Telefono" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="10 dígitos" required>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="form-section form-section--accent form-section--ghost" id="contacto2Section">
+                <legend><span class="step-num step-num--accent">3</span> Contacto de emergencia 2 <span class="badge badge-optional">Opcional</span></legend>
+
+                <div id="contacto2Placeholder" class="contacto2-placeholder">
+                    <button type="button" id="btnAgregarContacto2" class="btn-add-contacto">
+                        <span aria-hidden="true">+</span> Agregar un segundo contacto
+                    </button>
+                </div>
+
+                <div id="contacto2Fields" class="field-grid" hidden>
+                    <div class="field-group field-group--full">
+                        <label for="contacto2Nombre">Nombre completo</label>
+                        <input type="text" id="contacto2Nombre" autocomplete="off" placeholder="Nombre del contacto">
+                    </div>
+                    <div class="field-group">
+                        <label for="contacto2Parentesco">Parentesco</label>
+                        <select id="contacto2Parentesco">
+                            <option value="">Seleccionar</option>
+                            <option value="ESPOSO(A)">ESPOSO(A)</option>
+                            <option value="HIJO(A)">HIJO(A)</option>
+                            <option value="PADRE">PADRE</option>
+                            <option value="MADRE">MADRE</option>
+                            <option value="HERMANO(A)">HERMANO(A)</option>
+                            <option value="AMIGO(A)">AMIGO(A)</option>
+                            <option value="OTRO">OTRO</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label for="contacto2Telefono">Teléfono</label>
+                        <input type="tel" id="contacto2Telefono" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="10 dígitos">
+                    </div>
+                    <div class="field-group field-group--full field-group--end">
+                        <button type="button" id="btnQuitarContacto2" class="btn-remove-contacto">✕ Quitar este contacto</button>
+                    </div>
+                </div>
+            </fieldset>
+
+            <button type="submit" class="btn-enviar">Enviar información</button>
+        </form>
+    </main>
+
+    <!-- Modal de confirmación -->
+    <div id="modalConfirmacion" class="modal">
+        <div class="modal-content">
+            <h3>¿Tus datos son correctos?</h3>
+            <div id="resumenDatos"></div>
+            <div class="modal-buttons">
+                <button id="btnConfirmar" class="btn-confirmar">Sí, enviar</button>
+                <button id="btnCancelar" class="btn-cancelar">Revisar de nuevo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de éxito -->
+    <div id="modalExito" class="modal">
+        <div class="modal-content modal-success">
+            <h3>✓ Información Registrada</h3>
+            <p>Tu información de contacto de emergencia se guardó correctamente. Gracias por mantenerla actualizada.</p>
+            <button id="btnCerrarExito" class="btn-confirmar">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module" src="contactoEmergencia.js"></script>
+</body>
+</html>
