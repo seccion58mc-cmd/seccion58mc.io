@@ -4,6 +4,11 @@ let registros = [];
 let registroActual = null;
 let filtroActual = 'TODOS';
 
+function nombreCompleto(obj) {
+    if (!obj) return '';
+    return [obj.nombres, obj.apellidoPaterno, obj.apellidoMaterno].filter(Boolean).join(' ');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     if (!verificarAutenticacion()) return;
 
@@ -100,7 +105,7 @@ function filtrarRegistros() {
 
     if (searchTerm) {
         filtrados = filtrados.filter(r =>
-            (r.nombreEmpleado || '').toLowerCase().includes(searchTerm) ||
+            nombreCompleto(r).toLowerCase().includes(searchTerm) ||
             (r.numeroEmpleado || '').toLowerCase().includes(searchTerm)
         );
     }
@@ -132,7 +137,7 @@ function mostrarRegistros(data) {
             <tr>
                 <td><span class="tipo-pill ${tipoClass}">${registro.tipoTrabajador || 'N/A'}</span></td>
                 <td>${registro.numeroEmpleado || 'N/A'}</td>
-                <td><strong>${registro.nombreEmpleado || 'N/A'}</strong></td>
+                <td><strong>${nombreCompleto(registro) || 'N/A'}</strong></td>
                 <td>${registro.telefonoEmpleado || 'N/A'}</td>
                 <td>${renderContacto(registro.contacto1)}</td>
                 <td>${renderContacto(registro.contacto2)}</td>
@@ -152,12 +157,12 @@ function mostrarRegistros(data) {
 }
 
 function renderContacto(contacto) {
-    if (!contacto || !contacto.nombre) {
+    if (!contacto || !contacto.nombres) {
         return '<span class="sin-contacto">Sin registrar</span>';
     }
     return `
         <div class="contacto-cell">
-            <strong>${contacto.nombre}</strong>
+            <strong>${nombreCompleto(contacto)}</strong>
             <span>${contacto.parentesco || ''} · ${contacto.telefono || ''}</span>
         </div>
     `;
@@ -173,15 +178,21 @@ window.editarRegistro = function(id) {
     document.getElementById('editTipo').value = registroActual.tipoTrabajador || 'PLANTA';
     document.getElementById('editNumEmpleado').value = registroActual.numeroEmpleado || '';
     document.getElementById('editTelefonoEmpleado').value = registroActual.telefonoEmpleado || '';
-    document.getElementById('editNombre').value = registroActual.nombreEmpleado || '';
+    document.getElementById('editNombres').value = registroActual.nombres || '';
+    document.getElementById('editApellidoPaterno').value = registroActual.apellidoPaterno || '';
+    document.getElementById('editApellidoMaterno').value = registroActual.apellidoMaterno || '';
 
     const c1 = registroActual.contacto1 || {};
-    document.getElementById('editC1Nombre').value = c1.nombre || '';
+    document.getElementById('editC1Nombres').value = c1.nombres || '';
+    document.getElementById('editC1ApellidoPaterno').value = c1.apellidoPaterno || '';
+    document.getElementById('editC1ApellidoMaterno').value = c1.apellidoMaterno || '';
     document.getElementById('editC1Parentesco').value = c1.parentesco || 'ESPOSO(A)';
     document.getElementById('editC1Telefono').value = c1.telefono || '';
 
     const c2 = registroActual.contacto2 || {};
-    document.getElementById('editC2Nombre').value = c2.nombre || '';
+    document.getElementById('editC2Nombres').value = c2.nombres || '';
+    document.getElementById('editC2ApellidoPaterno').value = c2.apellidoPaterno || '';
+    document.getElementById('editC2ApellidoMaterno').value = c2.apellidoMaterno || '';
     document.getElementById('editC2Parentesco').value = c2.parentesco || '';
     document.getElementById('editC2Telefono').value = c2.telefono || '';
 
@@ -206,27 +217,40 @@ async function guardarCambios(e) {
         return;
     }
 
-    const c1Nombre = document.getElementById('editC1Nombre').value.trim().toUpperCase();
-    const c1Parentesco = document.getElementById('editC1Parentesco').value;
-    const c1Telefono = document.getElementById('editC1Telefono').value.trim();
+    const nombres = document.getElementById('editNombres').value.trim().toUpperCase();
+    const apellidoPaterno = document.getElementById('editApellidoPaterno').value.trim().toUpperCase();
+    const apellidoMaterno = document.getElementById('editApellidoMaterno').value.trim().toUpperCase();
 
-    if (!c1Nombre || c1Telefono.length !== 10) {
-        alert('El Contacto de emergencia 1 es obligatorio (nombre y teléfono a 10 dígitos)');
+    if (!nombres || !apellidoPaterno) {
+        alert('El nombre y apellido paterno del empleado son obligatorios');
         return;
     }
 
-    const c2Nombre = document.getElementById('editC2Nombre').value.trim().toUpperCase();
+    const c1Nombres = document.getElementById('editC1Nombres').value.trim().toUpperCase();
+    const c1ApellidoPaterno = document.getElementById('editC1ApellidoPaterno').value.trim().toUpperCase();
+    const c1ApellidoMaterno = document.getElementById('editC1ApellidoMaterno').value.trim().toUpperCase();
+    const c1Parentesco = document.getElementById('editC1Parentesco').value;
+    const c1Telefono = document.getElementById('editC1Telefono').value.trim();
+
+    if (!c1Nombres || !c1ApellidoPaterno || c1Telefono.length !== 10) {
+        alert('El Contacto de emergencia 1 es obligatorio (nombre, apellido paterno y teléfono a 10 dígitos)');
+        return;
+    }
+
+    const c2Nombres = document.getElementById('editC2Nombres').value.trim().toUpperCase();
+    const c2ApellidoPaterno = document.getElementById('editC2ApellidoPaterno').value.trim().toUpperCase();
+    const c2ApellidoMaterno = document.getElementById('editC2ApellidoMaterno').value.trim().toUpperCase();
     const c2Parentesco = document.getElementById('editC2Parentesco').value;
     const c2Telefono = document.getElementById('editC2Telefono').value.trim();
 
     let contacto2 = null;
-    const c2TieneAlgo = c2Nombre || c2Parentesco || c2Telefono;
+    const c2TieneAlgo = c2Nombres || c2ApellidoPaterno || c2ApellidoMaterno || c2Parentesco || c2Telefono;
     if (c2TieneAlgo) {
-        if (!c2Nombre || !c2Parentesco || c2Telefono.length !== 10) {
-            alert('Completa todos los campos del Contacto de emergencia 2 o déjalos todos vacíos');
+        if (!c2Nombres || !c2ApellidoPaterno || !c2Parentesco || c2Telefono.length !== 10) {
+            alert('Completa todos los campos obligatorios del Contacto de emergencia 2 o déjalos todos vacíos');
             return;
         }
-        contacto2 = { nombre: c2Nombre, parentesco: c2Parentesco, telefono: c2Telefono };
+        contacto2 = { nombres: c2Nombres, apellidoPaterno: c2ApellidoPaterno, apellidoMaterno: c2ApellidoMaterno, parentesco: c2Parentesco, telefono: c2Telefono };
     }
 
     try {
@@ -235,8 +259,10 @@ async function guardarCambios(e) {
             tipoTrabajador: document.getElementById('editTipo').value,
             numeroEmpleado: numEmpleado,
             telefonoEmpleado: telefonoEmpleado,
-            nombreEmpleado: document.getElementById('editNombre').value.trim().toUpperCase(),
-            contacto1: { nombre: c1Nombre, parentesco: c1Parentesco, telefono: c1Telefono },
+            nombres: nombres,
+            apellidoPaterno: apellidoPaterno,
+            apellidoMaterno: apellidoMaterno,
+            contacto1: { nombres: c1Nombres, apellidoPaterno: c1ApellidoPaterno, apellidoMaterno: c1ApellidoMaterno, parentesco: c1Parentesco, telefono: c1Telefono },
             contacto2: contacto2
         });
 
@@ -261,7 +287,7 @@ window.eliminarRegistro = function(id) {
     registroActual = registros.find(r => r.id === id);
     if (!registroActual) return;
 
-    document.getElementById('nombreEliminar').textContent = registroActual.nombreEmpleado;
+    document.getElementById('nombreEliminar').textContent = nombreCompleto(registroActual);
     document.getElementById('modalEliminar').style.display = 'block';
 };
 
@@ -288,8 +314,8 @@ function cerrarModalEliminar() {
 // GENERACIÓN DE PDF
 // ============================================================
 function filaContacto(contacto) {
-    if (!contacto || !contacto.nombre) return 'Sin registrar';
-    return `${contacto.nombre}\n${contacto.parentesco || ''} - ${contacto.telefono || ''}`;
+    if (!contacto || !contacto.nombres) return 'Sin registrar';
+    return `${nombreCompleto(contacto)}\n${contacto.parentesco || ''} - ${contacto.telefono || ''}`;
 }
 
 function dibujarTabla(doc, titulo, datos, margin, startY, colorRGB) {
@@ -306,7 +332,7 @@ function dibujarTabla(doc, titulo, datos, margin, startY, colorRGB) {
         body: datos.map((r, i) => [
             i + 1,
             r.numeroEmpleado || 'N/A',
-            r.nombreEmpleado || 'N/A',
+            nombreCompleto(r) || 'N/A',
             r.telefonoEmpleado || 'N/A',
             filaContacto(r.contacto1),
             filaContacto(r.contacto2)

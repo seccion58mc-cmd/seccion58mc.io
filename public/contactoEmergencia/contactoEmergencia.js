@@ -56,7 +56,11 @@ function configurarValidacionNumerica() {
 }
 
 function configurarMayusculas() {
-    ['nombreEmpleado', 'contacto1Nombre', 'contacto2Nombre'].forEach(id => {
+    [
+        'empleadoNombres', 'empleadoApellidoPaterno', 'empleadoApellidoMaterno',
+        'contacto1Nombres', 'contacto1ApellidoPaterno', 'contacto1ApellidoMaterno',
+        'contacto2Nombres', 'contacto2ApellidoPaterno', 'contacto2ApellidoMaterno'
+    ].forEach(id => {
         document.getElementById(id).addEventListener('input', function() {
             const cursorPos = this.selectionStart;
             this.value = this.value.toUpperCase();
@@ -82,7 +86,9 @@ function configurarContacto2() {
         contacto2Activo = false;
         campos.hidden = true;
         placeholder.hidden = false;
-        document.getElementById('contacto2Nombre').value = '';
+        document.getElementById('contacto2Nombres').value = '';
+        document.getElementById('contacto2ApellidoPaterno').value = '';
+        document.getElementById('contacto2ApellidoMaterno').value = '';
         document.getElementById('contacto2Parentesco').value = '';
         document.getElementById('contacto2Telefono').value = '';
     });
@@ -96,10 +102,15 @@ function validarYMostrarConfirmacion(e) {
 
     const tipoTrabajador = document.getElementById('tipoToggle').dataset.tipo || '';
     const numeroEmpleado = document.getElementById('numeroEmpleado').value.trim();
-    const nombreEmpleado = document.getElementById('nombreEmpleado').value.trim();
     const telefonoEmpleado = document.getElementById('telefonoEmpleado').value.trim();
 
-    const contacto1Nombre = document.getElementById('contacto1Nombre').value.trim();
+    const empleadoNombres = document.getElementById('empleadoNombres').value.trim();
+    const empleadoApellidoPaterno = document.getElementById('empleadoApellidoPaterno').value.trim();
+    const empleadoApellidoMaterno = document.getElementById('empleadoApellidoMaterno').value.trim();
+
+    const contacto1Nombres = document.getElementById('contacto1Nombres').value.trim();
+    const contacto1ApellidoPaterno = document.getElementById('contacto1ApellidoPaterno').value.trim();
+    const contacto1ApellidoMaterno = document.getElementById('contacto1ApellidoMaterno').value.trim();
     const contacto1Parentesco = document.getElementById('contacto1Parentesco').value;
     const contacto1Telefono = document.getElementById('contacto1Telefono').value.trim();
 
@@ -114,8 +125,8 @@ function validarYMostrarConfirmacion(e) {
         return;
     }
 
-    if (!nombreEmpleado) {
-        mostrarNotificacion('Ingresa tu nombre completo', 'error');
+    if (!empleadoNombres || !empleadoApellidoPaterno) {
+        mostrarNotificacion('Ingresa tu nombre y apellido paterno', 'error');
         return;
     }
 
@@ -124,35 +135,55 @@ function validarYMostrarConfirmacion(e) {
         return;
     }
 
-    if (!contacto1Nombre || !contacto1Parentesco || contacto1Telefono.length !== 10) {
-        mostrarNotificacion('Completa los datos del Contacto de emergencia 1 (nombre, parentesco y teléfono a 10 dígitos)', 'error');
+    if (!contacto1Nombres || !contacto1ApellidoPaterno || !contacto1Parentesco || contacto1Telefono.length !== 10) {
+        mostrarNotificacion('Completa los datos del Contacto de emergencia 1 (nombre, apellido paterno, parentesco y teléfono a 10 dígitos)', 'error');
         return;
     }
 
     let contacto2 = null;
     if (contacto2Activo) {
-        const contacto2Nombre = document.getElementById('contacto2Nombre').value.trim();
+        const contacto2Nombres = document.getElementById('contacto2Nombres').value.trim();
+        const contacto2ApellidoPaterno = document.getElementById('contacto2ApellidoPaterno').value.trim();
+        const contacto2ApellidoMaterno = document.getElementById('contacto2ApellidoMaterno').value.trim();
         const contacto2Parentesco = document.getElementById('contacto2Parentesco').value;
         const contacto2Telefono = document.getElementById('contacto2Telefono').value.trim();
 
-        if (!contacto2Nombre || !contacto2Parentesco || contacto2Telefono.length !== 10) {
+        if (!contacto2Nombres || !contacto2ApellidoPaterno || !contacto2Parentesco || contacto2Telefono.length !== 10) {
             mostrarNotificacion('Completa los datos del Contacto de emergencia 2 o quítalo si no lo necesitas', 'error');
             return;
         }
 
-        contacto2 = { nombre: contacto2Nombre, parentesco: contacto2Parentesco, telefono: contacto2Telefono };
+        contacto2 = {
+            nombres: contacto2Nombres.toUpperCase(),
+            apellidoPaterno: contacto2ApellidoPaterno.toUpperCase(),
+            apellidoMaterno: contacto2ApellidoMaterno.toUpperCase(),
+            parentesco: contacto2Parentesco,
+            telefono: contacto2Telefono
+        };
     }
 
     const datos = {
         tipoTrabajador,
         numeroEmpleado,
-        nombreEmpleado: nombreEmpleado.toUpperCase(),
+        nombres: empleadoNombres.toUpperCase(),
+        apellidoPaterno: empleadoApellidoPaterno.toUpperCase(),
+        apellidoMaterno: empleadoApellidoMaterno.toUpperCase(),
         telefonoEmpleado,
-        contacto1: { nombre: contacto1Nombre.toUpperCase(), parentesco: contacto1Parentesco, telefono: contacto1Telefono },
+        contacto1: {
+            nombres: contacto1Nombres.toUpperCase(),
+            apellidoPaterno: contacto1ApellidoPaterno.toUpperCase(),
+            apellidoMaterno: contacto1ApellidoMaterno.toUpperCase(),
+            parentesco: contacto1Parentesco,
+            telefono: contacto1Telefono
+        },
         contacto2
     };
 
     mostrarResumen(datos);
+}
+
+function nombreCompleto({ nombres, apellidoPaterno, apellidoMaterno }) {
+    return [nombres, apellidoPaterno, apellidoMaterno].filter(Boolean).join(' ');
 }
 
 function mostrarResumen(datos) {
@@ -162,12 +193,12 @@ function mostrarResumen(datos) {
         <div class="resumen-section">
             <strong>Tipo:</strong> ${datos.tipoTrabajador}<br>
             <strong>No. de empleado:</strong> ${datos.numeroEmpleado}<br>
-            <strong>Nombre:</strong> ${datos.nombreEmpleado}<br>
+            <strong>Nombre:</strong> ${nombreCompleto(datos)}<br>
             <strong>Teléfono:</strong> ${datos.telefonoEmpleado}
         </div>
         <div class="resumen-section">
             <strong>Contacto de emergencia 1</strong><br>
-            ${datos.contacto1.nombre} (${datos.contacto1.parentesco}) - ${datos.contacto1.telefono}
+            ${nombreCompleto(datos.contacto1)} (${datos.contacto1.parentesco}) - ${datos.contacto1.telefono}
         </div>
     `;
 
@@ -175,7 +206,7 @@ function mostrarResumen(datos) {
         html += `
         <div class="resumen-section">
             <strong>Contacto de emergencia 2</strong><br>
-            ${datos.contacto2.nombre} (${datos.contacto2.parentesco}) - ${datos.contacto2.telefono}
+            ${nombreCompleto(datos.contacto2)} (${datos.contacto2.parentesco}) - ${datos.contacto2.telefono}
         </div>
         `;
     }
