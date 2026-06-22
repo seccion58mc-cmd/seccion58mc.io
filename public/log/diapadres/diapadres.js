@@ -3,12 +3,27 @@ import { collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/fi
 // ── Estado global ──────────────────────────────────────────
 let hijosCount = 0;
 
+// ponytail: registro cerrado. Para reabrir, poner REGISTRO_CERRADO = false.
+const REGISTRO_CERRADO = true;
+
 // ── Init ───────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+    if (REGISTRO_CERRADO) return cerrarRegistro();
     inicializarFecha();
     configurarEventos();
     agregarHijo(); // un hijo por defecto
 });
+
+function cerrarRegistro() {
+    const form = document.getElementById('diaPadreForm');
+    form.querySelectorAll('input, select, button, textarea').forEach(el => el.disabled = true);
+    form.addEventListener('submit', e => e.preventDefault());
+    const aviso = document.createElement('div');
+    aviso.className = 'error-message';
+    aviso.style.textAlign = 'center';
+    aviso.textContent = 'El registro para el Día del Padre está cerrado.';
+    form.insertBefore(aviso, form.firstChild);
+}
 
 function inicializarFecha() {
     const hoy = new Date();
