@@ -3,7 +3,11 @@ import { collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/fi
 
 let contacto2Activo = false;
 
+// ponytail: registro cerrado. Para reabrir, poner REGISTRO_CERRADO = false.
+const REGISTRO_CERRADO = true;
+
 document.addEventListener('DOMContentLoaded', () => {
+    if (REGISTRO_CERRADO) return cerrarRegistro();
     configurarTipoToggle();
     configurarValidacionNumerica();
     configurarMayusculas();
@@ -18,6 +22,18 @@ document.addEventListener('DOMContentLoaded', () => {
         location.reload();
     });
 });
+
+function cerrarRegistro() {
+    const form = document.getElementById('contactoForm');
+    form.querySelectorAll('input, select, button, textarea').forEach(el => el.disabled = true);
+    form.addEventListener('submit', e => e.preventDefault());
+    const aviso = document.createElement('div');
+    aviso.className = 'field-hint';
+    aviso.style.textAlign = 'center';
+    aviso.style.color = '#c0392b';
+    aviso.textContent = 'El registro de contacto de emergencia está cerrado.';
+    form.insertBefore(aviso, form.firstChild);
+}
 
 // ============================================================
 // TIPO DE TRABAJADOR (PLANTA / EVENTUAL)
