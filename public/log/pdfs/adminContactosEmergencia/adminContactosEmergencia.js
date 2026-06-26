@@ -1,4 +1,5 @@
 import { collection, getDocs, doc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+import { LISTA_OFICIAL } from './listaOficial.js';
 
 let registros = [];
 let registroActual = null;
@@ -73,6 +74,11 @@ function configurarEventos() {
         lista.focus();
     });
     lista.addEventListener('input', () => localStorage.setItem('listaFaltantes', lista.value));
+    document.getElementById('btnCargarOficial').addEventListener('click', () => {
+        document.getElementById('listaWrap').hidden = false;
+        lista.value = LISTA_OFICIAL.join('\n');
+        localStorage.setItem('listaFaltantes', lista.value);
+    });
     document.getElementById('btnQuienesFaltan').addEventListener('click', calcularFaltantes);
 }
 
