@@ -120,75 +120,61 @@ header p {
     margin-bottom: 15px;
 }
 
-.btn-faltantes {
-    background-color: #2980b9;
-    color: white;
-    border: none;
-    padding: 14px 18px;
-    border-radius: 8px;
-    font-size: 14px;
+.reg-ok-demo {
+    text-decoration: line-through;
+    color: #27ae60;
     font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.15s;
 }
 
-.btn-faltantes:hover {
-    background-color: #2471a3;
-    transform: translateY(-2px);
+.faltantes-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
 }
 
-.btn-faltantes--check {
-    background-color: #e67e22;
-    margin-top: 12px;
-}
-
-.btn-faltantes--check:hover {
-    background-color: #d35400;
-}
-
-.lista-textarea {
-    width: 100%;
-    margin-top: 15px;
-    padding: 12px;
-    border: 1px solid #ced4da;
-    border-radius: 8px;
-    font-size: 14px;
-    font-family: inherit;
-    resize: vertical;
-    box-sizing: border-box;
-}
-
-.resultado-faltantes {
-    margin-top: 20px;
-    padding: 16px 20px;
+.faltantes-col {
     background: white;
     border-radius: 8px;
-    border-left: 4px solid #e67e22;
+    padding: 16px 20px;
+    border-top: 3px solid #e67e22;
 }
 
-.faltantes-ok {
-    color: #27ae60 !important;
-    font-weight: 600;
-    margin: 0 !important;
+.faltantes-col h3 {
+    color: #2c3e50;
+    font-size: 16px;
+    margin: 0 0 12px;
 }
 
-.faltantes-aviso {
-    color: #2980b9 !important;
-    font-weight: 600;
-    margin: 0 !important;
-}
-
-.faltantes-titulo {
-    color: #c0392b !important;
-    font-weight: 600;
-    margin-bottom: 10px !important;
+.faltantes-col h3 span {
+    color: #c0392b;
 }
 
 .faltantes-lista {
     margin: 0;
-    padding-left: 24px;
-    color: #2c3e50;
-    line-height: 1.7;
+    padding-left: 22px;
+    color: #c0392b;
+    line-height: 1.9;
+    max-height: 480px;
+    overflow-y: auto;
+}
+
+.faltantes-lista li {
+    font-size: 14px;
+}
+
+.faltantes-lista .reg-ok {
+    text-decoration: line-through;
+    color: #27ae60;
+    cursor: pointer;
+}
+
+.faltantes-lista .reg-ok:hover {
+    color: #1e8449;
+    background: #eafaf1;
+}
+
+.faltantes-lista .reg-falta {
+    font-weight: 600;
 }
 
 .pdf-section h2 {
@@ -641,8 +627,8 @@ td {
         padding: 20px;
     }
 
-    .btn-faltantes {
-        width: 100%;
+    .faltantes-cols {
+        grid-template-columns: 1fr;
     }
 
     .form-row {

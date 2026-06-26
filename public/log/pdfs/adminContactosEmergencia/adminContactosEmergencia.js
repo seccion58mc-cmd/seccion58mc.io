@@ -1,5 +1,5 @@
 import { collection, getDocs, doc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
-import { LISTA_OFICIAL } from './listaOficial.js';
+import { LISTA_PLANTA, LISTA_EVENTUAL } from './listaOficial.js';
 
 let registros = [];
 let registroActual = null;
@@ -66,61 +66,44 @@ function configurarEventos() {
     document.getElementById('pdfPlanta').addEventListener('click', () => generarPDF('PLANTA'));
     document.getElementById('pdfEventual').addEventListener('click', () => generarPDF('EVENTUAL'));
 
-    // ¿Quiénes faltan?
-    const lista = document.getElementById('listaCompleta');
-    lista.value = localStorage.getItem('listaFaltantes') || '';
-    document.getElementById('btnAgregarLista').addEventListener('click', () => {
-        document.getElementById('listaWrap').hidden = false;
-        lista.focus();
-    });
-    lista.addEventListener('input', () => localStorage.setItem('listaFaltantes', lista.value));
-    document.getElementById('btnCargarOficial').addEventListener('click', () => {
-        document.getElementById('listaWrap').hidden = false;
-        lista.value = LISTA_OFICIAL.join('\n');
-        localStorage.setItem('listaFaltantes', lista.value);
-    });
-    document.getElementById('btnQuienesFaltan').addEventListener('click', calcularFaltantes);
 }
 
 // ============================================================
-// ¿QUIÉNES FALTAN?
+// LISTAS OFICIALES (tachar registrados / mostrar faltantes)
 // ============================================================
 function normalizar(s) {
     return (s || '').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')        .replace(/[^A-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-function calcularFaltantes() {
-    const lineas = document.getElementById('listaCompleta').value
-        .split('\n').map(l => l.trim()).filter(Boolean);
+// Busca el id del registro que contiene todos los tokens del nombre. null si no existe.
+function buscarRegistroId(linea, regSets) {
+    const tokens = normalizar(linea).split(' ').filter(Boolean);
+    if (!tokens.length) return null;
+    const hit = regSets.find(rs => tokens.every(t => rs.set.has(t)));
+    return hit ? hit.id : null;
+}
 
-    const cont = document.getElementById('resultadoFaltantes');
-    cont.hidden = false;
+function renderLista(nombres, regSets, ulId, countId) {
+    let faltan = 0;
+    const html = nombres.map(linea => {
+        const id = buscarRegistroId(linea, regSets);
+        if (id) {
+            return `<li class="reg-ok" onclick="editarRegistro('${id}')" title="Ver registro">${linea}</li>`;
+        }
+        faltan++;
+        return `<li class="reg-falta">${linea}</li>`;
+    }).join('');
+    document.getElementById(ulId).innerHTML = html;
+    document.getElementById(countId).textContent = faltan;
+}
 
-    if (lineas.length === 0) {
-        cont.innerHTML = '<p class="faltantes-aviso">✍️ Primero escribe tu lista de nombres.</p>';
-        return;
-    }
-
-    // Cada registro como conjunto de tokens (nombre + apellidos)
-    const registradosTokens = registros.map(r =>
-        new Set(normalizar([r.apellidoPaterno, r.apellidoMaterno, r.nombres].join(' ')).split(' '))
-    );
-
-    const faltan = lineas.filter(linea => {
-        const tokens = normalizar(linea).split(' ').filter(Boolean);
-        // Está registrado si algún registro contiene todos los tokens de la línea
-        return !registradosTokens.some(set => tokens.every(t => set.has(t)));
-    });
-
-    if (faltan.length === 0) {
-        cont.innerHTML = '<p class="faltantes-ok">✓ Todos los de tu lista ya están registrados.</p>';
-        return;
-    }
-
-    cont.innerHTML = `
-        <p class="faltantes-titulo">Te falta por registrarse a (${faltan.length}):</p>
-        <ol class="faltantes-lista">${faltan.map(n => `<li>${n}</li>`).join('')}</ol>
-    `;
+function renderFaltantes() {
+    const regSets = registros.map(r => ({
+        id: r.id,
+        set: new Set(normalizar([r.apellidoPaterno, r.apellidoMaterno, r.nombres].join(' ')).split(' ').filter(Boolean))
+    }));
+    renderLista(LISTA_PLANTA, regSets, 'plantaLista', 'plantaFaltanCount');
+    renderLista(LISTA_EVENTUAL, regSets, 'eventualLista', 'eventualFaltanCount');
 }
 
 // ============================================================
@@ -139,6 +122,7 @@ async function cargarRegistros() {
 
         actualizarEstadisticas();
         filtrarRegistros();
+        renderFaltantes();
     } catch (error) {
         console.error('Error al cargar registros:', error);
         alert('Error al cargar los registros');

@@ -41,15 +41,18 @@
         </div>
 
         <div class="faltantes-section">
-            <h2>¿Quiénes faltan?</h2>
-            <p>Escribe tu lista completa, una persona por renglón (apellido paterno, apellido materno y nombre).</p>
-            <button class="btn-faltantes" id="btnAgregarLista">📝 Agregar los nombres de mi lista completa</button>
-            <button class="btn-faltantes" id="btnCargarOficial">📋 Cargar lista oficial</button>
-            <div id="listaWrap" hidden>
-                <textarea id="listaCompleta" class="lista-textarea" rows="10" placeholder="PEREZ LOPEZ JUAN CARLOS&#10;GARCIA MARTINEZ ANA&#10;..."></textarea>
-                <button class="btn-faltantes btn-faltantes--check" id="btnQuienesFaltan">🔍 ¿Quiénes faltan?</button>
+            <h2>Listas oficiales</h2>
+            <p>Los nombres <span class="reg-ok-demo">tachados</span> ya están en el sistema (haz clic para ver su registro). Los demás faltan por registrarse.</p>
+            <div class="faltantes-cols">
+                <div class="faltantes-col">
+                    <h3>Planta faltan: <span id="plantaFaltanCount">0</span></h3>
+                    <ul id="plantaLista" class="faltantes-lista"></ul>
+                </div>
+                <div class="faltantes-col">
+                    <h3>Eventuales faltan: <span id="eventualFaltanCount">0</span></h3>
+                    <ul id="eventualLista" class="faltantes-lista"></ul>
+                </div>
             </div>
-            <div id="resultadoFaltantes" class="resultado-faltantes" hidden></div>
         </div>
 
         <div class="table-container">
