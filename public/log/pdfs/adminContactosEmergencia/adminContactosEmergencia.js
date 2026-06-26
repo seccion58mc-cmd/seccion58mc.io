@@ -64,6 +64,57 @@ function configurarEventos() {
     document.getElementById('pdfTodos').addEventListener('click', () => generarPDF('TODOS'));
     document.getElementById('pdfPlanta').addEventListener('click', () => generarPDF('PLANTA'));
     document.getElementById('pdfEventual').addEventListener('click', () => generarPDF('EVENTUAL'));
+
+    // ¿Quiénes faltan?
+    const lista = document.getElementById('listaCompleta');
+    lista.value = localStorage.getItem('listaFaltantes') || '';
+    document.getElementById('btnAgregarLista').addEventListener('click', () => {
+        document.getElementById('listaWrap').hidden = false;
+        lista.focus();
+    });
+    lista.addEventListener('input', () => localStorage.setItem('listaFaltantes', lista.value));
+    document.getElementById('btnQuienesFaltan').addEventListener('click', calcularFaltantes);
+}
+
+// ============================================================
+// ¿QUIÉNES FALTAN?
+// ============================================================
+function normalizar(s) {
+    return (s || '').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')        .replace(/[^A-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function calcularFaltantes() {
+    const lineas = document.getElementById('listaCompleta').value
+        .split('\n').map(l => l.trim()).filter(Boolean);
+
+    const cont = document.getElementById('resultadoFaltantes');
+    cont.hidden = false;
+
+    if (lineas.length === 0) {
+        cont.innerHTML = '<p class="faltantes-aviso">✍️ Primero escribe tu lista de nombres.</p>';
+        return;
+    }
+
+    // Cada registro como conjunto de tokens (nombre + apellidos)
+    const registradosTokens = registros.map(r =>
+        new Set(normalizar([r.apellidoPaterno, r.apellidoMaterno, r.nombres].join(' ')).split(' '))
+    );
+
+    const faltan = lineas.filter(linea => {
+        const tokens = normalizar(linea).split(' ').filter(Boolean);
+        // Está registrado si algún registro contiene todos los tokens de la línea
+        return !registradosTokens.some(set => tokens.every(t => set.has(t)));
+    });
+
+    if (faltan.length === 0) {
+        cont.innerHTML = '<p class="faltantes-ok">✓ Todos los de tu lista ya están registrados.</p>';
+        return;
+    }
+
+    cont.innerHTML = `
+        <p class="faltantes-titulo">Te falta por registrarse a (${faltan.length}):</p>
+        <ol class="faltantes-lista">${faltan.map(n => `<li>${n}</li>`).join('')}</ol>
+    `;
 }
 
 // ============================================================
