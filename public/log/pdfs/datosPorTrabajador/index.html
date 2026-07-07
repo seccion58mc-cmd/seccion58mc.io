@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datos por Trabajador</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f4f5f7; color: #1f2430; padding: 20px; min-height: 100vh;
+        }
+        .wrap { max-width: 1280px; margin: 0 auto; }
+
+        header {
+            background: linear-gradient(135deg, #6a1b9a, #4a148c);
+            color: #fff; border-radius: 14px; padding: 22px 26px; margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;
+        }
+        header h1 { font-size: 22px; }
+        header p { font-size: 13px; opacity: .9; margin-top: 4px; }
+        .back { background: rgba(255,255,255,.18); color: #fff; text-decoration: none;
+            padding: 9px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; white-space: nowrap; }
+        .back:hover { background: rgba(255,255,255,.3); }
+
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
+        .stat { background: #fff; border-radius: 12px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+        .stat b { display: block; font-size: 30px; line-height: 1; }
+        .stat span { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; }
+        .stat--ok b { color: #16a34a; }
+        .stat--falta b { color: #dc2626; }
+
+        .toolbar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; align-items: center; }
+        #searchInput { flex: 1; min-width: 220px; padding: 11px 14px; border: 1px solid #d1d5db;
+            border-radius: 9px; font-size: 15px; }
+        #searchInput:focus { outline: none; border-color: #6a1b9a; box-shadow: 0 0 0 3px rgba(106,27,154,.15); }
+        .filtros { display: flex; gap: 6px; background: #fff; padding: 4px; border-radius: 10px;
+            border: 1px solid #e5e7eb; }
+        .filtro-btn { border: 0; background: transparent; padding: 8px 16px; border-radius: 7px;
+            font-size: 14px; font-weight: 600; color: #4b5563; cursor: pointer; }
+        .filtro-btn.is-active { background: #6a1b9a; color: #fff; }
+
+        .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: #6b7280; margin-bottom: 14px; }
+        .legend span { display: inline-flex; align-items: center; gap: 5px; }
+        .dot { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+        .dot--ok { background: #16a34a; } .dot--falta { background: #dc2626; } .dot--na { background: #cbd5e1; }
+
+        #loading { text-align: center; padding: 60px 20px; color: #6b7280; font-size: 16px; }
+        .empty { text-align: center; padding: 40px; color: #9ca3af; grid-column: 1/-1; }
+
+        #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 16px; }
+        .card { background: #fff; border-radius: 13px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            border: 1px solid #eef0f3; }
+        .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .tipo-pill { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; letter-spacing: .3px; }
+        .tipo-pill--planta { background: #dbeafe; color: #1d4ed8; }
+        .tipo-pill--eventual { background: #ffedd5; color: #c2410c; }
+        .score { font-size: 15px; font-weight: 800; }
+        .score--full { color: #16a34a; } .score--mid { color: #d97706; } .score--low { color: #dc2626; }
+        .card-nombre { font-size: 15px; font-weight: 700; margin-bottom: 10px; line-height: 1.25; }
+        .bar { height: 6px; background: #eef0f3; border-radius: 4px; overflow: hidden; margin-bottom: 12px; }
+        .bar-fill { height: 100%; border-radius: 4px; transition: width .3s; }
+        .bar-fill--full { background: #16a34a; } .bar-fill--mid { background: #f59e0b; } .bar-fill--low { background: #ef4444; }
+        .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+        .chip { font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 7px; white-space: nowrap; }
+        .chip--ok { background: #dcfce7; color: #15803d; }
+        .chip--falta { background: #fee2e2; color: #b91c1c; }
+        .chip--na { background: #f1f5f9; color: #94a3b8; text-decoration: line-through; }
+
+        @media (max-width: 560px) {
+            body { padding: 12px; }
+            .stats { grid-template-columns: 1fr; }
+            #grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header>
+            <div>
+                <h1>🗃️ Datos por Trabajador</h1>
+                <p>Qué tenemos y qué falta de cada trabajador en todas las colecciones</p>
+            </div>
+            <a class="back" href="../index.html">← Volver al panel</a>
+        </header>
+
+        <div class="stats">
+            <div class="stat"><b id="statTotal">—</b><span>Trabajadores</span></div>
+            <div class="stat stat--ok"><b id="statCompletos">—</b><span>Completos</span></div>
+            <div class="stat stat--falta"><b id="statFaltantes">—</b><span>Con faltantes</span></div>
+        </div>
+
+        <div class="toolbar">
+            <input type="text" id="searchInput" placeholder="Buscar por nombre...">
+            <div class="filtros">
+                <button class="filtro-btn is-active" data-filtro="TODOS">Todos</button>
+                <button class="filtro-btn" data-filtro="PLANTA">Planta</button>
+                <button class="filtro-btn" data-filtro="EVENTUAL">Eventuales</button>
+            </div>
+        </div>
+
+        <div class="legend">
+            <span><i class="dot dot--ok"></i> Registrado</span>
+            <span><i class="dot dot--falta"></i> Falta</span>
+            <span><i class="dot dot--na"></i> No aplica</span>
+        </div>
+
+        <div id="loading">Cargando y revisando todas las colecciones…</div>
+        <div id="grid"></div>
+    </div>
+
+    <script type="module">
+        import { db } from '../../../firebase-config.js';
+        window.db = db;
+    </script>
+    <script type="module" src="datosPorTrabajador.js"></script>
+</body>
+</html>
