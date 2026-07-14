@@ -1,4 +1,8 @@
-// Listas oficiales (PATERNO MATERNO NOMBRE). El matching es por tokens, así que el orden no importa.
+import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+
+// Listas base (PATERNO MATERNO NOMBRE). El matching es por tokens, así que el orden no importa.
+// Ya NO son la fuente de la verdad: solo sirven como semilla inicial y respaldo si la
+// colección 'trabajadores' está vacía. La verdad vive en Firestore (ver cargarTrabajadores).
 export const LISTA_PLANTA = [
   'ABURTO MORA JOSE LUIS',
   'ALANIS ARTEAGA BLANCA ESTELA',
@@ -280,3 +284,25 @@ export const LISTA_EVENTUAL = [
   'VENTURA ANGELES LUIS ERNESTO',
   'ZAVALZA SALAZAR SAMANTA',
 ];
+
+// Fuente de la verdad: colección 'trabajadores' en Firestore.
+// Devuelve { planta:[nombre...], eventual:[nombre...] } activos. Si la colección está
+// vacía (aún no sembrada) o falla la lectura, cae a las listas base de arriba.
+export async function cargarTrabajadores() {
+    try {
+        const snap = await getDocs(collection(window.db, 'trabajadores'));
+        const planta = [], eventual = [];
+        snap.forEach(d => {
+            const { nombre, tipo } = d.data();
+            if (!nombre) return;
+            (tipo === 'EVENTUAL' ? eventual : planta).push(nombre);
+        });
+        if (planta.length || eventual.length) {
+            planta.sort(); eventual.sort();
+            return { planta, eventual };
+        }
+    } catch (e) {
+        console.error('cargarTrabajadores: fallo al leer Firestore, uso lista base', e);
+    }
+    return { planta: [...LISTA_PLANTA], eventual: [...LISTA_EVENTUAL] };
+}

@@ -1,5 +1,5 @@
 import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
-import { LISTA_PLANTA, LISTA_EVENTUAL } from '../adminContactosEmergencia/listaOficial.js';
+import { cargarTrabajadores } from '../adminContactosEmergencia/listaOficial.js';
 
 // Colecciones a revisar. count: cuenta para el % de completitud.
 // tipo: solo aplica a ese tipo de trabajador. condicional: se muestra pero no cuenta (depende de género/caso).
@@ -67,9 +67,10 @@ async function cargar() {
             tokenSets[ds.key] = snap.docs.map(d => tokensDeDoc(d.data()));
         }));
 
+        const { planta, eventual } = await cargarTrabajadores();
         trabajadores = [
-            ...LISTA_PLANTA.map(n => construir(n, 'PLANTA')),
-            ...LISTA_EVENTUAL.map(n => construir(n, 'EVENTUAL')),
+            ...planta.map(n => construir(n, 'PLANTA')),
+            ...eventual.map(n => construir(n, 'EVENTUAL')),
         ];
 
         document.getElementById('loading').style.display = 'none';

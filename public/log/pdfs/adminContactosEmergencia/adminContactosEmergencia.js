@@ -1,21 +1,14 @@
 import { collection, getDocs, doc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
-import { LISTA_PLANTA, LISTA_EVENTUAL } from './listaOficial.js';
+import { cargarTrabajadores } from './listaOficial.js';
 
 let registros = [];
 let registroActual = null;
 let filtroActual = 'TODOS';
 
-// Listas oficiales activas: las subidas (localStorage) o las de listaOficial.js por defecto
-let listaPlanta = cargarListaGuardada('listaOficialPlanta') || LISTA_PLANTA;
-let listaEventual = cargarListaGuardada('listaOficialEventual') || LISTA_EVENTUAL;
-let importTipo = null;
-
-function cargarListaGuardada(key) {
-    try {
-        const v = JSON.parse(localStorage.getItem(key));
-        return Array.isArray(v) && v.length ? v : null;
-    } catch { return null; }
-}
+// Listas oficiales: fuente de la verdad en Firestore (colección 'trabajadores').
+// Se administran en la pantalla "Trabajadores" (adminTrabajadores).
+let listaPlanta = [];
+let listaEventual = [];
 
 function nombreCompleto(obj) {
     if (!obj) return '';
@@ -77,67 +70,6 @@ function configurarEventos() {
     document.getElementById('pdfTodos').addEventListener('click', () => generarPDF('TODOS'));
     document.getElementById('pdfPlanta').addEventListener('click', () => generarPDF('PLANTA'));
     document.getElementById('pdfEventual').addEventListener('click', () => generarPDF('EVENTUAL'));
-
-    // Importar listas oficiales (Excel / Word)
-    document.getElementById('btnImportPlanta').addEventListener('click', () => abrirSelector('PLANTA'));
-    document.getElementById('btnImportEventual').addEventListener('click', () => abrirSelector('EVENTUAL'));
-    document.getElementById('btnResetListas').addEventListener('click', restaurarListas);
-    document.getElementById('fileImport').addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        e.target.value = '';
-        await importarLista(importTipo, file);
-    });
-}
-
-// ============================================================
-// IMPORTAR LISTAS OFICIALES (Excel / Word)
-// ============================================================
-function abrirSelector(tipo) {
-    importTipo = tipo;
-    document.getElementById('fileImport').click();
-}
-
-function limpiarNombres(arr) {
-    return arr.map(s => (s ?? '').toString().trim().replace(/\s+/g, ' ').toUpperCase()).filter(Boolean);
-}
-
-async function extraerNombres(file) {
-    const buf = await file.arrayBuffer();
-    if (file.name.toLowerCase().endsWith('.docx')) {
-        const { value } = await mammoth.extractRawText({ arrayBuffer: buf });
-        return limpiarNombres(value.split('\n'));
-    }
-    // .xlsx / .xls / .csv: toma la primera columna de la primera hoja
-    const wb = XLSX.read(buf, { type: 'array' });
-    const sheet = wb.Sheets[wb.SheetNames[0]];
-    const filas = XLSX.utils.sheet_to_json(sheet, { header: 1, blankrows: false });
-    return limpiarNombres(filas.map(f => f[0]));
-}
-
-async function importarLista(tipo, file) {
-    if (!file || !tipo) return;
-    try {
-        const nombres = await extraerNombres(file);
-        if (!nombres.length) { alert('No se encontraron nombres en el archivo.'); return; }
-        const key = tipo === 'PLANTA' ? 'listaOficialPlanta' : 'listaOficialEventual';
-        localStorage.setItem(key, JSON.stringify(nombres));
-        if (tipo === 'PLANTA') listaPlanta = nombres; else listaEventual = nombres;
-        renderFaltantes();
-        alert(`✓ Lista de ${tipo} actualizada: ${nombres.length} nombres`);
-    } catch (e) {
-        console.error('Error al importar lista:', e);
-        alert('No se pudo leer el archivo. Usa Excel (.xlsx/.csv) o Word (.docx) con un nombre por fila.');
-    }
-}
-
-function restaurarListas() {
-    if (!confirm('¿Restaurar las listas oficiales por defecto? Se borrarán las listas subidas en este navegador.')) return;
-    localStorage.removeItem('listaOficialPlanta');
-    localStorage.removeItem('listaOficialEventual');
-    listaPlanta = LISTA_PLANTA;
-    listaEventual = LISTA_EVENTUAL;
-    renderFaltantes();
-    alert('✓ Listas restauradas a las de por defecto');
 }
 
 // ============================================================
@@ -183,6 +115,10 @@ function renderFaltantes() {
 // ============================================================
 async function cargarRegistros() {
     try {
+        const { planta, eventual } = await cargarTrabajadores();
+        listaPlanta = planta;
+        listaEventual = eventual;
+
         const querySnapshot = await getDocs(collection(window.db, 'contactosEmergencia'));
         registros = [];
 

@@ -40,20 +40,9 @@
             </div>
         </div>
 
-        <div class="import-section">
-            <h2>Actualizar listas oficiales</h2>
-            <p>Sube un Excel (<strong>.xlsx / .csv</strong>) o Word (<strong>.docx</strong>) con <strong>un nombre por fila</strong>. Sube una lista a la vez (Planta <em>o</em> Eventual). Se guarda en este navegador.</p>
-            <div class="import-buttons">
-                <button class="btn-import btn-import--planta" id="btnImportPlanta">🏭 Subir lista PLANTA</button>
-                <button class="btn-import btn-import--eventual" id="btnImportEventual">📋 Subir lista EVENTUAL</button>
-                <button class="btn-import btn-import--reset" id="btnResetListas">↺ Restaurar por defecto</button>
-            </div>
-            <input type="file" id="fileImport" accept=".xlsx,.xls,.csv,.docx" style="display:none">
-        </div>
-
         <div class="faltantes-section">
             <h2>Listas oficiales</h2>
-            <p>Los nombres <span class="reg-ok-demo">tachados</span> ya están en el sistema (haz clic para ver su registro). Los demás faltan por registrarse.</p>
+            <p>Los trabajadores se administran en <strong>Trabajadores</strong> (dar de alta / baja). Los nombres <span class="reg-ok-demo">tachados</span> ya tienen contacto de emergencia registrado (haz clic para ver su registro). Los demás faltan.</p>
             <div class="faltantes-cols">
                 <div class="faltantes-col">
                     <h3>Planta faltan: <span id="plantaFaltanCount">0</span></h3>
@@ -252,10 +241,6 @@
     <!-- jsPDF + autoTable -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-
-    <!-- Lectura de Excel / Word para importar listas oficiales -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 
     <script type="module" src="adminContactosEmergencia.js"></script>
 </body>
