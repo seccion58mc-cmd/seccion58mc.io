@@ -3,186 +3,910 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Administrativo - PDFs</title>
+    <title>Panel Administrativo — SSMC</title>
+    <meta name="description" content="Panel administrativo SSMC para generacion de PDFs, gestion de trabajadores, afiliados y mas.">
+
+    <!-- Aplica el tema guardado antes de pintar para evitar parpadeo -->
+    <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('adminTheme') || 'dark');</script>
+
+    <!-- Fuente moderna -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome (iconos) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
     <link rel="stylesheet" href="stylePdf.css">
 </head>
 <body>
-    <div class="admin-panel">
-        <header>
-            <h1>Panel Administrativo - Generar PDFs</h1>
-            <p>Selecciona un área para generar el reporte en PDF</p>
+
+<!-- Canvas de partículas -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- ======== LAYOUT PRINCIPAL ======== -->
+<div class="admin-shell" id="admin-shell">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand" id="brand-home" style="cursor:pointer">
+            <img src="../../assets/sindicatoLogo.png" alt="SSMC Logo" class="brand-logo-img">
+            <span class="brand-text">Seccion 58 Admin</span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Principal</div>
+            <a href="#" class="nav-item active" data-section="home">
+                <i class="fa-solid fa-house-chimney"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <div class="nav-section-label">Documentos</div>
+            <a href="#" class="nav-item" data-section="vacaciones">
+                <i class="fa-solid fa-calendar-check"></i>
+                <span>Vacaciones</span>
+            </a>
+            <a href="#" class="nav-item" data-section="cena">
+                <i class="fa-solid fa-utensils"></i>
+                <span>Cena Fin de Ano</span>
+            </a>
+            <a href="#" class="nav-item" data-section="celebracion">
+                <i class="fa-solid fa-star"></i>
+                <span>Celebracion Anual</span>
+            </a>
+            <a href="#" class="nav-item" data-section="correos">
+                <i class="fa-solid fa-envelope"></i>
+                <span>Correos</span>
+            </a>
+
+            <div class="nav-section-label">Gestion</div>
+            <a href="#" class="nav-item" data-section="afiliados">
+                <i class="fa-solid fa-users"></i>
+                <span>Afiliados</span>
+            </a>
+            <a href="#" class="nav-item" data-section="beneficiarios">
+                <i class="fa-solid fa-file-shield"></i>
+                <span>Beneficiarios</span>
+            </a>
+            <a href="#" class="nav-item" data-section="trabajadores">
+                <i class="fa-solid fa-hard-hat"></i>
+                <span>Trabajadores</span>
+            </a>
+            <a href="#" class="nav-item" data-section="emergencia">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>Contactos Emergencia</span>
+            </a>
+            <a href="#" class="nav-item" data-section="datos">
+                <i class="fa-solid fa-folder-open"></i>
+                <span>Datos por Trabajador</span>
+            </a>
+
+            <div class="nav-section-label">Eventos</div>
+            <a href="#" class="nav-item" data-section="madres">
+                <i class="fa-solid fa-heart"></i>
+                <span>Dia de las Madres</span>
+            </a>
+            <a href="#" class="nav-item" data-section="padres">
+                <i class="fa-solid fa-person"></i>
+                <span>Dia del Padre</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="logout-btn" id="logout-btn">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Cerrar Sesion</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- ===== MAIN ===== -->
+    <div class="main-area">
+
+        <!-- HEADER -->
+        <header class="top-header">
+            <div class="header-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <img src="../../assets/sindicatoLogo.png" alt="Logo" class="header-logo-img">
+                <div class="header-title" id="header-title">Dashboard</div>
+            </div>
+            <div class="header-center">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="global-search" placeholder="Buscar seccion..." autocomplete="off">
+                    <div class="search-results" id="search-results"></div>
+                </div>
+            </div>
+            <div class="header-right">
+                <button id="themeToggle" class="theme-toggle-btn" title="Cambiar tema">
+                    <i class="fa-solid fa-sun"></i>
+                </button>
+                <div class="user-badge">
+                    <i class="fa-solid fa-circle-user"></i>
+                    <span id="user-label">Usuario</span>
+                </div>
+            </div>
         </header>
 
-        <h2 style="color: #2980b9;">Lista de Asistentes - Fiesta Fin de Año</h2>
-        <div class="service-buttons">
-            <button class="service-btn" id="reporte-fiesta" data-service="FIESTA_FIN_ANIO">
-                <span class="btn-icon">🎉</span>
-                <span class="btn-text">FIESTA FIN DE AÑO</span>
-                <span class="btn-desc">Lista completa de asistentes</span>
-            </button>
-        </div>
-        
-        <h2 style="color: #c62828;">¿Quiénes y qué pidieron en la cena?</h2>
-        <div class="service-buttons">
-            <button class="service-btn" id="reporte-pavo" data-service="PAVO">
-                <span class="btn-icon">🦃</span>
-                <span class="btn-text">PAVO</span>
-                <span class="btn-desc">Ver quienes eligieron pavo</span>
-            </button>
-            <button class="service-btn" id="reporte-pierna" data-service="PIERNA">
-                <span class="btn-icon">🖖</span>
-                <span class="btn-text">PIERNA</span>
-                <span class="btn-desc">Ver quienes eligieron pierna</span>
-            </button>
-        </div>
+        <!-- CONTENT -->
+        <main class="content-area">
 
-        <h2 style="text-align: center; margin: 40px 0 20px; color: #2c3e50;">Solicitudes de Vacaciones por Área</h2>
+            <!-- ============ HOME ============ -->
+            <section class="page-section active" id="section-home">
+                <div class="section-header">
+                    <h1 class="section-title">Panel Administrativo</h1>
+                    <p class="section-subtitle">Resumen, calendario y accesos rapidos</p>
+                </div>
 
-        <!-- Selector de cuatrimestre para PDFs de vacaciones -->
-        <div style="background:#e8eaf6;border:2px solid #3949ab;border-radius:10px;padding:16px 20px;margin:0 0 20px;">
-            <div style="font-size:13px;font-weight:700;color:#1a237e;margin-bottom:10px;letter-spacing:.5px;">
-                CUATRIMESTRE A EXPORTAR
-            </div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                <label style="display:flex;align-items:center;gap:7px;cursor:pointer;padding:8px 16px;
-                    border:2px solid #3949ab;border-radius:6px;background:#fff;font-weight:600;font-size:14px;">
-                    <input type="radio" name="cuatrimestre-pdf" value="1er" checked> 1er &nbsp;(Feb - May)
-                </label>
-                <label style="display:flex;align-items:center;gap:7px;cursor:pointer;padding:8px 16px;
-                    border:2px solid #3949ab;border-radius:6px;background:#fff;font-weight:600;font-size:14px;">
-                    <input type="radio" name="cuatrimestre-pdf" value="2do"> 2do &nbsp;(Jun - Sep)
-                </label>
-                <label style="display:flex;align-items:center;gap:7px;cursor:pointer;padding:8px 16px;
-                    border:2px solid #3949ab;border-radius:6px;background:#fff;font-weight:600;font-size:14px;">
-                    <input type="radio" name="cuatrimestre-pdf" value="3er"> 3er &nbsp;(Oct - Ene)
-                </label>
-            </div>
-        </div>
+                <!-- ===== BENTO: hero + stats + calendario ===== -->
+                <div class="home-bento">
+                    <div class="bento-main">
+                        <!-- Hero -->
+                        <div class="hero-card">
+                            <div class="hero-glow"></div>
+                            <div class="hero-content">
+                                <span class="hero-badge"><i class="fa-solid fa-shield-halved"></i> Seccion 58 Admin</span>
+                                <h2 class="hero-title">Gestion centralizada del sindicato</h2>
+                                <p class="hero-sub">Trabajadores, beneficiarios, documentos y eventos en un solo lugar.</p>
+                            </div>
+                        </div>
 
-        <div class="service-buttons">
-            <button class="service-btn" data-service="FLUJOS">
-                <span class="btn-icon">📊</span>
-                <span class="btn-text">Flujos</span>
-            </button>
-            <button class="service-btn" data-service="FABRICACION">
-                <span class="btn-icon">🏭</span>
-                <span class="btn-text">Fabricación</span>
-            </button>
-            <button class="service-btn" data-service="SERVICIOS">
-                <span class="btn-icon">🔧</span>
-                <span class="btn-text">Servicios</span>
-            </button>
-            <button class="service-btn" data-service="MECANICO ACONDICIONAMIENTO">
-                <span class="btn-icon">🔩</span>
-                <span class="btn-text">Mecánico Acondicionamiento</span>
-            </button>
-            <button class="service-btn" data-service="ACONDICIONAMIENTO A">
-                <span class="btn-icon">🗂️</span>
-                <span class="btn-text">Acondicionamiento A</span>
-            </button>
-            <button class="service-btn" data-service="ACONDICIONAMIENTO B">
-                <span class="btn-icon">🗂️</span>
-                <span class="btn-text">Acondicionamiento B</span>
-            </button>
-            <button class="service-btn" data-service="ACONDICIONAMIENTO C">
-                <span class="btn-icon">🗂️</span>
-                <span class="btn-text">Acondicionamiento C</span>
-            </button>
-            <button class="service-btn" data-service="ACONDICIONAMIENTO D">
-                <span class="btn-icon">🗂️</span>
-                <span class="btn-text">Acondicionamiento D</span>
-            </button>
-            <button class="service-btn" data-service="MECANICO FABRICACION">
-                <span class="btn-icon">🔧</span>
-                <span class="btn-text">Mecánico Fabricación</span>
-            </button>
-        </div>
+                        <!-- Recuadros de conteo -->
+                        <div class="stat-row">
+                            <div class="stat-tile" data-goto="trabajadores">
+                                <div class="stat-tile-top">
+                                    <span class="stat-ico" style="--c:#1565C0"><i class="fa-solid fa-hard-hat"></i></span>
+                                    <span class="stat-ver">Ver <i class="fa-solid fa-chevron-right"></i></span>
+                                </div>
+                                <div class="stat-num" id="stat-trabajadores">—</div>
+                                <div class="stat-label">Trabajadores</div>
+                            </div>
+                            <div class="stat-tile" data-goto="emergencia">
+                                <div class="stat-tile-top">
+                                    <span class="stat-ico" style="--c:#E53935"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                                    <span class="stat-ver">Ver <i class="fa-solid fa-chevron-right"></i></span>
+                                </div>
+                                <div class="stat-num" id="stat-emergencia">—</div>
+                                <div class="stat-label">Contactos de Emergencia</div>
+                            </div>
+                            <div class="stat-tile" data-goto="vacaciones">
+                                <div class="stat-tile-top">
+                                    <span class="stat-ico" style="--c:#2979FF"><i class="fa-solid fa-calendar-check"></i></span>
+                                    <span class="stat-ver">Ver <i class="fa-solid fa-chevron-right"></i></span>
+                                </div>
+                                <div class="stat-num" id="stat-vacaciones">—</div>
+                                <div class="stat-label">Solicitudes de Vacaciones</div>
+                            </div>
+                            <div class="stat-tile" data-goto="correos">
+                                <div class="stat-tile-top">
+                                    <span class="stat-ico" style="--c:#00BFA5"><i class="fa-solid fa-envelope"></i></span>
+                                    <span class="stat-ver">Ver <i class="fa-solid fa-chevron-right"></i></span>
+                                </div>
+                                <div class="stat-num" id="stat-correos">—</div>
+                                <div class="stat-label">Correos Registrados</div>
+                            </div>
+                        </div>
+                    </div>
 
-        <h2 style="text-align: center; margin: 40px 0 20px; color: #2c3e50;">Sistema de Gestión de Afiliados</h2>
-        <div class="service-buttons">
-            <button class="service-btn" onclick="window.location.href='../afiliados/index.html'">
-                <span class="btn-icon">👥</span>
-                <span class="btn-text">Gestión de Afiliados</span>
-                <span class="btn-desc">Administrar altas, bajas y reingresos</span>
-            </button>
-        </div>
+                    <!-- Columna lateral: calendario + recordatorios -->
+                    <aside class="bento-side">
+                        <div class="upcoming-card" id="upcoming-card"></div>
+                        <div class="cal-card">
+                            <div class="cal-head">
+                                <button class="cal-nav" id="cal-prev" aria-label="Mes anterior"><i class="fa-solid fa-chevron-left"></i></button>
+                                <div class="cal-title" id="cal-title">—</div>
+                                <button class="cal-nav" id="cal-next" aria-label="Mes siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+                            </div>
+                            <div class="cal-weekdays">
+                                <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+                            </div>
+                            <div class="cal-grid" id="cal-grid"></div>
+                        </div>
 
-        <!-- NUEVAS SECCIONES -->
-        <h2 style="text-align: center; margin: 40px 0 20px; color: #1e3c72;">Gestión de Beneficiarios</h2>
-        <div class="service-buttons">
-            <button class="service-btn" onclick="window.location.href='./adminAyudaDefuncion/index.html'">
-                <span class="btn-icon">📋</span>
-                <span class="btn-text">Ayuda de Defunción</span>
-                <span class="btn-desc">Administrar designaciones de beneficiarios</span>
-            </button>
-            <button class="service-btn" onclick="window.location.href='./adminBeneficiarioEventual/index.html'">
-                <span class="btn-icon">📄</span>
-                <span class="btn-text">Beneficiario Eventual</span>
-                <span class="btn-desc">Administrar trabajadores eventuales</span>
-            </button>
-        </div>
+                        <div class="rem-card">
+                            <div class="rem-head">
+                                <h3><i class="fa-solid fa-bell"></i> Recordatorios</h3>
+                                <span class="rem-date" id="rem-date"></span>
+                            </div>
+                            <div class="rem-add">
+                                <input type="text" id="rem-input" placeholder="Nuevo recordatorio..." autocomplete="off" maxlength="120">
+                                <button id="rem-add-btn" aria-label="Agregar recordatorio"><i class="fa-solid fa-plus"></i></button>
+                            </div>
+                            <ul class="rem-list" id="rem-list"></ul>
+                        </div>
+                    </aside>
 
-        <h2 style="text-align: center; margin: 40px 0 20px; color: #16a085;">Gestión de Correos Electrónicos</h2>
-        <div class="service-buttons">
-            <button class="service-btn" id="reporte-correos" data-service="LISTADO_CORREOS">
-                <span class="btn-icon">📧</span>
-                <span class="btn-text">LISTADO DE CORREOS</span>
-                <span class="btn-desc">Reporte completo de correos registrados</span>
-            </button>
-        </div>
+                <h2 class="quick-title">Accesos rapidos</h2>
 
-        <h2 style="text-align: center; margin: 40px 0 20px; color: #d63384;">Dia de las Madres</h2>
-        <div class="service-buttons">
-            <button class="service-btn btn-madres" onclick="window.location.href='./adminDiaMadres/index.html'">
-                <span class="btn-icon">🌸</span>
-                <span class="btn-text">Dia de las Madres</span>
-                <span class="btn-desc">Administrar registros del 10 de Mayo</span>
-            </button>
-        </div>
+                <div class="cards-grid" id="home-grid">
 
-         <h2 style="text-align: center; margin: 40px 0 20px; color: #d63384;">Dia del Padre</h2>
-        <div class="service-buttons">
-            <button class="service-btn btn-padres" onclick="window.location.href='./adminDiaPadres/index.html'">
-                <span class="btn-icon">🚙</span>
-                <span class="btn-text">Dia del Padre</span>
-                <span class="btn-desc">Administrar registros del 18 de Junio</span>
-            </button>
-        </div>
+                    <!-- Vacaciones -->
+                    <div class="dash-card" data-goto="vacaciones" data-search-terms="vacaciones solicitud cuatrimestre flujos fabricacion servicios mecanico acondicionamiento">
+                        <div class="dash-card-icon" style="--card-color: #2979FF;">
+                            <i class="fa-solid fa-calendar-check"></i>
+                        </div>
+                        <div class="dash-card-body">
+                            <h3>Vacaciones por Area</h3>
+                            <p>Genera reportes de solicitudes de vacaciones por cuatrimestre</p>
+                        </div>
+                        <div class="dash-card-arrow">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </div>
 
-        <h2 style="text-align: center; margin: 40px 0 20px; color: #6a1b9a;">Datos por Trabajador</h2>
-        <div class="service-buttons">
-            <button class="service-btn" onclick="window.location.href='./datosPorTrabajador/index.html'">
-                <span class="btn-icon">🗃️</span>
-                <span class="btn-text">Datos por Trabajador</span>
-                <span class="btn-desc">Qué tenemos y qué falta de cada uno en todas las colecciones</span>
-            </button>
-        </div>
+                    <!-- Cena -->
+                    <div class="dash-card" data-goto="cena" data-search-terms="cena fin de ano pavo pierna obsequios navidad">
+                        <div class="dash-card-icon" style="--card-color: #E53935;">
+                            <i class="fa-solid fa-utensils"></i>
+                        </div>
+                        <div class="dash-card-body">
+                            <h3>Cena Fin de Ano</h3>
+                            <p>PDF de eleccion de obsequios — pavo o pierna</p>
+                        </div>
+                        <div class="dash-card-arrow">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </div>
 
-        <h2 style="text-align: center; margin: 40px 0 20px; color: #0f766e;">Trabajadores</h2>
-        <div class="service-buttons">
-            <button class="service-btn" onclick="window.location.href='./adminTrabajadores/index.html'">
-                <span class="btn-icon">👷</span>
-                <span class="btn-text">Trabajadores (Planta / Eventuales)</span>
-                <span class="btn-desc">Dar de alta y de baja · fuente de la verdad de todos los módulos</span>
-            </button>
-        </div>
+                    <!-- Celebracion -->
+                    <div class="dash-card" data-goto="celebracion" data-search-terms="fiesta fin de ano lista asistentes celebracion anual virgen">
+                        <div class="dash-card-icon" style="--card-color: #F9A825;">
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <div class="dash-card-body">
+                            <h3>Celebracion Anual</h3>
+                            <p>Lista de asistentes a la celebracion fin de ano</p>
+                        </div>
+                        <div class="dash-card-arrow">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </div>
 
-        <h2 style="text-align: center; margin: 40px 0 20px; color: #c0392b;">Contactos de Emergencia</h2>
-        <div class="service-buttons">
-            <button class="service-btn" onclick="window.location.href='./adminContactosEmergencia/index.html'">
-                <span class="btn-icon">🚨</span>
-                <span class="btn-text">Contactos de Emergencia</span>
-                <span class="btn-desc">Editar datos y generar PDF de Planta / Eventuales</span>
-            </button>
-        </div>
+                    <!-- Correos -->
+                    <div class="dash-card" data-goto="correos" data-search-terms="correos electronicos listado email contacto">
+                        <div class="dash-card-icon" style="--card-color: #00BFA5;">
+                            <i class="fa-solid fa-envelope"></i>
+                        </div>
+                        <div class="dash-card-body">
+                            <h3>Correos Electronicos</h3>
+                            <p>Listado completo de correos registrados</p>
+                        </div>
+                        <div class="dash-card-arrow">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </div>
 
-        <div class="logout-section">
-            <button class="logout-btn" id="logout-btn">
-                Cerrar Sesión
-            </button>
-        </div>
+                    <!-- Afiliados -->
+                    <div class="dash-card" data-goto="afiliados" data-search-terms="afiliados altas bajas reingreso gestion">
+                        <div class="dash-card-icon" style="--card-color: #6200EA;">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                        <div class="dash-card-body">
+                            <h3>Gestion de Afiliados</h3>
+                            <p>Administrar altas, bajas y reingresos</p>
+                        </div>
+                        <div class="dash-card-arrow">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </div>
+
+                    <!-- Beneficiarios -->
+                    <div class="dash-card" data-goto="beneficiarios" data-search-terms="beneficiarios defuncion eventual designaciones trabajadores eventuales">
+                        <div class="dash-card-icon" style="--card-color: #0288D1;">
+                            <i class="fa-solid fa-file-shield"></i>
+                        </div>
+                        <div class="dash-card-body">
+                            <h3>Gestion de Beneficiarios</h3>
+                            <p>Ayuda de defuncion y beneficiarios eventuales</p>
+                        </div>
+                        <div class="dash-card-arrow">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </div>
+
+                    <!-- Trabajadores -->
+                    <div class="dash-card" data-goto="trabajadores" data-search-terms="trabajadores planta eventuales alta baja fuente de la verdad">
+                        <div class="dash-card-icon" style="--card-color: #1565C0;">
+                            <i class="fa-solid fa-hard-hat"></i>
+                        </div>
+                        <div class="dash-card-body">
+                            <h3>Trabajadores</h3>
+                            <p>Planta y eventuales — fuente principal de todos los modulos</p>
+                        </div>
+                        <div class="dash-card-arrow">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </div>
+
+                    <!-- Emergencia -->
+                    <div class="dash-card" data-goto="emergencia" data-search-terms="contactos emergencia editar datos pdf planta eventuales">
+                        <div class="dash-card-icon" style="--card-color: #B71C1C;">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <div class="dash-card-body">
+                            <h3>Contactos de Emergencia</h3>
+                            <p>Editar datos y generar PDF de planta y eventuales</p>
+                        </div>
+                        <div class="dash-card-arrow">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </div>
+
+                    <!-- Datos por trabajador -->
+                    <div class="dash-card" data-goto="datos" data-search-terms="datos por trabajador colecciones falta tienen">
+                        <div class="dash-card-icon" style="--card-color: #4527A0;">
+                            <i class="fa-solid fa-folder-open"></i>
+                        </div>
+                        <div class="dash-card-body">
+                            <h3>Datos por Trabajador</h3>
+                            <p>Que tenemos y que falta de cada uno en todas las colecciones</p>
+                        </div>
+                        <div class="dash-card-arrow">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </div>
+
+                    <!-- Dia de las Madres -->
+                    <div class="dash-card" data-goto="madres" data-search-terms="dia de las madres 10 de mayo registros administrar">
+                        <div class="dash-card-icon" style="--card-color: #AD1457;">
+                            <i class="fa-solid fa-heart"></i>
+                        </div>
+                        <div class="dash-card-body">
+                            <h3>Dia de las Madres</h3>
+                            <p>Administrar registros del 10 de Mayo</p>
+                        </div>
+                        <div class="dash-card-arrow">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </div>
+
+                    <!-- Dia del Padre -->
+                    <div class="dash-card" data-goto="padres" data-search-terms="dia del padre 18 de junio registros administrar">
+                        <div class="dash-card-icon" style="--card-color: #00695C;">
+                            <i class="fa-solid fa-person"></i>
+                        </div>
+                        <div class="dash-card-body">
+                            <h3>Dia del Padre</h3>
+                            <p>Administrar registros del 18 de Junio</p>
+                        </div>
+                        <div class="dash-card-arrow">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </div>
+
+                </div>
+                </div>
+            </section>
+
+            <!-- ============ VACACIONES ============ -->
+            <section class="page-section" id="section-vacaciones">
+                <div class="section-header">
+                    <div class="back-btn" data-goto="home">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Volver</span>
+                    </div>
+                    <h1 class="section-title">Solicitudes de Vacaciones por Area</h1>
+                    <p class="section-subtitle">Selecciona el cuatrimestre y el area para generar el PDF</p>
+                </div>
+
+                <!-- Selector cuatrimestre -->
+                <div class="cuatrimestre-panel">
+                    <div class="cuatrimestre-label">
+                        <i class="fa-solid fa-calendar-days"></i>
+                        Cuatrimestre a exportar
+                    </div>
+                    <div class="cuatrimestre-options">
+                        <label class="cuatrimestre-opt">
+                            <input type="radio" name="cuatrimestre-pdf" value="1er" checked>
+                            <span>1er — Feb / May</span>
+                        </label>
+                        <label class="cuatrimestre-opt">
+                            <input type="radio" name="cuatrimestre-pdf" value="2do">
+                            <span>2do — Jun / Sep</span>
+                        </label>
+                        <label class="cuatrimestre-opt">
+                            <input type="radio" name="cuatrimestre-pdf" value="3er">
+                            <span>3er — Oct / Ene</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="service-buttons">
+                    <button class="service-btn" data-service="FLUJOS">
+                        <span class="btn-icon-wrap"><i class="fa-solid fa-chart-area"></i></span>
+                        <span class="btn-text">Flujos</span>
+                    </button>
+                    <button class="service-btn" data-service="FABRICACION">
+                        <span class="btn-icon-wrap"><i class="fa-solid fa-industry"></i></span>
+                        <span class="btn-text">Fabricacion</span>
+                    </button>
+                    <button class="service-btn" data-service="SERVICIOS">
+                        <span class="btn-icon-wrap"><i class="fa-solid fa-screwdriver-wrench"></i></span>
+                        <span class="btn-text">Servicios</span>
+                    </button>
+                    <button class="service-btn" data-service="MECANICO ACONDICIONAMIENTO">
+                        <span class="btn-icon-wrap"><i class="fa-solid fa-gear"></i></span>
+                        <span class="btn-text">Mecanico Acondicionamiento</span>
+                    </button>
+                    <button class="service-btn" data-service="ACONDICIONAMIENTO A">
+                        <span class="btn-icon-wrap"><i class="fa-solid fa-layer-group"></i></span>
+                        <span class="btn-text">Acondicionamiento A</span>
+                    </button>
+                    <button class="service-btn" data-service="ACONDICIONAMIENTO B">
+                        <span class="btn-icon-wrap"><i class="fa-solid fa-layer-group"></i></span>
+                        <span class="btn-text">Acondicionamiento B</span>
+                    </button>
+                    <button class="service-btn" data-service="ACONDICIONAMIENTO C">
+                        <span class="btn-icon-wrap"><i class="fa-solid fa-layer-group"></i></span>
+                        <span class="btn-text">Acondicionamiento C</span>
+                    </button>
+                    <button class="service-btn" data-service="ACONDICIONAMIENTO D">
+                        <span class="btn-icon-wrap"><i class="fa-solid fa-layer-group"></i></span>
+                        <span class="btn-text">Acondicionamiento D</span>
+                    </button>
+                    <button class="service-btn" data-service="MECANICO FABRICACION">
+                        <span class="btn-icon-wrap"><i class="fa-solid fa-wrench"></i></span>
+                        <span class="btn-text">Mecanico Fabricacion</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ============ CENA FIN DE ANO ============ -->
+            <section class="page-section" id="section-cena">
+                <div class="section-header">
+                    <div class="back-btn" data-goto="home">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Volver</span>
+                    </div>
+                    <h1 class="section-title">Cena Fin de Ano</h1>
+                    <p class="section-subtitle">Genera PDF de quienes eligieron cada opcion</p>
+                </div>
+                <div class="service-buttons">
+                    <button class="service-btn service-btn--red" id="reporte-pavo" data-service="PAVO">
+                        <span class="btn-icon-wrap"><i class="fa-solid fa-drumstick-bite"></i></span>
+                        <span class="btn-text">Pavo</span>
+                        <span class="btn-desc">Ver quienes eligieron pavo</span>
+                    </button>
+                    <button class="service-btn service-btn--red" id="reporte-pierna" data-service="PIERNA">
+                        <span class="btn-icon-wrap"><i class="fa-solid fa-bone"></i></span>
+                        <span class="btn-text">Pierna</span>
+                        <span class="btn-desc">Ver quienes eligieron pierna</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ============ CELEBRACION ANUAL ============ -->
+            <section class="page-section" id="section-celebracion">
+                <div class="section-header">
+                    <div class="back-btn" data-goto="home">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Volver</span>
+                    </div>
+                    <h1 class="section-title">Celebracion Anual</h1>
+                    <p class="section-subtitle">Lista completa de asistentes a la celebracion</p>
+                </div>
+                <div class="service-buttons">
+                    <button class="service-btn" id="reporte-fiesta" data-service="FIESTA_FIN_ANIO">
+                        <span class="btn-icon-wrap"><i class="fa-solid fa-champagne-glasses"></i></span>
+                        <span class="btn-text">Fiesta Fin de Ano</span>
+                        <span class="btn-desc">Lista completa de asistentes</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ============ CORREOS ============ -->
+            <section class="page-section" id="section-correos">
+                <div class="section-header">
+                    <div class="back-btn" data-goto="home">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Volver</span>
+                    </div>
+                    <h1 class="section-title">Gestion de Correos Electronicos</h1>
+                    <p class="section-subtitle">Reporte completo de correos registrados</p>
+                </div>
+                <div class="service-buttons">
+                    <button class="service-btn service-btn--teal" id="reporte-correos" data-service="LISTADO_CORREOS">
+                        <span class="btn-icon-wrap"><i class="fa-solid fa-envelope-open-text"></i></span>
+                        <span class="btn-text">Listado de Correos</span>
+                        <span class="btn-desc">Reporte completo de correos registrados</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ============ AFILIADOS ============ -->
+            <section class="page-section" id="section-afiliados">
+                <div class="section-header">
+                    <div class="back-btn" data-goto="home">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Volver</span>
+                    </div>
+                    <h1 class="section-title">Sistema de Gestion de Afiliados</h1>
+                    <p class="section-subtitle">Administrar altas, bajas y reingresos</p>
+                </div>
+                <div class="service-buttons">
+                    <button class="service-btn" onclick="window.location.href='../afiliados/index.html'">
+                        <span class="btn-icon-wrap"><i class="fa-solid fa-users"></i></span>
+                        <span class="btn-text">Gestion de Afiliados</span>
+                        <span class="btn-desc">Administrar altas, bajas y reingresos</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ============ BENEFICIARIOS ============ -->
+            <section class="page-section" id="section-beneficiarios">
+                <div class="section-header">
+                    <div class="back-btn" data-goto="home">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Volver</span>
+                    </div>
+                    <h1 class="section-title">Gestion de Beneficiarios</h1>
+                    <p class="section-subtitle">Administrar designaciones y trabajadores eventuales</p>
+                </div>
+                <div class="service-buttons">
+                    <button class="service-btn" onclick="window.location.href='./adminAyudaDefuncion/index.html'">
+                        <span class="btn-icon-wrap"><i class="fa-solid fa-file-contract"></i></span>
+                        <span class="btn-text">Ayuda de Defuncion</span>
+                        <span class="btn-desc">Administrar designaciones de beneficiarios</span>
+                    </button>
+                    <button class="service-btn" onclick="window.location.href='./adminBeneficiarioEventual/index.html'">
+                        <span class="btn-icon-wrap"><i class="fa-solid fa-file-lines"></i></span>
+                        <span class="btn-text">Beneficiario Eventual</span>
+                        <span class="btn-desc">Administrar trabajadores eventuales</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ============ TRABAJADORES ============ -->
+            <section class="page-section" id="section-trabajadores">
+                <div class="section-header">
+                    <div class="back-btn" data-goto="home">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Volver</span>
+                    </div>
+                    <h1 class="section-title">Trabajadores</h1>
+                    <p class="section-subtitle">Dar de alta y de baja — fuente principal de todos los modulos</p>
+                </div>
+                <div class="service-buttons">
+                    <button class="service-btn" onclick="window.location.href='./adminTrabajadores/index.html'">
+                        <span class="btn-icon-wrap"><i class="fa-solid fa-hard-hat"></i></span>
+                        <span class="btn-text">Trabajadores (Planta / Eventuales)</span>
+                        <span class="btn-desc">Dar de alta y de baja · fuente de la verdad de todos los modulos</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ============ EMERGENCIA ============ -->
+            <section class="page-section" id="section-emergencia">
+                <div class="section-header">
+                    <div class="back-btn" data-goto="home">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Volver</span>
+                    </div>
+                    <h1 class="section-title">Contactos de Emergencia</h1>
+                    <p class="section-subtitle">Editar datos y generar PDF de planta y eventuales</p>
+                </div>
+                <div class="service-buttons">
+                    <button class="service-btn service-btn--red" onclick="window.location.href='./adminContactosEmergencia/index.html'">
+                        <span class="btn-icon-wrap"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                        <span class="btn-text">Contactos de Emergencia</span>
+                        <span class="btn-desc">Editar datos y generar PDF de Planta / Eventuales</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ============ DATOS POR TRABAJADOR ============ -->
+            <section class="page-section" id="section-datos">
+                <div class="section-header">
+                    <div class="back-btn" data-goto="home">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Volver</span>
+                    </div>
+                    <h1 class="section-title">Datos por Trabajador</h1>
+                    <p class="section-subtitle">Que tenemos y que falta de cada uno en todas las colecciones</p>
+                </div>
+                <div class="service-buttons">
+                    <button class="service-btn" onclick="window.location.href='./datosPorTrabajador/index.html'">
+                        <span class="btn-icon-wrap"><i class="fa-solid fa-folder-open"></i></span>
+                        <span class="btn-text">Datos por Trabajador</span>
+                        <span class="btn-desc">Que tenemos y que falta de cada uno en todas las colecciones</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ============ DIA DE LAS MADRES ============ -->
+            <section class="page-section" id="section-madres">
+                <div class="section-header">
+                    <div class="back-btn" data-goto="home">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Volver</span>
+                    </div>
+                    <h1 class="section-title">Dia de las Madres</h1>
+                    <p class="section-subtitle">Administrar registros del 10 de Mayo</p>
+                </div>
+                <div class="service-buttons">
+                    <button class="service-btn service-btn--pink" onclick="window.location.href='./adminDiaMadres/index.html'">
+                        <span class="btn-icon-wrap"><i class="fa-solid fa-heart"></i></span>
+                        <span class="btn-text">Dia de las Madres</span>
+                        <span class="btn-desc">Administrar registros del 10 de Mayo</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ============ DIA DEL PADRE ============ -->
+            <section class="page-section" id="section-padres">
+                <div class="section-header">
+                    <div class="back-btn" data-goto="home">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Volver</span>
+                    </div>
+                    <h1 class="section-title">Dia del Padre</h1>
+                    <p class="section-subtitle">Administrar registros del 18 de Junio</p>
+                </div>
+                <div class="service-buttons">
+                    <button class="service-btn service-btn--teal" onclick="window.location.href='./adminDiaPadres/index.html'">
+                        <span class="btn-icon-wrap"><i class="fa-solid fa-person"></i></span>
+                        <span class="btn-text">Dia del Padre</span>
+                        <span class="btn-desc">Administrar registros del 18 de Junio</span>
+                    </button>
+                </div>
+            </section>
+
+        </main>
     </div>
+</div>
 
-    <script type="module" src="appPdf.js"></script>
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- tsParticles -->
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+
+<!-- Dashboard UI logic (NO TOCAMOS LA LOGICA DE PDF) -->
+<script>
+// ============================================================
+//  PARTICLES
+// ============================================================
+(async () => {
+    if (typeof tsParticles === 'undefined') return;
+    const canvas = document.getElementById('particles-canvas');
+    await tsParticles.load({
+        element: canvas,
+        options: {
+            fullScreen: false,
+            background: { color: 'transparent' },
+            fpsLimit: 60,
+            particles: {
+                number: { value: 55, density: { enable: true, area: 900 } },
+                color: { value: ['#2979FF', '#00E5FF', '#1565C0', '#ffffff'] },
+                shape: { type: 'circle' },
+                opacity: { value: 0.18, random: true },
+                size: { value: { min: 1, max: 3 }, random: true },
+                links: {
+                    enable: true,
+                    distance: 140,
+                    color: '#2979FF',
+                    opacity: 0.15,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 0.6,
+                    direction: 'none',
+                    outModes: { default: 'bounce' }
+                }
+            },
+            interactivity: {
+                events: {
+                    onHover: { enable: true, mode: 'grab' },
+                    resize: true
+                },
+                modes: {
+                    grab: { distance: 120, links: { opacity: 0.4 } }
+                }
+            },
+            detectRetina: true
+        }
+    });
+})();
+
+// ============================================================
+//  SIDEBAR TOGGLE
+// ============================================================
+const shell = document.getElementById('admin-shell');
+const sidebarToggle = document.getElementById('sidebar-toggle');
+
+sidebarToggle.addEventListener('click', () => {
+    shell.classList.toggle('sidebar-collapsed');
+});
+
+// Brand logo click → home
+document.getElementById('brand-home').addEventListener('click', () => navigateTo('home'));
+
+// Auto-collapse on small screens
+if (window.innerWidth < 768) {
+    shell.classList.add('sidebar-collapsed');
+}
+window.addEventListener('resize', () => {
+    if (window.innerWidth < 768) {
+        shell.classList.add('sidebar-collapsed');
+    } else {
+        shell.classList.remove('sidebar-collapsed');
+    }
+});
+
+// Always start at home on every page load
+window.addEventListener('load', () => navigateTo('home'));
+
+// ============================================================
+//  NAVIGATION
+// ============================================================
+const sections = document.querySelectorAll('.page-section');
+const navItems = document.querySelectorAll('.nav-item');
+const headerTitle = document.getElementById('header-title');
+
+const sectionTitles = {
+    home: 'Dashboard',
+    vacaciones: 'Vacaciones por Area',
+    cena: 'Cena Fin de Ano',
+    celebracion: 'Celebracion Anual',
+    correos: 'Correos Electronicos',
+    afiliados: 'Gestion de Afiliados',
+    beneficiarios: 'Gestion de Beneficiarios',
+    trabajadores: 'Trabajadores',
+    emergencia: 'Contactos de Emergencia',
+    datos: 'Datos por Trabajador',
+    madres: 'Dia de las Madres',
+    padres: 'Dia del Padre'
+};
+
+function navigateTo(sectionKey) {
+    sections.forEach(s => s.classList.remove('active'));
+    navItems.forEach(n => n.classList.remove('active'));
+
+    const target = document.getElementById('section-' + sectionKey);
+    if (target) target.classList.add('active');
+
+    const activeNav = document.querySelector(`.nav-item[data-section="${sectionKey}"]`);
+    if (activeNav) activeNav.classList.add('active');
+
+    headerTitle.textContent = sectionTitles[sectionKey] || 'Dashboard';
+
+    // Close sidebar on mobile when navigating
+    if (window.innerWidth < 768) {
+        shell.classList.add('sidebar-collapsed');
+    }
+}
+window.navigateTo = navigateTo; // para que dashboard.js pueda navegar desde los recuadros
+
+// Nav items click
+navItems.forEach(item => {
+    item.addEventListener('click', e => {
+        e.preventDefault();
+        navigateTo(item.dataset.section);
+    });
+});
+
+// Dashboard cards click
+document.querySelectorAll('.dash-card').forEach(card => {
+    card.addEventListener('click', () => {
+        navigateTo(card.dataset.goto);
+    });
+});
+
+// Back buttons
+document.querySelectorAll('.back-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        navigateTo(btn.dataset.goto);
+    });
+});
+
+// ============================================================
+//  GLOBAL SEARCH
+// ============================================================
+const searchInput = document.getElementById('global-search');
+const searchResults = document.getElementById('search-results');
+const allCards = Array.from(document.querySelectorAll('.dash-card'));
+
+const searchIndex = allCards.map(card => ({
+    el: card,
+    title: card.querySelector('h3')?.textContent || '',
+    desc: card.querySelector('p')?.textContent || '',
+    terms: card.dataset.searchTerms || '',
+    goto: card.dataset.goto
+}));
+
+searchInput.addEventListener('input', () => {
+    const q = searchInput.value.trim().toLowerCase();
+    if (!q) {
+        searchResults.innerHTML = '';
+        searchResults.classList.remove('open');
+        return;
+    }
+    const matches = searchIndex.filter(item =>
+        item.title.toLowerCase().includes(q) ||
+        item.desc.toLowerCase().includes(q) ||
+        item.terms.toLowerCase().includes(q)
+    );
+    if (matches.length === 0) {
+        searchResults.innerHTML = '<div class="search-result-item no-result">Sin resultados</div>';
+        searchResults.classList.add('open');
+        return;
+    }
+    searchResults.innerHTML = matches.map(m => `
+        <div class="search-result-item" data-goto="${m.goto}">
+            <i class="fa-solid fa-arrow-right"></i>
+            <span>${m.title}</span>
+        </div>
+    `).join('');
+    searchResults.classList.add('open');
+
+    searchResults.querySelectorAll('.search-result-item[data-goto]').forEach(item => {
+        item.addEventListener('click', () => {
+            navigateTo(item.dataset.goto);
+            searchInput.value = '';
+            searchResults.innerHTML = '';
+            searchResults.classList.remove('open');
+        });
+    });
+});
+
+document.addEventListener('click', e => {
+    if (!e.target.closest('.search-box')) {
+        searchResults.innerHTML = '';
+        searchResults.classList.remove('open');
+    }
+});
+
+// ============================================================
+//  LOGOUT — Se conecta aqui para que Swal este garantizado
+// ============================================================
+async function handleLogout() {
+    const result = await Swal.fire({
+        title: 'Cerrar sesion',
+        text: '\u00bfEsta seguro de que quiere salir?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Salir',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#E53935',
+        background: '#111827',
+        color: '#F0F4FF'
+    });
+    if (!result.isConfirmed) return;
+    sessionStorage.removeItem('pdfAuth');
+    sessionStorage.removeItem('user');
+    window.location.href = '../../log/index.html';
+}
+
+document.getElementById('logout-btn').addEventListener('click', handleLogout);
+
+// Theme Toggle Logic
+(function() {
+    const tog = document.getElementById('themeToggle');
+    if (!tog) return;
+    const updateIcon = () => {
+        const light = document.documentElement.getAttribute('data-theme') === 'light';
+        tog.querySelector('i').className = light ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+    };
+    updateIcon();
+    tog.addEventListener('click', () => {
+        const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('adminTheme', next);
+        updateIcon();
+    });
+})();
+</script>
+
+<!-- Firebase + PDF Logic (sin cambios) -->
+<script type="module" src="appPdf.js"></script>
+
+<!-- Dashboard: recuadros + calendario con recordatorios -->
+<script type="module" src="dashboard.js"></script>
+
 </body>
 </html>

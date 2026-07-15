@@ -90,6 +90,38 @@ const CUATRIMESTRES_PDF = {
     }
 };
 
+// ─────────────────────────────────────────────
+//  SweetAlert2 helpers (tema oscuro)
+// ─────────────────────────────────────────────
+const swalDark = (opts) => Swal.fire({
+    background: '#111827',
+    color: '#F0F4FF',
+    confirmButtonColor: '#2979FF',
+    cancelButtonColor: 'transparent',
+    ...opts
+});
+
+const swalToast = (title, icon = 'success') => Swal.fire({
+    toast: true,
+    position: 'bottom-end',
+    icon,
+    title,
+    showConfirmButton: false,
+    timer: 2800,
+    timerProgressBar: true,
+    background: '#111827',
+    color: '#F0F4FF'
+});
+
+const swalLoading = (title) => Swal.fire({
+    title,
+    background: '#111827',
+    color: '#F0F4FF',
+    allowOutsideClick: false,
+    showConfirmButton: false,
+    didOpen: () => Swal.showLoading()
+});
+
 // Cargar jsPDF dinámicamente
 async function loadJsPDF() {
     try {
@@ -98,7 +130,7 @@ async function loadJsPDF() {
         return true;
     } catch (error) {
         console.error('Error cargando jsPDF:', error);
-        alert('Error al cargar el generador de PDF. Por favor, recarga la página.');
+        swalDark({ icon: 'error', title: 'Error', text: 'Error al cargar el generador de PDF. Por favor, recarga la página.' });
         return false;
     }
 }
@@ -176,33 +208,21 @@ async function obtenerDatosCena(tipoCena) {
 // Generar PDF para cena navideña
 async function generarPDFCena(tipoCena) {
     try {
-        // Mostrar mensaje de carga
-        const loadingMsg = document.createElement('div');
-        loadingMsg.textContent = `Generando PDF para ${tipoCena}...`;
-        loadingMsg.style.position = 'fixed';
-        loadingMsg.style.top = '20px';
-        loadingMsg.style.left = '50%';
-        loadingMsg.style.transform = 'translateX(-50%)';
-        loadingMsg.style.background = '#4CAF50';
-        loadingMsg.style.color = 'white';
-        loadingMsg.style.padding = '10px 20px';
-        loadingMsg.style.borderRadius = '5px';
-        loadingMsg.style.zIndex = '1000';
-        document.body.appendChild(loadingMsg);
+        swalLoading(`Generando PDF para ${tipoCena}...`);
         
         // Obtener datos
         const datos = await obtenerDatosCena(tipoCena);
         
         if (datos.length === 0) {
-            alert(`No se encontraron registros para ${tipoCena}`);
-            document.body.removeChild(loadingMsg);
+            Swal.close();
+            swalDark({ icon: 'info', title: 'Sin registros', text: `No se encontraron registros para ${tipoCena}` });
             return;
         }
 
         // Cargar jsPDF
         const jsPDFLoaded = await loadJsPDF();
         if (!jsPDFLoaded) {
-            document.body.removeChild(loadingMsg);
+            Swal.close();
             return;
         }
 
@@ -269,13 +289,13 @@ async function generarPDFCena(tipoCena) {
         // Guardar PDF
         const fileName = `cena_navidenia_${tipoCena.toLowerCase()}_${new Date().toISOString().slice(0, 10)}.pdf`;
         doc.save(fileName);
-        
-        // Eliminar mensaje de carga
-        document.body.removeChild(loadingMsg);
+        Swal.close();
+        swalToast('PDF generado correctamente');
         
     } catch (error) {
         console.error('Error generando PDF de cena:', error);
-        alert('Error al generar el PDF: ' + error.message);
+        Swal.close();
+        swalDark({ icon: 'error', title: 'Error', text: 'Error al generar el PDF: ' + error.message });
     }
 }
 
@@ -288,10 +308,7 @@ async function generatePDF(servicio, cuatrimestre = '1er') {
     try {
         const cuatriInfo = CUATRIMESTRES_PDF[cuatrimestre] || CUATRIMESTRES_PDF['1er'];
 
-        const loadingMsg = document.createElement('div');
-        loadingMsg.textContent = `Generando PDF para ${servicio} - ${cuatriInfo.subtitulo}...`;
-        loadingMsg.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#4CAF50;color:white;padding:10px 20px;border-radius:5px;z-index:1000;';
-        document.body.appendChild(loadingMsg);
+        swalLoading(`Generando PDF — ${servicio} · ${cuatriInfo.subtitulo}...`);
 
         // Consultar datos de Firebase y filtrar por carpeta + cuatrimestre
         let data = [];
@@ -328,13 +345,13 @@ async function generatePDF(servicio, cuatrimestre = '1er') {
         }
 
         if (data.length === 0) {
-            alert(`No se encontraron registros para ${servicio} - ${cuatriInfo.subtitulo}`);
-            document.body.removeChild(loadingMsg);
+            Swal.close();
+            swalDark({ icon: 'info', title: 'Sin registros', text: `No se encontraron registros para ${servicio} - ${cuatriInfo.subtitulo}` });
             return;
         }
 
         const jsPDFLoaded = await loadJsPDF();
-        if (!jsPDFLoaded) { document.body.removeChild(loadingMsg); return; }
+        if (!jsPDFLoaded) { Swal.close(); return; }
 
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
@@ -456,11 +473,13 @@ async function generatePDF(servicio, cuatrimestre = '1er') {
         const cuatriSlug = cuatrimestre.replace(/[^a-z0-9]/gi, '');
         const fileName = `vacaciones_${servicio}_${cuatriSlug}_${new Date().toISOString().slice(0, 10)}.pdf`;
         doc.save(fileName);
-        document.body.removeChild(loadingMsg);
+        Swal.close();
+        swalToast('PDF generado correctamente');
 
     } catch (error) {
         console.error('Error generando PDF:', error);
-        alert('Error al generar el PDF: ' + error.message);
+        Swal.close();
+        swalDark({ icon: 'error', title: 'Error', text: 'Error al generar el PDF: ' + error.message });
     }
 }
 
@@ -491,33 +510,21 @@ async function obtenerDatosFiestaFinAnio() {
 // Generar PDF para fiesta fin de año
 async function generarPDFFiestaFinAnio() {
     try {
-        // Mostrar mensaje de carga
-        const loadingMsg = document.createElement('div');
-        loadingMsg.textContent = 'Generando lista de asistentes a Celebración Anual...';
-        loadingMsg.style.position = 'fixed';
-        loadingMsg.style.top = '20px';
-        loadingMsg.style.left = '50%';
-        loadingMsg.style.transform = 'translateX(-50%)';
-        loadingMsg.style.background = '#3498db';
-        loadingMsg.style.color = 'white';
-        loadingMsg.style.padding = '10px 20px';
-        loadingMsg.style.borderRadius = '5px';
-        loadingMsg.style.zIndex = '1000';
-        document.body.appendChild(loadingMsg);
+        swalLoading('Generando lista de asistentes...');
         
         // Obtener datos
         const datos = await obtenerDatosFiestaFinAnio();
         
         if (datos.length === 0) {
-            alert('No se encontraron registros para la Celebración Anual');
-            document.body.removeChild(loadingMsg);
+            Swal.close();
+            swalDark({ icon: 'info', title: 'Sin registros', text: 'No se encontraron registros para la Celebracion Anual' });
             return;
         }
 
         // Cargar jsPDF
         const jsPDFLoaded = await loadJsPDF();
         if (!jsPDFLoaded) {
-            document.body.removeChild(loadingMsg);
+            Swal.close();
             return;
         }
 
@@ -609,13 +616,13 @@ async function generarPDFFiestaFinAnio() {
         // Guardar PDF
         const fileName = `lista_asistentes_celebracion_anual_${new Date().toISOString().slice(0, 10)}.pdf`;
         doc.save(fileName);
-        
-        // Eliminar mensaje de carga
-        document.body.removeChild(loadingMsg);
+        Swal.close();
+        swalToast('PDF generado correctamente');
         
     } catch (error) {
         console.error('Error generando PDF de celebración anual:', error);
-        alert('Error al generar el PDF: ' + error.message);
+        Swal.close();
+        swalDark({ icon: 'error', title: 'Error', text: 'Error al generar el PDF: ' + error.message });
     }
 }
 
@@ -652,34 +659,37 @@ async function abrirPanelCorreos() {
 
     const panel = document.createElement('div');
     panel.style.cssText = `
-        background:#fff;border-radius:14px;width:100%;max-width:1100px;
-        box-shadow:0 10px 40px rgba(0,0,0,.25);overflow:hidden;margin:auto;
+        background:#111827;border-radius:16px;width:100%;max-width:1100px;
+        box-shadow:0 10px 60px rgba(0,0,0,.7);overflow:hidden;margin:auto;
+        border: 1px solid rgba(0,191,165,0.3);
     `;
 
     panel.innerHTML = `
-        <div style="background:linear-gradient(135deg,#16a085,#1abc9c);padding:22px 28px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="background:linear-gradient(135deg,#0D1220,#111827);padding:22px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(0,191,165,0.3);">
             <div>
-                <h2 style="margin:0;color:#fff;font-size:20px;">📧 Gestión de Correos Electrónicos</h2>
-                <p style="margin:4px 0 0;color:rgba(255,255,255,.8);font-size:13px;" id="correos-subtitulo">Cargando...</p>
+                <h2 style="margin:0;color:#fff;font-size:20px;display:flex;align-items:center;gap:10px;"><i class="fa-solid fa-envelope" style="color:#40C4FF"></i> Gestion de Correos Electronicos</h2>
+                <p style="margin:4px 0 0;color:#8FA3C0;font-size:13px;" id="correos-subtitulo">Cargando...</p>
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
                 <button id="btn-generar-pdf-correos" style="
-                    background:#fff;color:#16a085;border:none;padding:10px 18px;
+                    background:rgba(0,191,165,0.15);color:#40C4FF;border:1px solid rgba(0,191,165,0.3);padding:10px 18px;
                     border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;
-                    display:flex;align-items:center;gap:6px;
-                ">📄 Generar PDF</button>
+                    display:flex;align-items:center;gap:6px;transition:all 0.2s;
+                ">Generar PDF</button>
                 <button id="btn-cerrar-panel-correos" style="
-                    background:rgba(255,255,255,.2);color:#fff;border:2px solid rgba(255,255,255,.5);
-                    padding:10px 18px;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;
-                ">✕ Cerrar</button>
+                    background:rgba(255,255,255,.05);color:#F0F4FF;border:1px solid rgba(255,255,255,0.15);
+                    padding:10px 18px;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;transition:all 0.2s;
+                ">Cerrar</button>
             </div>
         </div>
-        <div style="padding:20px;">
-            <input id="correos-buscar" type="text" placeholder="🔍 Buscar por nombre o correo..."
-                style="width:100%;padding:10px 14px;border:2px solid #e0e0e0;border-radius:8px;
-                font-size:14px;margin-bottom:16px;outline:none;box-sizing:border-box;">
+        <div style="padding:20px;background:#111827;">
+            <div style="position:relative;margin-bottom:16px;">
+                <input id="correos-buscar" type="text" placeholder="Buscar por nombre o correo..."
+                    style="width:100%;padding:12px 14px 12px 44px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:10px;
+                    font-size:14px;outline:none;box-sizing:border-box;color:#F0F4FF;">
+            </div>
             <div id="correos-tabla-wrapper" style="overflow-x:auto;">
-                <p style="text-align:center;color:#888;padding:40px;">Cargando datos...</p>
+                <p style="text-align:center;color:#8FA3C0;padding:40px;">Cargando datos...</p>
             </div>
         </div>
     `;
@@ -735,31 +745,31 @@ async function abrirPanelCorreos() {
         }
 
         const filas = lista.map((item, idx) => `
-            <tr style="border-bottom:1px solid #f0f0f0;transition:background .15s;" 
-                onmouseover="this.style.background='#f0faf8'" onmouseout="this.style.background=''">
-                <td style="padding:10px 12px;text-align:center;color:#888;font-size:13px;">${idx + 1}</td>
-                <td style="padding:10px 12px;font-weight:500;font-size:14px;">${escHtml(item.nombreCompleto || 'N/A')}</td>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);transition:background .15s;" 
+                onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+                <td style="padding:10px 12px;text-align:center;color:#4A6080;font-size:13px;">${idx + 1}</td>
+                <td style="padding:10px 12px;font-weight:500;font-size:14px;color:#F0F4FF;">${escHtml(item.nombreCompleto || 'N/A')}</td>
                 <td style="padding:10px 12px;">
                     <a href="mailto:${escHtml(item.correo || '')}"
-                       style="color:#16a085;text-decoration:none;font-size:14px;font-weight:500;"
+                       style="color:#40C4FF;text-decoration:none;font-size:14px;font-weight:500;"
                        title="Enviar correo a ${escHtml(item.correo || '')}">
-                        📧 ${escHtml(item.correo || 'N/A')}
+                        ${escHtml(item.correo || 'N/A')}
                     </a>
                 </td>
-                <td style="padding:10px 12px;font-size:13px;color:#555;">${item.fechaIngreso ? formatDate(item.fechaIngreso) : 'N/A'}</td>
-                <td style="padding:10px 12px;font-size:13px;color:#555;">${escHtml(item.antiguedadTotal || 'N/A')}</td>
-                <td style="padding:10px 12px;font-size:13px;color:#555;">${item.fechaRegistro ? formatDate(item.fechaRegistro) : 'N/A'}</td>
+                <td style="padding:10px 12px;font-size:13px;color:#8FA3C0;text-align:center;">${item.fechaIngreso ? formatDate(item.fechaIngreso) : 'N/A'}</td>
+                <td style="padding:10px 12px;font-size:13px;color:#8FA3C0;text-align:center;">${escHtml(item.antiguedadTotal || 'N/A')}</td>
+                <td style="padding:10px 12px;font-size:13px;color:#8FA3C0;text-align:center;">${item.fechaRegistro ? formatDate(item.fechaRegistro) : 'N/A'}</td>
                 <td style="padding:10px 12px;text-align:center;">
                     <div style="display:flex;gap:6px;justify-content:center;">
                         <button onclick="editarCorreo('${item.id}')"
-                            style="background:#3498db;color:#fff;border:none;padding:6px 12px;
+                            style="background:rgba(64,196,255,0.1);color:#40C4FF;border:1px solid rgba(64,196,255,0.3);padding:6px 12px;
                             border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">
-                            ✏️ Editar
+                            Editar
                         </button>
                         <button onclick="eliminarCorreo('${item.id}','${escHtml(item.nombreCompleto || '')}')"
-                            style="background:#e74c3c;color:#fff;border:none;padding:6px 12px;
+                            style="background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.3);padding:6px 12px;
                             border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">
-                            🗑️ Eliminar
+                            Eliminar
                         </button>
                     </div>
                 </td>
@@ -769,14 +779,14 @@ async function abrirPanelCorreos() {
         wrapper.innerHTML = `
             <table style="width:100%;border-collapse:collapse;min-width:750px;">
                 <thead>
-                    <tr style="background:#16a085;color:#fff;">
-                        <th style="padding:12px;font-size:13px;">#</th>
-                        <th style="padding:12px;font-size:13px;text-align:left;">Nombre Completo</th>
-                        <th style="padding:12px;font-size:13px;text-align:left;">Correo Electrónico</th>
-                        <th style="padding:12px;font-size:13px;">Fecha Ingreso</th>
-                        <th style="padding:12px;font-size:13px;">Antigüedad</th>
-                        <th style="padding:12px;font-size:13px;">Fecha Registro</th>
-                        <th style="padding:12px;font-size:13px;">Acciones</th>
+                    <tr style="background:rgba(0,0,0,0.4);">
+                        <th style="padding:12px;font-size:12px;color:#8FA3C0;text-transform:uppercase;letter-spacing:0.5px;">#</th>
+                        <th style="padding:12px;font-size:12px;color:#8FA3C0;text-transform:uppercase;letter-spacing:0.5px;text-align:left;">Nombre Completo</th>
+                        <th style="padding:12px;font-size:12px;color:#8FA3C0;text-transform:uppercase;letter-spacing:0.5px;text-align:left;">Correo Electronico</th>
+                        <th style="padding:12px;font-size:12px;color:#8FA3C0;text-transform:uppercase;letter-spacing:0.5px;">Fecha Ingreso</th>
+                        <th style="padding:12px;font-size:12px;color:#8FA3C0;text-transform:uppercase;letter-spacing:0.5px;">Antiguedad</th>
+                        <th style="padding:12px;font-size:12px;color:#8FA3C0;text-transform:uppercase;letter-spacing:0.5px;">Fecha Registro</th>
+                        <th style="padding:12px;font-size:12px;color:#8FA3C0;text-transform:uppercase;letter-spacing:0.5px;">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>${filas}</tbody>
@@ -788,12 +798,33 @@ async function abrirPanelCorreos() {
             const registro = todosDatos.find(d => d.id === id) || lista.find(d => d.id === id);
             if (!registro) return;
 
-            const nuevoNombre = prompt('Nombre completo:', registro.nombreCompleto || '');
-            if (nuevoNombre === null) return;
-            const nuevoCorreo = prompt('Correo electrónico:', registro.correo || '');
-            if (nuevoCorreo === null) return;
-            const nuevaAntiguedad = prompt('Antigüedad:', registro.antiguedadTotal || '');
-            if (nuevaAntiguedad === null) return;
+            const { value: formValues } = await Swal.fire({
+                title: 'Editar Registro',
+                background: '#111827',
+                color: '#F0F4FF',
+                confirmButtonColor: '#2979FF',
+                showCancelButton: true,
+                cancelButtonText: 'Cancelar',
+                cancelButtonColor: 'transparent',
+                html: `
+                    <div style="text-align:left;display:flex;flex-direction:column;gap:10px;margin-top:8px">
+                        <label style="font-size:12px;color:#8FA3C0;font-weight:600;letter-spacing:0.5px">NOMBRE COMPLETO</label>
+                        <input id="swal-nombre" class="swal2-input" style="margin:0" placeholder="Nombre completo" value="${escHtml(registro.nombreCompleto || '')}">
+                        <label style="font-size:12px;color:#8FA3C0;font-weight:600;letter-spacing:0.5px">CORREO ELECTRONICO</label>
+                        <input id="swal-correo" class="swal2-input" style="margin:0" placeholder="correo@dominio.com" value="${escHtml(registro.correo || '')}">
+                        <label style="font-size:12px;color:#8FA3C0;font-weight:600;letter-spacing:0.5px">ANTIGUEDAD</label>
+                        <input id="swal-antiguedad" class="swal2-input" style="margin:0" placeholder="Antiguedad" value="${escHtml(registro.antiguedadTotal || '')}">
+                    </div>`,
+                focusConfirm: false,
+                preConfirm: () => ({
+                    nombre: document.getElementById('swal-nombre').value,
+                    correo: document.getElementById('swal-correo').value,
+                    antiguedad: document.getElementById('swal-antiguedad').value
+                })
+            });
+
+            if (!formValues) return;
+            const { nombre: nuevoNombre, correo: nuevoCorreo, antiguedad: nuevaAntiguedad } = formValues;
 
             try {
                 await updateDoc(firestoreDoc(db, 'ListadoCorreos', id), {
@@ -817,14 +848,23 @@ async function abrirPanelCorreos() {
                         (d.correo || '').toLowerCase().includes(term))
                     : todosDatos;
                 renderTablaCorreos(filtrados, todosDatos);
-                mostrarToast('✅ Registro actualizado correctamente', '#16a085');
+                swalToast('Registro actualizado correctamente');
             } catch (err) {
-                alert('Error al actualizar: ' + err.message);
+                swalDark({ icon: 'error', title: 'Error', text: 'Error al actualizar: ' + err.message });
             }
         };
 
         window.eliminarCorreo = async (id, nombre) => {
-            if (!confirm(`¿Eliminar a "${nombre}" de la base de datos?\nEsta acción no se puede deshacer.`)) return;
+            const result = await swalDark({
+                icon: 'warning',
+                title: 'Eliminar registro',
+                html: `¿Eliminar a <strong>${escHtml(nombre)}</strong> de la base de datos?<br><small>Esta accion no se puede deshacer.</small>`,
+                showCancelButton: true,
+                confirmButtonText: 'Eliminar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#E53935'
+            });
+            if (!result.isConfirmed) return;
             try {
                 await deleteDoc(firestoreDoc(db, 'ListadoCorreos', id));
                 const idx = todosDatos.findIndex(d => d.id === id);
@@ -838,9 +878,9 @@ async function abrirPanelCorreos() {
                         (d.correo || '').toLowerCase().includes(term))
                     : todosDatos;
                 renderTablaCorreos(filtrados, todosDatos);
-                mostrarToast('🗑️ Registro eliminado correctamente', '#e74c3c');
+                swalToast('Registro eliminado correctamente', 'success');
             } catch (err) {
-                alert('Error al eliminar: ' + err.message);
+                swalDark({ icon: 'error', title: 'Error', text: 'Error al eliminar: ' + err.message });
             }
         };
     }
@@ -872,22 +912,15 @@ function escHtml(str) {
 // Generar PDF con enlaces mailto en cada correo
 async function generarPDFCorreos(datos) {
     if (!datos || datos.length === 0) {
-        alert('No hay datos para generar el PDF.');
+        swalDark({ icon: 'info', title: 'Sin datos', text: 'No hay datos para generar el PDF.' });
         return;
     }
 
-    const loadingMsg = document.createElement('div');
-    loadingMsg.textContent = 'Generando PDF con enlaces de correo...';
-    loadingMsg.style.cssText = `
-        position:fixed;top:20px;left:50%;transform:translateX(-50%);
-        background:#16a085;color:#fff;padding:10px 20px;
-        border-radius:5px;z-index:99999;font-weight:600;
-    `;
-    document.body.appendChild(loadingMsg);
+    swalLoading('Generando PDF de correos...');
 
     try {
         const jsPDFLoaded = await loadJsPDF();
-        if (!jsPDFLoaded) { document.body.removeChild(loadingMsg); return; }
+        if (!jsPDFLoaded) { Swal.close(); return; }
 
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('landscape');
@@ -968,13 +1001,13 @@ async function generarPDFCorreos(datos) {
         });
 
         doc.save(`listado_correos_${new Date().toISOString().slice(0,10)}.pdf`);
-        document.body.removeChild(loadingMsg);
-        mostrarToast('📄 PDF generado con éxito', '#16a085');
+        Swal.close();
+        swalToast('PDF generado correctamente');
 
     } catch (error) {
         console.error('Error generando PDF de correos:', error);
-        document.body.removeChild(loadingMsg);
-        alert('Error al generar el PDF: ' + error.message);
+        Swal.close();
+        swalDark({ icon: 'error', title: 'Error', text: 'Error al generar el PDF: ' + error.message });
     }
 }
 
@@ -995,15 +1028,24 @@ function verificarAutenticacion() {
 }
 
 // Función para cerrar sesión
-function logout() {
-    if (confirm('¿Estás seguro de que quieres salir?')) {
-        // Limpiar sessionStorage
-        sessionStorage.removeItem('pdfAuth');
-        sessionStorage.removeItem('user');
-        
-        // Redirigir a la página principal de login
-        window.location.href = '../index.html';
-    }
+async function logout() {
+    const result = await Swal.fire({
+        title: 'Cerrar sesion',
+        text: '¿Estas seguro de que quieres salir?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Salir',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#E53935',
+        background: '#111827',
+        color: '#F0F4FF'
+    });
+    if (!result.isConfirmed) return;
+    // Limpiar sessionStorage
+    sessionStorage.removeItem('pdfAuth');
+    sessionStorage.removeItem('user');
+    // Redirigir a la página principal de login
+    window.location.href = '../index.html';
 }
 
 // Inicializar la aplicación
@@ -1016,11 +1058,15 @@ function initApp() {
     // Mostrar información del usuario logeado
     const usuario = sessionStorage.getItem('user');
     console.log(`Usuario autenticado: ${usuario}`);
+    // Actualizar etiqueta de usuario en el header
+    const userLabel = document.getElementById('user-label');
+    if (userLabel && usuario) userLabel.textContent = usuario;
     
     // Agregar event listeners a los botones de áreas
     document.querySelectorAll('.service-btn').forEach(button => {
         button.addEventListener('click', (e) => {
             const service = e.currentTarget.getAttribute('data-service');
+            if (!service) return; // Si es un botón de navegación pura (sin data-service), no hacer nada
             if (service === 'PAVO' || service === 'PIERNA') {
                 generarPDFCena(service);
             } else if (service === 'FIESTA_FIN_ANIO') {
@@ -1033,9 +1079,7 @@ function initApp() {
             }
         });
     });
-    
-    // Agregar event listener al botón de cerrar sesión
-    document.getElementById('logout-btn').addEventListener('click', logout);
+    // (logout-btn se maneja en el script inline del dashboard donde Swal está garantizado)
 }
 
 // Ejecutar cuando el DOM esté listo

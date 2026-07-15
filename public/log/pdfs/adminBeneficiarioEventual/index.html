@@ -4,16 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Beneficiario Eventual</title>
+    <!-- Fuente moderna -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome (iconos) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- Aplica el tema guardado antes de pintar para evitar parpadeo -->
+    <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('adminTheme') || 'dark');</script>
+
     <link rel="stylesheet" href="adminBeneficiarioEventual.css">
 </head>
 <body>
     <div class="admin-container">
         <header>
+            <div>
+                <h1><i class="fa-solid fa-file-contract"></i> Beneficiario Eventual</h1>
+                <p>Gestionar trabajadores eventuales - COSBEL S.A. DE C.V.</p>
+            </div>
             <button class="back-btn" onclick="window.location.href='../index.html'">
-                ← Volver al Dashboard
+                <i class="fa-solid fa-arrow-left"></i> Volver al Dashboard
             </button>
-            <h1>📄 Administración - Beneficiario Eventual</h1>
-            <p>Gestionar trabajadores eventuales - COSBEL S.A. DE C.V.</p>
         </header>
 
         <div class="stats-container" id="statsContainer">
@@ -26,11 +38,15 @@
         <div class="table-container">
             <div class="table-header">
                 <h2>Registros de Beneficiarios Eventuales</h2>
-                <input type="text" id="searchInput" placeholder="Buscar por nombre..." class="search-input">
+                <div class="search-wrap">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="Buscar por nombre..." class="search-input">
+                </div>
             </div>
             
             <div id="loadingSpinner" class="loading">
-                Cargando registros...
+                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                <span>Cargando registros...</span>
             </div>
 
             <table id="registrosTable" style="display: none;">
@@ -49,7 +65,7 @@
             </table>
 
             <div id="emptyState" class="empty-state" style="display: none;">
-                <p>📭 No hay registros disponibles</p>
+                <p><i class="fa-solid fa-folder-open" style="margin-right:8px; color:var(--text-dim)"></i> No hay registros disponibles</p>
             </div>
         </div>
     </div>
@@ -58,21 +74,21 @@
     <div id="modalEditar" class="modal">
         <div class="modal-content modal-large">
             <span class="close" id="closeModal">&times;</span>
-            <h2>Editar Designación de Beneficiarios</h2>
+            <h2><i class="fa-solid fa-pen-to-square" style="margin-right:8px; color:var(--blue)"></i> Editar Designación de Beneficiarios</h2>
             <form id="formEditar">
                 <div class="form-group">
                     <label>Nombre del Trabajador:</label>
                     <input type="text" id="editNombre" required>
                 </div>
 
-                <h3>Beneficiarios</h3>
+                <h3 style="margin: 20px 0 12px; font-size: 15px; color: #fff;">Beneficiarios</h3>
                 <div id="beneficiariosContainer"></div>
                 
-                <button type="button" class="btn-add" id="btnAgregarBeneficiario">+ Agregar Beneficiario</button>
+                <button type="button" class="btn-add" id="btnAgregarBeneficiario"><i class="fa-solid fa-plus"></i> Agregar Beneficiario</button>
 
                 <div class="modal-buttons">
-                    <button type="submit" class="btn-save">Guardar Cambios</button>
                     <button type="button" class="btn-cancel" id="btnCancelarEditar">Cancelar</button>
+                    <button type="submit" class="btn-save">Guardar Cambios</button>
                 </div>
             </form>
         </div>
@@ -80,27 +96,22 @@
 
     <!-- Modal de Confirmación de Eliminación -->
     <div id="modalEliminar" class="modal">
-        <div class="modal-content">
-            <h2>⚠️ Confirmar Eliminación</h2>
-            <p>¿Está seguro de que desea eliminar este registro?</p>
-            <p><strong id="nombreEliminar"></strong></p>
-            <p style="color: #e74c3c;">Esta acción no se puede deshacer.</p>
-            <div class="modal-buttons">
-                <button class="btn-delete" id="btnConfirmarEliminar">Eliminar</button>
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <h2 style="color: var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> Confirmar Eliminación</h2>
+            <p style="margin-bottom: 24px; color: var(--text-sec);">¿Estás seguro de que deseas eliminar este registro?</p>
+            <p><strong id="nombreEliminar" style="color:#fff;"></strong></p>
+            <p style="color: var(--danger); font-size: 13px; margin-top: 10px;">Esta acción no se puede deshacer.</p>
+            <div class="modal-buttons" style="justify-content: center; margin-top: 24px;">
                 <button class="btn-cancel" id="btnCancelarEliminar">Cancelar</button>
+                <button class="btn-delete" id="btnConfirmarEliminar">Eliminar</button>
             </div>
         </div>
     </div>
 
-    <!-- Firebase SDK -->
     <script type="module">
         import { db } from '../../../firebase-config.js';
         window.db = db;
     </script>
-
-    <!-- jsPDF Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
     <script type="module" src="adminBeneficiarioEventual.js"></script>
 </body>
 </html>

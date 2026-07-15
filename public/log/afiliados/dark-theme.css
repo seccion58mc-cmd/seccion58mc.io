@@ -1,0 +1,157 @@
+/* ============================================================
+   DARK THEME OVERRIDES FOR AFILIADOS
+   Only applied when data-theme is dark (default)
+   ============================================================ */
+
+html:not([data-theme="light"]) {
+    --bg-base:      #080C14;
+    --bg-surface:   #0D1220;
+    --bg-card:      #111827;
+    --primary:      #B388FF; /* Morado/Violeta para Afiliados */
+    --primary-hover:#9575CD;
+    --text-main:    #F0F4FF;
+    --text-sec:     #8FA3C0;
+    --border-color: rgba(255,255,255,0.1);
+    --border-bright:rgba(179,136,255,0.45);
+    --danger:       #ef4444;
+    --success:      #10b981;
+    --warning:      #f59e0b;
+}
+
+html:not([data-theme="light"]) body {
+    background: var(--bg-base) !important;
+    color: var(--text-main) !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+html:not([data-theme="light"]) .header {
+    background: rgba(17,24,39,0.7) !important;
+    border: 1px solid var(--border-bright) !important;
+    box-shadow: 0 0 32px rgba(179,136,255,0.28) !important;
+    backdrop-filter: blur(12px) !important;
+    border-radius: 14px !important;
+    margin-bottom: 24px;
+}
+
+html:not([data-theme="light"]) .header-content h1 {
+    color: #fff !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+html:not([data-theme="light"]) .header-content h1 i { color: var(--primary); }
+html:not([data-theme="light"]) .header-content p { color: var(--text-sec) !important; }
+
+html:not([data-theme="light"]) .stat-card {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
+    border-radius: 14px !important;
+}
+html:not([data-theme="light"]) .stat-info h3 { color: #fff !important; }
+html:not([data-theme="light"]) .stat-info p { color: var(--text-sec) !important; }
+html:not([data-theme="light"]) .stat-icon { color: var(--primary); }
+
+html:not([data-theme="light"]) .filters-section, 
+html:not([data-theme="light"]) .table-section {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
+}
+html:not([data-theme="light"]) .filters-section h2, 
+html:not([data-theme="light"]) .table-header h2 { color: #fff !important; }
+html:not([data-theme="light"]) .filter-group label { color: var(--text-sec) !important; }
+html:not([data-theme="light"]) .filter-group input, 
+html:not([data-theme="light"]) .filter-group select {
+    background: rgba(255,255,255,0.03) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-main) !important;
+}
+html:not([data-theme="light"]) .filter-group input:focus, 
+html:not([data-theme="light"]) .filter-group select:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px rgba(179,136,255,0.15) !important;
+}
+
+/* Tab Navigation */
+html:not([data-theme="light"]) .tabs-navigation {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+html:not([data-theme="light"]) .tab-btn {
+    background: rgba(255,255,255,0.05) !important;
+    color: var(--text-sec) !important;
+    border: 1px solid var(--border-color) !important;
+    padding: 12px 24px !important;
+    border-radius: 8px !important;
+}
+html:not([data-theme="light"]) .tab-btn:hover { background: rgba(255,255,255,0.1) !important; color: #fff !important; }
+html:not([data-theme="light"]) .tab-btn.active {
+    background: var(--primary) !important;
+    color: #000 !important;
+    border-color: var(--primary) !important;
+}
+
+/* Modals */
+html:not([data-theme="light"]) .modal-content {
+    background: var(--bg-surface) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 14px !important;
+    color: var(--text-main);
+}
+html:not([data-theme="light"]) .modal-header h2 { color: #fff !important; }
+html:not([data-theme="light"]) .close-btn { color: var(--text-sec) !important; }
+html:not([data-theme="light"]) .close-btn:hover { color: #fff !important; }
+html:not([data-theme="light"]) .form-group label { color: var(--text-sec) !important; }
+html:not([data-theme="light"]) .form-group input, 
+html:not([data-theme="light"]) .form-group select, 
+html:not([data-theme="light"]) .form-group textarea {
+    background: rgba(255,255,255,0.03) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-main) !important;
+}
+html:not([data-theme="light"]) .form-group input:focus, 
+html:not([data-theme="light"]) .form-group select:focus, 
+html:not([data-theme="light"]) .form-group textarea:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px rgba(179,136,255,0.15) !important;
+}
+
+/* Table */
+html:not([data-theme="light"]) table th {
+    background: rgba(0,0,0,0.3) !important;
+    color: var(--text-sec) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+html:not([data-theme="light"]) table td {
+    border-bottom: 1px solid var(--border-color) !important;
+    color: var(--text-main) !important;
+}
+html:not([data-theme="light"]) tbody tr:hover { background: rgba(255,255,255,0.02) !important; }
+html:not([data-theme="light"]) .loading-row { color: var(--text-sec) !important; }
+
+/* Buttons */
+html:not([data-theme="light"]) .btn-primary { background: var(--primary) !important; color: #000 !important; }
+html:not([data-theme="light"]) .btn-primary:hover { background: var(--primary-hover) !important; }
+html:not([data-theme="light"]) .btn-secondary { background: rgba(255,255,255,0.1) !important; color: var(--text-main) !important; }
+html:not([data-theme="light"]) .btn-secondary:hover { background: rgba(255,255,255,0.15) !important; }
+html:not([data-theme="light"]) .btn-danger { background: var(--danger) !important; }
+html:not([data-theme="light"]) .btn-success { background: var(--success) !important; }
+html:not([data-theme="light"]) .btn-warning { background: var(--warning) !important; color: #000 !important;}
+
+/* Alert Box */
+html:not([data-theme="light"]) .alert-box { border-radius: 8px !important; }
+html:not([data-theme="light"]) .alert-info { background: rgba(59,130,246,0.1) !important; border: 1px solid rgba(59,130,246,0.3) !important; color: #60a5fa !important; }
+html:not([data-theme="light"]) .alert-warning { background: rgba(245,158,11,0.1) !important; border: 1px solid rgba(245,158,11,0.3) !important; color: #fbbf24 !important; }
+
+/* Floating btn */
+html:not([data-theme="light"]) .floating-utils-btn {
+    background: var(--primary) !important;
+    color: #000 !important;
+    box-shadow: 0 4px 12px rgba(179,136,255,0.4) !important;
+}
+
+html:not([data-theme="light"]) #resultCount, 
+html:not([data-theme="light"]) #pendientesCount { color: var(--text-sec) !important; }

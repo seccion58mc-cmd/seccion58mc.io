@@ -4,15 +4,15 @@ import { cargarTrabajadores } from '../adminContactosEmergencia/listaOficial.js'
 // Colecciones a revisar. count: cuenta para el % de completitud.
 // tipo: solo aplica a ese tipo de trabajador. condicional: se muestra pero no cuenta (depende de género/caso).
 const DATASETS = [
-    { key: 'contactosEmergencia', label: 'Contactos Emergencia', icon: '🚨', count: true },
-    { key: 'vacaciones',          label: 'Vacaciones',           icon: '🏖️', count: true },
-    { key: 'ListadoCorreos',      label: 'Correo',               icon: '📧', count: true },
-    { key: 'ayudaDefuncion',      label: 'Ayuda Defunción',      icon: '📋', count: true },
-    { key: 'fiestaFinAnio',       label: 'Fiesta Fin de Año',    icon: '🎉', count: true },
-    { key: 'cenaNavidenia',       label: 'Cena Navideña',        icon: '🍽️', count: true },
-    { key: 'beneficiarioEventual',label: 'Benef. Eventual',      icon: '📄', count: true, tipo: 'EVENTUAL' },
-    { key: 'diamadres',           label: 'Día de las Madres',    icon: '🌸', condicional: true },
-    { key: 'diapadre',            label: 'Día del Padre',        icon: '🚙', condicional: true },
+    { key: 'contactosEmergencia', label: 'Contactos Emergencia', icon: 'fa-solid fa-phone', count: true },
+    { key: 'vacaciones',          label: 'Vacaciones',           icon: 'fa-solid fa-umbrella-beach', count: true },
+    { key: 'ListadoCorreos',      label: 'Correo',               icon: 'fa-solid fa-envelope', count: true },
+    { key: 'ayudaDefuncion',      label: 'Ayuda Defunción',      icon: 'fa-solid fa-ribbon', count: true },
+    { key: 'fiestaFinAnio',       label: 'Fiesta Fin de Año',    icon: 'fa-solid fa-champagne-glasses', count: true },
+    { key: 'cenaNavidenia',       label: 'Cena Navideña',        icon: 'fa-solid fa-utensils', count: true },
+    { key: 'beneficiarioEventual',label: 'Benef. Eventual',      icon: 'fa-solid fa-user-tie', count: true, tipo: 'EVENTUAL' },
+    { key: 'diamadres',           label: 'Día de las Madres',    icon: 'fa-solid fa-venus', condicional: true },
+    { key: 'diapadre',            label: 'Día del Padre',        icon: 'fa-solid fa-mars', condicional: true },
 ];
 
 // Campos donde puede venir el nombre en cualquiera de las colecciones.
@@ -128,9 +128,9 @@ function cardHTML(t) {
     const chips = DATASETS.map(ds => {
         const st = t.estados[ds.key];
         const cls = st === null ? 'na' : st ? 'ok' : 'falta';
-        const marca = st === null ? '–' : st ? '✓' : '✗';
+        const brandIcon = st === null ? 'fa-solid fa-minus' : st ? 'fa-solid fa-check' : 'fa-solid fa-xmark';
         const titulo = st === null ? `${ds.label}: no aplica` : st ? `${ds.label}: registrado` : `${ds.label}: FALTA`;
-        return `<span class="chip chip--${cls}" title="${titulo}">${ds.icon} ${ds.label} ${marca}</span>`;
+        return `<span class="chip chip--${cls}" title="${titulo}"><i class="${ds.icon}"></i> ${ds.label} <i class="${brandIcon} chip-status-icon"></i></span>`;
     }).join('');
 
     return `

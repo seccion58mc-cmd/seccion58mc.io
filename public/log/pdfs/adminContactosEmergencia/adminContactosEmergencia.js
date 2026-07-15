@@ -97,8 +97,10 @@ function renderLista(nombres, regSets, ulId, countId) {
         faltan++;
         return `<li class="reg-falta">${linea}</li>`;
     }).join('');
-    document.getElementById(ulId).innerHTML = html;
-    document.getElementById(countId).textContent = faltan;
+    const ul = document.getElementById(ulId);
+    const count = document.getElementById(countId);
+    if (ul) ul.innerHTML = html;
+    if (count) count.textContent = faltan;
 }
 
 function renderFaltantes() {

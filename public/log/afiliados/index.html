@@ -4,72 +4,88 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administración de Afiliados</title>
+    <!-- Fuente moderna -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome (iconos) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- Aplica el tema guardado antes de pintar para evitar parpadeo -->
+    <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('adminTheme') || 'dark');</script>
+
     <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="dark-theme.css">
 </head>
 <body>
     <div class="admin-container">
         <header class="header">
             <div class="header-content">
-                <h1>🏭 Gestión de Afiliados</h1>
+                <h1><i class="fa-solid fa-users-gear"></i> Gestión de Afiliados</h1>
                 <p>Sistema de control de altas, bajas y reingresos</p>
             </div>
-            <button class="btn-logout" id="btnCerrarSesion">Cerrar Sesión</button>
+            <div style="display:flex; gap: 10px; align-items: center;">
+                <a href="../pdfs/index.html" style="background:rgba(255,255,255,0.05); color:#F0F4FF; text-decoration:none; padding:10px 18px; border-radius:8px; font-size:14px; font-weight:600; border:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:6px;">
+                    <i class="fa-solid fa-arrow-left"></i> Panel Principal
+                </a>
+                <button class="btn-logout" id="btnCerrarSesion">Cerrar Sesión</button>
+            </div>
         </header>
 
         <div class="main-content">
             <!-- Estadísticas -->
             <div class="stats-container">
                 <div class="stat-card">
-                    <div class="stat-icon">👥</div>
+                    <div class="stat-icon"><i class="fa-solid fa-user-check"></i></div>
                     <div class="stat-info">
                         <h3 id="totalActivos">0</h3>
                         <p>Activos</p>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">⏸️</div>
+                    <div class="stat-icon"><i class="fa-solid fa-user-minus"></i></div>
                     <div class="stat-info">
                         <h3 id="totalBajas">0</h3>
                         <p>Dados de Baja</p>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">🔄</div>
+                    <div class="stat-icon"><i class="fa-solid fa-arrow-rotate-left"></i></div>
                     <div class="stat-info">
                         <h3 id="totalReingresos">0</h3>
                         <p>Reingresos</p>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">🌟</div>
+                    <div class="stat-icon"><i class="fa-solid fa-industry"></i></div>
                     <div class="stat-info">
                         <h3 id="totalPlanta">0</h3>
                         <p>Con Planta</p>
                     </div>
                 </div>
                 <div class="stat-card stat-card-pending">
-                    <div class="stat-icon">⏳</div>
+                    <div class="stat-icon"><i class="fa-solid fa-hourglass-half"></i></div>
                     <div class="stat-info">
                         <h3 id="totalPendientes">0</h3>
                         <p>Solicitudes Pendientes</p>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">🚫</div>
+                    <div class="stat-icon"><i class="fa-solid fa-user-xmark"></i></div>
                     <div class="stat-info">
                         <h3 id="totalDespidos">0</h3>
                         <p>Despidos</p>
                     </div>
                 </div>
                 <div class="stat-card stat-card-hombres">
-                    <div class="stat-icon">👨</div>
+                    <div class="stat-icon"><i class="fa-solid fa-person"></i></div>
                     <div class="stat-info">
                         <h3 id="totalHombres">0</h3>
                         <p>Hombres</p>
                     </div>
                 </div>
                 <div class="stat-card stat-card-mujeres">
-                    <div class="stat-icon">👩</div>
+                    <div class="stat-icon"><i class="fa-solid fa-person-dress"></i></div>
                     <div class="stat-info">
                         <h3 id="totalMujeres">0</h3>
                         <p>Mujeres</p>
@@ -246,14 +262,14 @@
 
     <!-- Botón flotante de utilidades (solo visible para admin) -->
     <div class="floating-utils-btn" id="btnUtilidades" title="Utilidades de administración">
-        ⚙️
+        <i class="fa-solid fa-gear"></i>
     </div>
 
     <!-- Modal de utilidades -->
     <div id="modalUtilidades" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>⚙️ Utilidades de Administración</h2>
+                <h2><i class="fa-solid fa-gears" style="margin-right:8px; color:var(--primary)"></i> Utilidades de Administración</h2>
                 <button class="close-btn" onclick="closeModal('modalUtilidades')">&times;</button>
             </div>
             <div class="modal-body">
@@ -263,7 +279,7 @@
                 </div>
 
                 <div class="util-section">
-                    <h3>🔄 Convertir Registros a Mayúsculas</h3>
+                    <h3><i class="fa-solid fa-text-height" style="margin-right:6px"></i> Convertir Registros a Mayúsculas</h3>
                     <p>Convierte todos los campos de texto de los registros existentes a mayúsculas para mantener consistencia en la base de datos.</p>
                     <button class="btn-primary" onclick="convertirTodoAMayusculas()">
                         Convertir Registros Existentes
@@ -271,7 +287,7 @@
                 </div>
 
                 <div class="util-section">
-                    <h3>🗑️ Eliminar Duplicados por CURP</h3>
+                    <h3><i class="fa-solid fa-trash-can" style="margin-right:6px; color:var(--danger)"></i> Eliminar Duplicados por CURP</h3>
                     <p>Busca y elimina registros duplicados basándose en el CURP. Solo mantiene el registro más reciente de cada persona.</p>
                     <button class="btn-danger" onclick="eliminarDuplicados()">
                         Buscar y Eliminar Duplicados
@@ -279,7 +295,7 @@
                 </div>
 
                 <div class="util-section">
-                    <h3>📊 Generar Reporte de Duplicados</h3>
+                    <h3><i class="fa-solid fa-chart-bar" style="margin-right:6px; color:var(--primary)"></i> Generar Reporte de Duplicados</h3>
                     <p>Muestra una lista de CURPs duplicados sin eliminarlos (solo para revisión).</p>
                     <button class="btn-secondary" onclick="reportarDuplicados()">
                         Ver Reporte de Duplicados
@@ -347,7 +363,7 @@
     <div id="modalPlanta" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>🌟 Otorgar Planta</h2>
+                <h2><i class="fa-solid fa-industry" style="margin-right:8px; color:#60A5FA"></i> Otorgar Planta</h2>
                 <button class="close-btn" onclick="closeModal('modalPlanta')">&times;</button>
             </div>
             <div class="modal-body">
@@ -364,7 +380,7 @@
     <div id="modalEditar" class="modal">
         <div class="modal-content modal-large">
             <div class="modal-header">
-                <h2>✏️ Editar Datos del Afiliado</h2>
+                <h2><i class="fa-solid fa-pen-to-square" style="margin-right:8px; color:var(--primary)"></i> Editar Datos del Afiliado</h2>
                 <button class="close-btn" onclick="closeModal('modalEditar')">&times;</button>
             </div>
             <div class="modal-body">

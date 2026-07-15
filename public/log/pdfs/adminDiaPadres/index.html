@@ -4,18 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Día del Padre</title>
-    <link rel="stylesheet" href="admindiapadres.css">
+    <!-- Fuente moderna -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome (iconos) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- Aplica el tema guardado antes de pintar para evitar parpadeo -->
+    <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('adminTheme') || 'dark');</script>
+
+    <link rel="stylesheet" href="admindiaPadres.css">
 </head>
 <body>
     <div class="admin-container">
         <header>
-            <button class="back-btn" onclick="window.location.href='../index.html'">
-                ← Volver
-            </button>
             <div class="header-text">
-                <h1>Administración — Día del Padre</h1>
-                <p>Gestionar registros del 18 de Junio</p>
+                <h1><i class="fa-solid fa-medal"></i> Administración — Día del Padre</h1>
+                <p>Gestionar registros del evento del Día del Padre</p>
             </div>
+            <button class="back-btn" onclick="window.location.href='../index.html'">
+                <i class="fa-solid fa-arrow-left"></i> Volver
+            </button>
         </header>
 
         <!-- Estadisticas -->
@@ -36,16 +46,16 @@
 
         <!-- Seccion de impresion por listado -->
         <div class="print-section">
-            <h3 class="print-section-title">Imprimir listado de registrados</h3>
+            <h3 class="print-section-title"><i class="fa-solid fa-print"></i> Imprimir listado de registrados</h3>
             <div class="print-buttons">
                 <button class="btn-print btn-print-planta" id="btnImprimirPlanta">
-                    Imprimir Listado Planta
+                    <i class="fa-solid fa-industry"></i> Listado Planta
                 </button>
                 <button class="btn-print btn-print-eventual" id="btnImprimirEventual">
-                    Imprimir Listado Eventual
+                    <i class="fa-solid fa-clipboard-user"></i> Listado Eventual
                 </button>
                 <button class="btn-print btn-print-todos" id="btnImprimirTodos">
-                    Imprimir Todos
+                    <i class="fa-solid fa-users"></i> Imprimir Todos
                 </button>
             </div>
         </div>
@@ -59,57 +69,63 @@
                         <option value="PLANTA">Planta</option>
                         <option value="EVENTUAL">Eventual</option>
                     </select>
-                    <input type="text" id="searchInput" placeholder="Buscar por nombre..." class="search-input">
+                    <div class="search-wrap">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="searchInput" placeholder="Buscar por nombre o número..." class="search-input">
+                    </div>
                 </div>
             </div>
+            
+            <div id="loadingSpinner" class="loading">
+                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                <span>Cargando registros...</span>
+            </div>
 
-            <div id="loadingSpinner" class="loading">Cargando registros...</div>
-
-            <table id="registrosTable" style="display: none;">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Fecha</th>
-                        <th>Nombre</th>
-                        <th>Edad</th>
-                        <th>Contrato</th>
-                        <th>Hijos</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-            </table>
+            <div class="table-responsive">
+                <table id="registrosTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>No. Empleado</th>
+                            <th>Nombre</th>
+                            <th>Contrato</th>
+                            <th>No. Hijos</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Se llenara dinamicamente -->
+                    </tbody>
+                </table>
+            </div>
 
             <div id="emptyState" class="empty-state" style="display: none;">
-                <p>No hay registros disponibles</p>
+                <p><i class="fa-solid fa-folder-open" style="margin-right:8px; color:var(--text-light)"></i> No hay registros disponibles</p>
             </div>
         </div>
     </div>
 
-    <!-- Modal Eliminar -->
+    <!-- Modal de Confirmacion -->
     <div id="modalEliminar" class="modal">
-        <div class="modal-content">
-            <h2>Confirmar Eliminación</h2>
-            <p>¿Está seguro de que desea eliminar el registro de:</p>
-            <p><strong id="nombreEliminar"></strong></p>
-            <p class="warning-text">Esta acción no se puede deshacer.</p>
-            <div class="modal-buttons">
-                <button class="btn-delete" id="btnConfirmarEliminar">Eliminar</button>
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <span class="close" id="closeModal">&times;</span>
+            <h2 style="color: var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> Confirmar Eliminación</h2>
+            <p style="margin-bottom: 24px; color: var(--text-mid);">¿Estás seguro de que deseas eliminar este registro?</p>
+            <p><strong id="nombreEliminar" style="color:#fff;"></strong></p>
+            <p style="color: var(--danger); font-size: 13px; margin-top: 10px;">Esta acción no se puede deshacer.</p>
+            <div class="modal-buttons" style="justify-content: center; margin-top: 24px;">
                 <button class="btn-cancel" id="btnCancelarEliminar">Cancelar</button>
+                <button class="btn-delete" id="btnConfirmarEliminar">Eliminar Registro</button>
             </div>
         </div>
     </div>
 
-    <!-- Firebase SDK -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script type="module">
         import { db } from '../../../firebase-config.js';
         window.db = db;
     </script>
-
-    <!-- jsPDF + autoTable para tablas en PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-
-    <script type="module" src="admindiapadres.js"></script>
+    <script type="module" src="adminDiaPadres.js"></script>
 </body>
 </html>
