@@ -43,6 +43,10 @@
                 <i class="fa-solid fa-house-chimney"></i>
                 <span>Dashboard</span>
             </a>
+            <a href="#" class="nav-item" data-section="enlaces">
+                <i class="fa-solid fa-link"></i>
+                <span>Enlaces de Formularios</span>
+            </a>
 
             <div class="nav-section-label">Documentos</div>
             <a href="#" class="nav-item" data-section="vacaciones">
@@ -225,6 +229,20 @@
 
                 <div class="cards-grid" id="home-grid">
 
+                    <!-- Enlaces de Formularios -->
+                    <div class="dash-card" data-goto="enlaces" data-search-terms="enlaces links formularios registro vacaciones afiliacion beneficiarios correos emergencia madres padres diciembre">
+                        <div class="dash-card-icon" style="--card-color: #00B8D4;">
+                            <i class="fa-solid fa-link"></i>
+                        </div>
+                        <div class="dash-card-body">
+                            <h3>Enlaces de Formularios</h3>
+                            <p>Links directos a todos los formularios de registro y eventos</p>
+                        </div>
+                        <div class="dash-card-arrow">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </div>
+
                     <!-- Vacaciones -->
                     <div class="dash-card" data-goto="vacaciones" data-search-terms="vacaciones solicitud cuatrimestre flujos fabricacion servicios mecanico acondicionamiento">
                         <div class="dash-card-icon" style="--card-color: #2979FF;">
@@ -381,6 +399,20 @@
 
                 </div>
                 </div>
+            </section>
+
+            <!-- ============ ENLACES DE FORMULARIOS ============ -->
+            <section class="page-section" id="section-enlaces">
+                <div class="section-header">
+                    <div class="back-btn" data-goto="home">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Volver</span>
+                    </div>
+                    <h1 class="section-title">Enlaces de Formularios</h1>
+                    <p class="section-subtitle">Links directos a los formularios de registro y eventos</p>
+                </div>
+
+                <div class="link-groups" id="link-groups"></div>
             </section>
 
             <!-- ============ VACACIONES ============ -->
@@ -750,6 +782,7 @@ const headerTitle = document.getElementById('header-title');
 
 const sectionTitles = {
     home: 'Dashboard',
+    enlaces: 'Enlaces de Formularios',
     vacaciones: 'Vacaciones por Area',
     cena: 'Cena Fin de Ano',
     celebracion: 'Celebracion Anual',
@@ -802,6 +835,63 @@ document.querySelectorAll('.back-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         navigateTo(btn.dataset.goto);
     });
+});
+
+// ============================================================
+//  ENLACES DE FORMULARIOS (visitar / copiar)
+//  Para agregar un formulario nuevo: agrega una linea al grupo.
+// ============================================================
+const BASE_URL = 'https://seccion58mc-cmd.github.io/seccion58mc.io/';
+const LINK_GROUPS = [
+    { icon: 'fa-lock', title: 'Admin', items: [
+        ['Inicial (Admin)', 'public/log/index.html'],
+    ]},
+    { icon: 'fa-clipboard-list', title: 'Formularios / Registro', items: [
+        ['Formulario de vacaciones', 'public/index.html'],
+        ['Solicitud al sindicato (Afiliación)', 'public/log/afiliacion/index.html'],
+        ['Designación de beneficiarios', 'public/log/ayudaDefuncion/index.html'],
+        ['Pólizas beneficiarios eventuales', 'public/log/polizasEventual/index.html'],
+        ['Registro de correos electrónicos', 'public/log/listadoCorreos/listadoCorreos.html'],
+        ['Contacto de emergencia', 'public/contactoEmergencia/index.html'],
+    ]},
+    { icon: 'fa-champagne-glasses', title: 'Eventos / Festividades', items: [
+        ['Registro 12 de diciembre', 'public/festividadAnual/festividadAnual.html'],
+        ['Elección de obsequio (diciembre)', 'public/eleccionObsequio/obsequioFinDeAnio.html'],
+        ['Día de las madres', 'public/log/diamadres/index.html'],
+        ['Día de los padres', 'public/log/diapadres/diapadres.html'],
+    ]},
+];
+
+document.getElementById('link-groups').innerHTML = LINK_GROUPS.map(g => `
+    <div class="link-group">
+        <h2 class="link-group-title"><i class="fa-solid ${g.icon}"></i> ${g.title}</h2>
+        ${g.items.map(([name, path]) => {
+            const url = BASE_URL + path;
+            return `<div class="link-item">
+                <span class="link-name">${name}</span>
+                <div class="link-actions">
+                    <a class="link-btn" target="_blank" rel="noopener" href="${url}"><i class="fa-solid fa-arrow-up-right-from-square"></i> Visitar</a>
+                    <button class="link-btn link-btn--copy" data-copy="${url}"><i class="fa-solid fa-copy"></i> Copiar</button>
+                </div>
+            </div>`;
+        }).join('')}
+    </div>
+`).join('');
+
+document.getElementById('link-groups').addEventListener('click', async e => {
+    const btn = e.target.closest('.link-btn--copy');
+    if (!btn) return;
+    try {
+        await navigator.clipboard.writeText(btn.dataset.copy);
+    } catch {
+        const t = document.createElement('textarea');
+        t.value = btn.dataset.copy; document.body.appendChild(t); t.select();
+        document.execCommand('copy'); t.remove();
+    }
+    const original = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Copiado';
+    btn.classList.add('link-btn--copied');
+    setTimeout(() => { btn.innerHTML = original; btn.classList.remove('link-btn--copied'); }, 1500);
 });
 
 // ============================================================

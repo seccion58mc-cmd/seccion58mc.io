@@ -4,6 +4,7 @@ import { cargarTrabajadores } from '../adminContactosEmergencia/listaOficial.js'
 // Colecciones a revisar. count: cuenta para el % de completitud.
 // tipo: solo aplica a ese tipo de trabajador. condicional: se muestra pero no cuenta (depende de género/caso).
 const DATASETS = [
+    { key: 'ingresos',            label: 'Alta Sindicato',       icon: 'fa-solid fa-file-signature', count: true },
     { key: 'contactosEmergencia', label: 'Contactos Emergencia', icon: 'fa-solid fa-phone', count: true },
     { key: 'vacaciones',          label: 'Vacaciones',           icon: 'fa-solid fa-umbrella-beach', count: true },
     { key: 'ListadoCorreos',      label: 'Correo',               icon: 'fa-solid fa-envelope', count: true },
