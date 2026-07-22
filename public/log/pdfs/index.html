@@ -65,6 +65,10 @@
                 <i class="fa-solid fa-envelope"></i>
                 <span>Correos</span>
             </a>
+            <a href="#" class="nav-item" data-section="correos-transporte">
+                <i class="fa-solid fa-bus"></i>
+                <span>Lista de Correos de transporte</span>
+            </a>
 
             <div class="nav-section-label">Gestion</div>
             <a href="#" class="nav-item" data-section="afiliados">
@@ -293,6 +297,20 @@
                         <div class="dash-card-body">
                             <h3>Correos Electronicos</h3>
                             <p>Listado completo de correos registrados</p>
+                        </div>
+                        <div class="dash-card-arrow">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </div>
+
+                    <!-- Correos de transporte -->
+                    <div class="dash-card" data-goto="correos-transporte" data-search-terms="correos transporte camion ruta telefono email lista">
+                        <div class="dash-card-icon" style="--card-color: #F57C00;">
+                            <i class="fa-solid fa-bus"></i>
+                        </div>
+                        <div class="dash-card-body">
+                            <h3>Lista de Correos de transporte</h3>
+                            <p>Correos y telefonos registrados para transporte</p>
                         </div>
                         <div class="dash-card-arrow">
                             <i class="fa-solid fa-chevron-right"></i>
@@ -550,6 +568,25 @@
                 </div>
             </section>
 
+            <!-- ============ CORREOS DE TRANSPORTE ============ -->
+            <section class="page-section" id="section-correos-transporte">
+                <div class="section-header">
+                    <div class="back-btn" data-goto="home">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Volver</span>
+                    </div>
+                    <h1 class="section-title">Lista de Correos de transporte</h1>
+                    <p class="section-subtitle">Correos y telefonos registrados para el servicio de transporte</p>
+                </div>
+                <div class="service-buttons">
+                    <button class="service-btn service-btn--teal" id="reporte-correos-transporte" data-service="CORREOS_TRANSPORTE">
+                        <span class="btn-icon-wrap"><i class="fa-solid fa-bus"></i></span>
+                        <span class="btn-text">Lista de Correos de transporte</span>
+                        <span class="btn-desc">Ver, editar y generar PDF de los registros</span>
+                    </button>
+                </div>
+            </section>
+
             <!-- ============ AFILIADOS ============ -->
             <section class="page-section" id="section-afiliados">
                 <div class="section-header">
@@ -787,6 +824,7 @@ const sectionTitles = {
     cena: 'Cena Fin de Ano',
     celebracion: 'Celebracion Anual',
     correos: 'Correos Electronicos',
+    'correos-transporte': 'Lista de Correos de transporte',
     afiliados: 'Gestion de Afiliados',
     beneficiarios: 'Gestion de Beneficiarios',
     trabajadores: 'Trabajadores',
@@ -852,6 +890,7 @@ const LINK_GROUPS = [
         ['Designación de beneficiarios', 'public/log/ayudaDefuncion/index.html'],
         ['Pólizas beneficiarios eventuales', 'public/log/polizasEventual/index.html'],
         ['Registro de correos electrónicos', 'public/log/listadoCorreos/listadoCorreos.html'],
+        ['Correos de transporte', 'public/log/correosTransporte/correosTransporte.html'],
         ['Contacto de emergencia', 'public/contactoEmergencia/index.html'],
     ]},
     { icon: 'fa-champagne-glasses', title: 'Eventos / Festividades', items: [

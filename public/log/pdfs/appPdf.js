@@ -886,6 +886,261 @@ async function abrirPanelCorreos() {
     }
 }
 
+// ─────────────────────────────────────────────
+//  LISTA DE CORREOS DE TRANSPORTE (panel + PDF)
+// ─────────────────────────────────────────────
+async function abrirPanelCorreosTransporte() {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;
+        display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px;
+    `;
+
+    const panel = document.createElement('div');
+    panel.style.cssText = `
+        background:#111827;border-radius:16px;width:100%;max-width:1100px;
+        box-shadow:0 10px 60px rgba(0,0,0,.7);overflow:hidden;margin:auto;
+        border: 1px solid rgba(245,124,0,0.3);
+    `;
+    panel.innerHTML = `
+        <div style="background:linear-gradient(135deg,#0D1220,#111827);padding:22px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(245,124,0,0.3);flex-wrap:wrap;gap:12px;">
+            <div>
+                <h2 style="margin:0;color:#fff;font-size:20px;display:flex;align-items:center;gap:10px;"><i class="fa-solid fa-bus" style="color:#FFA726"></i> Lista de Correos de transporte</h2>
+                <p style="margin:4px 0 0;color:#8FA3C0;font-size:13px;" id="ct-subtitulo">Cargando...</p>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button id="ct-pdf" style="background:rgba(245,124,0,0.15);color:#FFA726;border:1px solid rgba(245,124,0,0.3);padding:10px 18px;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;">Generar PDF</button>
+                <button id="ct-cerrar" style="background:rgba(255,255,255,.05);color:#F0F4FF;border:1px solid rgba(255,255,255,0.15);padding:10px 18px;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;">Cerrar</button>
+            </div>
+        </div>
+        <div style="padding:20px;background:#111827;">
+            <input id="ct-buscar" type="text" placeholder="Buscar por nombre, correo o telefono..."
+                style="width:100%;padding:12px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:10px;font-size:14px;outline:none;box-sizing:border-box;color:#F0F4FF;margin-bottom:16px;">
+            <div id="ct-tabla" style="overflow-x:auto;">
+                <p style="text-align:center;color:#8FA3C0;padding:40px;">Cargando datos...</p>
+            </div>
+        </div>
+    `;
+    overlay.appendChild(panel);
+    document.body.appendChild(overlay);
+
+    const cerrar = () => document.body.removeChild(overlay);
+    overlay.addEventListener('click', e => { if (e.target === overlay) cerrar(); });
+    document.getElementById('ct-cerrar').addEventListener('click', cerrar);
+
+    let datos = [];
+    try {
+        const snap = await getDocs(query(collection(db, 'CorreosTransporte'), orderBy('nombreCompleto', 'asc')));
+        snap.forEach(d => datos.push({ id: d.id, ...d.data() }));
+    } catch (err) {
+        document.getElementById('ct-tabla').innerHTML =
+            `<p style="color:#f87171;text-align:center;padding:30px;">Error al cargar datos: ${err.message}</p>`;
+        return;
+    }
+
+    const actualizarSubtitulo = () =>
+        document.getElementById('ct-subtitulo').textContent = `Total registrados: ${datos.length} registros`;
+    actualizarSubtitulo();
+
+    function filtrar() {
+        const term = document.getElementById('ct-buscar').value.toLowerCase();
+        return !term ? datos : datos.filter(d =>
+            (d.nombreCompleto || '').toLowerCase().includes(term) ||
+            (d.correo || '').toLowerCase().includes(term) ||
+            (d.telefono || '').includes(term));
+    }
+
+    function render(lista) {
+        const wrapper = document.getElementById('ct-tabla');
+        if (!lista.length) {
+            wrapper.innerHTML = '<p style="text-align:center;color:#8FA3C0;padding:30px;">No se encontraron registros.</p>';
+            return;
+        }
+        const filas = lista.map((item, idx) => `
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                <td style="padding:10px 12px;text-align:center;color:#4A6080;font-size:13px;">${idx + 1}</td>
+                <td style="padding:10px 12px;font-size:14px;color:#F0F4FF;">${escHtml(item.apellidoPaterno || '')} ${escHtml(item.apellidoMaterno || '')}</td>
+                <td style="padding:10px 12px;font-size:14px;color:#F0F4FF;">${escHtml(item.primerNombre || '')} ${escHtml(item.segundoNombre || '')}</td>
+                <td style="padding:10px 12px;"><a href="mailto:${escHtml(item.correo || '')}" style="color:#FFA726;text-decoration:none;font-size:14px;">${escHtml(item.correo || 'N/A')}</a></td>
+                <td style="padding:10px 12px;text-align:center;"><a href="tel:${escHtml(item.telefono || '')}" style="color:#40C4FF;text-decoration:none;font-size:14px;">${escHtml(item.telefono || 'N/A')}</a></td>
+                <td style="padding:10px 12px;font-size:13px;color:#8FA3C0;text-align:center;">${item.fechaRegistro ? formatDate(item.fechaRegistro) : 'N/A'}</td>
+                <td style="padding:10px 12px;text-align:center;">
+                    <div style="display:flex;gap:6px;justify-content:center;">
+                        <button onclick="editarCorreoTransporte('${item.id}')" style="background:rgba(64,196,255,0.1);color:#40C4FF;border:1px solid rgba(64,196,255,0.3);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Editar</button>
+                        <button onclick="eliminarCorreoTransporte('${item.id}','${escHtml(item.nombreCompleto || '')}')" style="background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.3);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Eliminar</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+
+        wrapper.innerHTML = `
+            <table style="width:100%;border-collapse:collapse;min-width:800px;">
+                <thead>
+                    <tr style="background:rgba(0,0,0,0.4);">
+                        ${['#','Apellidos','Nombre(s)','Correo Electronico','Telefono','Fecha Registro','Acciones']
+                            .map(h => `<th style="padding:12px;font-size:12px;color:#8FA3C0;text-transform:uppercase;letter-spacing:0.5px;">${h}</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>${filas}</tbody>
+            </table>
+        `;
+    }
+    render(datos);
+
+    document.getElementById('ct-buscar').addEventListener('input', () => render(filtrar()));
+    document.getElementById('ct-pdf').addEventListener('click', () => generarPDFCorreosTransporte(datos));
+
+    window.editarCorreoTransporte = async (id) => {
+        const reg = datos.find(d => d.id === id);
+        if (!reg) return;
+        const { value: v } = await Swal.fire({
+            title: 'Editar Registro',
+            background: '#111827',
+            color: '#F0F4FF',
+            confirmButtonColor: '#2979FF',
+            showCancelButton: true,
+            cancelButtonText: 'Cancelar',
+            cancelButtonColor: 'transparent',
+            html: `
+                <div style="text-align:left;display:flex;flex-direction:column;gap:8px;margin-top:8px">
+                    <input id="ct-e-paterno" class="swal2-input" style="margin:0" placeholder="Apellido paterno" value="${escHtml(reg.apellidoPaterno || '')}">
+                    <input id="ct-e-materno" class="swal2-input" style="margin:0" placeholder="Apellido materno" value="${escHtml(reg.apellidoMaterno || '')}">
+                    <input id="ct-e-primer" class="swal2-input" style="margin:0" placeholder="Primer nombre" value="${escHtml(reg.primerNombre || '')}">
+                    <input id="ct-e-segundo" class="swal2-input" style="margin:0" placeholder="Segundo nombre" value="${escHtml(reg.segundoNombre || '')}">
+                    <input id="ct-e-correo" class="swal2-input" style="margin:0" placeholder="Correo" value="${escHtml(reg.correo || '')}">
+                    <input id="ct-e-tel" class="swal2-input" style="margin:0" maxlength="10" placeholder="Telefono (10 digitos)" value="${escHtml(reg.telefono || '')}">
+                </div>`,
+            focusConfirm: false,
+            preConfirm: () => {
+                const g = i => document.getElementById(i).value.trim().toUpperCase();
+                const tel = document.getElementById('ct-e-tel').value.replace(/\D/g, '');
+                const correo = document.getElementById('ct-e-correo').value.trim(); // tal cual lo escriben
+                if (!correo.includes('@')) { Swal.showValidationMessage('El correo debe contener @'); return false; }
+                if (!/^\d{10}$/.test(tel)) { Swal.showValidationMessage('El telefono debe tener 10 digitos'); return false; }
+                return {
+                    apellidoPaterno: g('ct-e-paterno'),
+                    apellidoMaterno: g('ct-e-materno'),
+                    primerNombre: g('ct-e-primer'),
+                    segundoNombre: g('ct-e-segundo'),
+                    correo,
+                    telefono: tel
+                };
+            }
+        });
+        if (!v) return;
+        v.nombreCompleto = `${v.primerNombre} ${v.segundoNombre} ${v.apellidoPaterno} ${v.apellidoMaterno}`.replace(/\s+/g, ' ').trim();
+        try {
+            await updateDoc(firestoreDoc(db, 'CorreosTransporte', id), v);
+            Object.assign(datos.find(d => d.id === id), v);
+            render(filtrar());
+            swalToast('Registro actualizado correctamente');
+        } catch (err) {
+            swalDark({ icon: 'error', title: 'Error', text: 'Error al actualizar: ' + err.message });
+        }
+    };
+
+    window.eliminarCorreoTransporte = async (id, nombre) => {
+        const result = await swalDark({
+            icon: 'warning',
+            title: 'Eliminar registro',
+            html: `¿Eliminar a <strong>${escHtml(nombre)}</strong> de la base de datos?<br><small>Esta accion no se puede deshacer.</small>`,
+            showCancelButton: true,
+            confirmButtonText: 'Eliminar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#E53935'
+        });
+        if (!result.isConfirmed) return;
+        try {
+            await deleteDoc(firestoreDoc(db, 'CorreosTransporte', id));
+            const i = datos.findIndex(d => d.id === id);
+            if (i !== -1) datos.splice(i, 1);
+            actualizarSubtitulo();
+            render(filtrar());
+            swalToast('Registro eliminado correctamente', 'success');
+        } catch (err) {
+            swalDark({ icon: 'error', title: 'Error', text: 'Error al eliminar: ' + err.message });
+        }
+    };
+}
+
+async function generarPDFCorreosTransporte(datos) {
+    if (!datos || datos.length === 0) {
+        swalDark({ icon: 'info', title: 'Sin datos', text: 'No hay datos para generar el PDF.' });
+        return;
+    }
+    swalLoading('Generando PDF de correos de transporte...');
+    try {
+        if (!(await loadJsPDF())) { Swal.close(); return; }
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('landscape');
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const margin = 15;
+
+        doc.setFillColor(245, 124, 0);
+        doc.rect(0, 0, pageWidth, 28, 'F');
+        doc.setFontSize(16);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(255, 255, 255);
+        doc.text('LISTA DE CORREOS DE TRANSPORTE', pageWidth / 2, 12, { align: 'center' });
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'normal');
+        doc.text('Sindicato Nacional de Trabajadores', pageWidth / 2, 20, { align: 'center' });
+
+        doc.setFontSize(9);
+        doc.setTextColor(80, 80, 80);
+        doc.text(`Generado el: ${new Date().toLocaleDateString('es-ES', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}`, margin, 35);
+        doc.text(`Total de registros: ${datos.length}`, pageWidth - margin, 35, { align: 'right' });
+
+        doc.autoTable({
+            startY: 40,
+            head: [['#','Apellido Paterno','Apellido Materno','Primer Nombre','Segundo Nombre','Correo Electronico','Telefono']],
+            body: datos.map((it, i) => [
+                i + 1,
+                it.apellidoPaterno || 'N/A',
+                it.apellidoMaterno || 'N/A',
+                it.primerNombre || 'N/A',
+                it.segundoNombre || '',
+                it.correo || 'N/A',
+                it.telefono || 'N/A'
+            ]),
+            theme: 'grid',
+            headStyles: { fillColor:[245,124,0], textColor:255, fontStyle:'bold', fontSize:9 },
+            styles: { fontSize:8, cellPadding:3, overflow:'linebreak', minCellHeight:9 },
+            margin: { left: margin, right: margin },
+            columnStyles: {
+                0: { cellWidth:10, halign:'center' },
+                1: { cellWidth:42 },
+                2: { cellWidth:42 },
+                3: { cellWidth:35 },
+                4: { cellWidth:35 },
+                5: { cellWidth:70, textColor:[245,124,0] },
+                6: { cellWidth:28, halign:'center' }
+            },
+            didDrawCell: function(hookData) {
+                if (hookData.section === 'body' && hookData.column.index === 5) {
+                    const correo = datos[hookData.row.index]?.correo;
+                    if (correo) doc.link(hookData.cell.x, hookData.cell.y, hookData.cell.width, hookData.cell.height, { url: `mailto:${correo}` });
+                }
+            },
+            didDrawPage: function(data) {
+                doc.setFontSize(8);
+                doc.setTextColor(130,130,130);
+                doc.text(`Página ${data.pageNumber}`, pageWidth - margin, pageHeight - 8, { align:'right' });
+                doc.text('CONFIDENCIAL - Uso interno', margin, pageHeight - 8);
+            }
+        });
+
+        doc.save(`correos_transporte_${new Date().toISOString().slice(0,10)}.pdf`);
+        Swal.close();
+        swalToast('PDF generado correctamente');
+    } catch (error) {
+        console.error('Error generando PDF de correos de transporte:', error);
+        Swal.close();
+        swalDark({ icon: 'error', title: 'Error', text: 'Error al generar el PDF: ' + error.message });
+    }
+}
+
 // Pequeño toast de confirmación
 function mostrarToast(msg, color = '#333') {
     const t = document.createElement('div');
@@ -1073,6 +1328,8 @@ function initApp() {
                 generarPDFFiestaFinAnio();
             } else if (service === 'LISTADO_CORREOS') {
                 abrirPanelCorreos();
+            } else if (service === 'CORREOS_TRANSPORTE') {
+                abrirPanelCorreosTransporte();
             } else {
                 const cuatrimestre = document.querySelector('input[name="cuatrimestre-pdf"]:checked')?.value || '1er';
                 generatePDF(service, cuatrimestre);
