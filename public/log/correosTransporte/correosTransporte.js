@@ -1,10 +1,29 @@
-import { collection, addDoc, query, where, getDocs, Timestamp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+import { collection, addDoc, query, where, getDocs, getDoc, doc as fdoc, Timestamp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 
 const COLECCION = 'CorreosTransporte';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const $ = id => document.getElementById(id);
     $('currentYear').textContent = new Date().getFullYear();
+
+    // Verificar si el formulario esta habilitado desde el panel admin
+    try {
+        const cfg = await getDoc(fdoc(window.db, 'Config', 'correosTransporte'));
+        if (cfg.exists() && cfg.data().habilitado === false) {
+            $('formTransporte').style.display = 'none';
+            const aviso = document.createElement('div');
+            aviso.className = 'declaracion';
+            aviso.style.textAlign = 'center';
+            aviso.innerHTML = `
+                <p><i class="fas fa-lock" style="font-size:1.5rem;"></i></p>
+                <p><strong>El registro esta cerrado temporalmente.</strong></p>
+                <p>En este momento no se estan recibiendo respuestas. Intenta mas tarde.</p>`;
+            document.querySelector('.main-content').appendChild(aviso);
+            return;
+        }
+    } catch (e) {
+        console.error('No se pudo verificar el estado del formulario:', e);
+    }
 
     // Nombres en MAYUSCULAS. El correo se guarda tal cual lo escriben.
     ['apellidoPaterno', 'apellidoMaterno', 'primerNombre', 'segundoNombre'].forEach(id => {

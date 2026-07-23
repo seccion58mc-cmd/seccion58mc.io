@@ -9,7 +9,9 @@ import {
     orderBy,
     doc as firestoreDoc,
     updateDoc,
-    deleteDoc
+    deleteDoc,
+    getDoc,
+    setDoc
 } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 
 // Configuración de Firebase
@@ -909,6 +911,7 @@ async function abrirPanelCorreosTransporte() {
                 <p style="margin:4px 0 0;color:#8FA3C0;font-size:13px;" id="ct-subtitulo">Cargando...</p>
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button id="ct-toggle" style="padding:10px 18px;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,.05);color:#8FA3C0;">Cargando...</button>
                 <button id="ct-pdf" style="background:rgba(245,124,0,0.15);color:#FFA726;border:1px solid rgba(245,124,0,0.3);padding:10px 18px;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;">Generar PDF</button>
                 <button id="ct-cerrar" style="background:rgba(255,255,255,.05);color:#F0F4FF;border:1px solid rgba(255,255,255,0.15);padding:10px 18px;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;">Cerrar</button>
             </div>
@@ -927,6 +930,57 @@ async function abrirPanelCorreosTransporte() {
     const cerrar = () => document.body.removeChild(overlay);
     overlay.addEventListener('click', e => { if (e.target === overlay) cerrar(); });
     document.getElementById('ct-cerrar').addEventListener('click', cerrar);
+
+    // ── Control de habilitado/inhabilitado del formulario ──
+    const cfgRef = firestoreDoc(db, 'Config', 'correosTransporte');
+    const btnToggle = document.getElementById('ct-toggle');
+    let habilitado = true;
+
+    function pintarToggle() {
+        if (habilitado) {
+            btnToggle.innerHTML = '<i class="fa-solid fa-toggle-on"></i> Formulario ABIERTO';
+            btnToggle.style.background = 'rgba(34,197,94,0.15)';
+            btnToggle.style.color = '#4ade80';
+            btnToggle.style.borderColor = 'rgba(34,197,94,0.35)';
+        } else {
+            btnToggle.innerHTML = '<i class="fa-solid fa-toggle-off"></i> Formulario CERRADO';
+            btnToggle.style.background = 'rgba(239,68,68,0.15)';
+            btnToggle.style.color = '#f87171';
+            btnToggle.style.borderColor = 'rgba(239,68,68,0.35)';
+        }
+    }
+
+    (async () => {
+        try {
+            const snap = await getDoc(cfgRef);
+            habilitado = !(snap.exists() && snap.data().habilitado === false);
+        } catch (e) { habilitado = true; }
+        pintarToggle();
+    })();
+
+    btnToggle.addEventListener('click', async () => {
+        const nuevo = !habilitado;
+        const result = await swalDark({
+            icon: nuevo ? 'question' : 'warning',
+            title: nuevo ? 'Abrir formulario' : 'Cerrar formulario',
+            html: nuevo
+                ? 'El formulario volvera a recibir respuestas de los trabajadores.'
+                : 'Se dejaran de recibir respuestas. Los trabajadores veran un aviso de registro cerrado.',
+            showCancelButton: true,
+            confirmButtonText: nuevo ? 'Abrir' : 'Cerrar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: nuevo ? '#22C55E' : '#E53935'
+        });
+        if (!result.isConfirmed) return;
+        try {
+            await setDoc(cfgRef, { habilitado: nuevo }, { merge: true });
+            habilitado = nuevo;
+            pintarToggle();
+            swalToast(nuevo ? 'Formulario abierto' : 'Formulario cerrado');
+        } catch (err) {
+            swalDark({ icon: 'error', title: 'Error', text: 'No se pudo cambiar el estado: ' + err.message });
+        }
+    });
 
     let datos = [];
     try {
