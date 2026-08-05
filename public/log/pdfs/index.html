@@ -91,6 +91,10 @@
                 <i class="fa-solid fa-folder-open"></i>
                 <span>Datos por Trabajador</span>
             </a>
+            <a href="#" class="nav-item" data-section="becas">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span>Proceso de Becas</span>
+            </a>
 
             <div class="nav-section-label">Eventos</div>
             <a href="#" class="nav-item" data-section="madres">
@@ -381,6 +385,20 @@
                         <div class="dash-card-body">
                             <h3>Datos por Trabajador</h3>
                             <p>Que tenemos y que falta de cada uno en todas las colecciones</p>
+                        </div>
+                        <div class="dash-card-arrow">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </div>
+
+                    <!-- Proceso de Becas -->
+                    <div class="dash-card" data-goto="becas" data-search-terms="becas proceso beca hijos acta nacimiento boleta calificaciones documentos zip descargar">
+                        <div class="dash-card-icon" style="--card-color: #2563EB;">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                        </div>
+                        <div class="dash-card-body">
+                            <h3>Proceso de Becas</h3>
+                            <p>Solicitudes y documentos de cada trabajador</p>
                         </div>
                         <div class="dash-card-arrow">
                             <i class="fa-solid fa-chevron-right"></i>
@@ -687,6 +705,25 @@
                 </div>
             </section>
 
+            <!-- ============ PROCESO DE BECAS ============ -->
+            <section class="page-section" id="section-becas">
+                <div class="section-header">
+                    <div class="back-btn" data-goto="home">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Volver</span>
+                    </div>
+                    <h1 class="section-title">Proceso de Becas</h1>
+                    <p class="section-subtitle">Consultar solicitudes y descargar los documentos de cada trabajador</p>
+                </div>
+                <div class="service-buttons">
+                    <button class="service-btn" onclick="window.location.href='./adminBecas/index.html'">
+                        <span class="btn-icon-wrap"><i class="fa-solid fa-graduation-cap"></i></span>
+                        <span class="btn-text">Proceso de Becas</span>
+                        <span class="btn-desc">Buscar por nombre o numero de empleado y descargar su ZIP</span>
+                    </button>
+                </div>
+            </section>
+
             <!-- ============ DIA DE LAS MADRES ============ -->
             <section class="page-section" id="section-madres">
                 <div class="section-header">
@@ -830,6 +867,7 @@ const sectionTitles = {
     trabajadores: 'Trabajadores',
     emergencia: 'Contactos de Emergencia',
     datos: 'Datos por Trabajador',
+    becas: 'Proceso de Becas',
     madres: 'Dia de las Madres',
     padres: 'Dia del Padre'
 };
@@ -892,6 +930,7 @@ const LINK_GROUPS = [
         ['Registro de correos electrónicos', 'public/log/listadoCorreos/listadoCorreos.html'],
         ['Correos de transporte', 'public/log/correosTransporte/correosTransporte.html'],
         ['Contacto de emergencia', 'public/contactoEmergencia/index.html'],
+        ['Proceso de becas', 'public/log/becas/index.html'],
     ]},
     { icon: 'fa-champagne-glasses', title: 'Eventos / Festividades', items: [
         ['Registro 12 de diciembre', 'public/festividadAnual/festividadAnual.html'],

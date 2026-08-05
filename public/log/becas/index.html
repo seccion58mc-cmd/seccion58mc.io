@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proceso de Becas - Registro Seccion 58</title>
+    <link rel="stylesheet" href="becas.css">
+</head>
+<body>
+    <div class="container">
+
+        <!-- ENCABEZADO -->
+        <header class="header">
+            <h1>SINDICATO NACIONAL DE TRABAJADORES DE LA INDUSTRIA QUIMICA,</h1>
+            <h2>PETROQUIMICA, CARBOQUIMICA, ENERGIA Y GASES.</h2>
+            <div class="logo-container">
+                <img src="../../assets/sindicatoLogo.png" alt="Logo Sindicato" class="logo">
+            </div>
+            <div class="header-badge"> &middot; SECCION 58</div>
+            <span class="header-divider"></span>
+        </header>
+
+        <!-- FORMULARIO -->
+        <div class="form-container">
+            <h2 class="form-title">Proceso de Becas</h2>
+
+            <form id="becasForm">
+
+                <!-- Datos del trabajador -->
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="nombre">Nombre(s) *</label>
+                        <input type="text" id="nombre" placeholder="JUAN ANTONIO" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="numEmpleado">Numero de empleado *</label>
+                        <input type="text" id="numEmpleado" placeholder="12345" inputmode="numeric" maxlength="9" required autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="apellidoPaterno">Apellido paterno *</label>
+                        <input type="text" id="apellidoPaterno" placeholder="RAMIREZ" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="apellidoMaterno">Apellido materno *</label>
+                        <input type="text" id="apellidoMaterno" placeholder="VARGAS" required autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="fechaIngreso">Fecha de ingreso (antiguedad) *</label>
+                    <input type="month" id="fechaIngreso" max="2026-05" min="1960-01" required>
+                    <span class="field-hint">Solo pueden participar quienes ingresaron en <strong>mayo de 2026 o antes</strong>. De junio de 2026 en adelante no aplica.</span>
+                </div>
+
+                <!-- Seccion Hijos -->
+                <div class="section-hijos">
+                    <div class="section-hijos-header">
+                        <h3>Hijos a registrar</h3>
+                        <button type="button" class="btn-agregar-hijo" id="btnAgregarHijo">+ Agregar hijo</button>
+                    </div>
+
+                    <div class="info-box">
+                        <div class="info-box-titulo">Como subir los documentos</div>
+                        <ul>
+                            <li>Puedes registrar un <strong>maximo de 2 hijos</strong>, los que tu elijas.</li>
+                            <li>Cada hijo necesita su <strong>acta de nacimiento</strong> y su <strong>boleta de calificaciones</strong>.</li>
+                            <li>Se acepta <strong>PDF</strong> o una <strong>foto</strong> del documento. Si tomas foto, el sistema la comprime automaticamente.</li>
+                            <li>Cada archivo debe pesar menos de <strong>650 KB</strong>. Si tu PDF pesa mas, vuelve a escanearlo en blanco y negro o toma una foto.</li>
+                        </ul>
+                    </div>
+
+                    <div class="hijos-lista" id="hijosLista"></div>
+                </div>
+
+                <!-- Declaracion -->
+                <div class="declaracion">
+                    <p>Declaro que la informacion y los documentos proporcionados son veridicos. Este registro es exclusivo para el <strong>proceso de becas</strong> de la Seccion 58 y solo se permite <strong>un registro por numero de empleado</strong>.</p>
+                </div>
+
+                <div class="button-container">
+                    <button type="submit" class="btn-enviar">Enviar Registro</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Confirmacion -->
+    <div id="modalConfirmacion" class="modal">
+        <div class="modal-content">
+            <h3>Confirmar Registro</h3>
+            <div id="resumenDatos"></div>
+            <div class="modal-buttons">
+                <button id="btnConfirmar" class="btn-confirmar">Confirmar y Enviar</button>
+                <button id="btnCancelar"  class="btn-cancelar">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Exito -->
+    <div id="modalExito" class="modal">
+        <div class="modal-content modal-success">
+            <h3>Registro Exitoso</h3>
+            <p>Tu solicitud de <strong>beca</strong> y tus documentos se enviaron correctamente.</p>
+            <div class="modal-buttons">
+                <button id="btnCerrarExito" class="btn-confirmar">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { db } from '../../firebase-config.js';
+        window.db = db;
+    </script>
+
+    <script type="module" src="becas.js"></script>
+</body>
+</html>

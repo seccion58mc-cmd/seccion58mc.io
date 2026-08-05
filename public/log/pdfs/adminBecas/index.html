@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Proceso de Becas</title>
+    <!-- Fuente moderna -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome (iconos) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Aplica el tema guardado antes de pintar para evitar parpadeo -->
+    <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('adminTheme') || 'dark');</script>
+
+    <link rel="stylesheet" href="adminBecas.css">
+</head>
+<body>
+    <div class="admin-container">
+        <header>
+            <div class="header-text">
+                <h1><i class="fa-solid fa-graduation-cap"></i> Administracion &mdash; Proceso de Becas</h1>
+                <p>Consultar solicitudes y descargar los documentos de cada trabajador</p>
+            </div>
+            <button class="back-btn" onclick="window.location.href='../index.html'">
+                <i class="fa-solid fa-arrow-left"></i> Volver
+            </button>
+        </header>
+
+        <!-- Estadisticas -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <span class="stat-number" id="totalRegistros">0</span>
+                <span class="stat-label">Solicitudes</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="totalHijos">0</span>
+                <span class="stat-label">Hijos registrados</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="totalDocs">0</span>
+                <span class="stat-label">Documentos subidos</span>
+            </div>
+        </div>
+
+        <!-- Buscador -->
+        <div class="search-wrap">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" class="search-input"
+                   placeholder="Filtrar por nombre o numero de empleado..." autocomplete="off">
+        </div>
+
+        <!-- Cuadritos -->
+        <div class="empleados-grid" id="empleadosGrid"></div>
+
+        <div class="loading" id="loading">
+            <i class="fa-solid fa-spinner fa-spin"></i> Cargando solicitudes...
+        </div>
+
+        <div class="empty-state" id="emptyState" style="display:none;">
+            <i class="fa-solid fa-inbox"></i>
+            <p>No hay solicitudes que coincidan con la busqueda.</p>
+        </div>
+    </div>
+
+    <!-- Modal: detalle del empleado -->
+    <div id="modalDetalle" class="modal">
+        <div class="modal-content">
+            <span class="close" id="btnCerrarDetalle">&times;</span>
+            <h2 id="detalleNombre"></h2>
+            <p class="detalle-sub" id="detalleSub"></p>
+
+            <div id="detalleHijos"></div>
+
+            <div class="modal-buttons">
+                <button class="btn-descargar" id="btnDescargarZip">
+                    <i class="fa-solid fa-file-zipper"></i> Descargar ZIP con sus PDFs
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JSZip para empaquetar los documentos -->
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+    <script type="module">
+        import { db } from '../../../firebase-config.js';
+        window.db = db;
+    </script>
+    <script type="module" src="adminBecas.js"></script>
+</body>
+</html>
