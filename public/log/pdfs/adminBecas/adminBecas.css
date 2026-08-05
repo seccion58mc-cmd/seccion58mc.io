@@ -221,7 +221,124 @@ header {
     color: var(--text-mid);
 }
 
-.modal-buttons { margin-top: 22px; text-align: center; }
+.modal-content--chico { max-width: 460px; }
+
+/* ===== CAMPOS EDITABLES ===== */
+.campos-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+.campo-ancho { grid-column: 1 / -1; }
+
+.campo label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-mid);
+    margin-bottom: 5px;
+}
+
+.campo input,
+.campo select {
+    width: 100%;
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-dark);
+    font-family: inherit;
+    font-size: 14px;
+    transition: all var(--transition);
+}
+.campo input:focus,
+.campo select:focus {
+    outline: none;
+    border-color: var(--border-bright);
+    background: rgba(255,255,255,0.07);
+}
+.campo input:disabled,
+.campo select:disabled {
+    color: var(--text-mid);
+    border-color: transparent;
+    background: rgba(255,255,255,0.02);
+    cursor: default;
+    opacity: 1;                      /* Safari los aclara de mas */
+    -webkit-text-fill-color: var(--text-mid);
+}
+.campo select option { background: var(--bg-card); color: var(--text-dark); }
+
+.hijo-row-titulo {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--accent-bright);
+    margin-bottom: 10px;
+}
+
+.aviso-edicion {
+    margin-top: 14px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    min-height: 18px;
+}
+.aviso-edicion--ok    { color: #4ade80; }
+.aviso-edicion--error { color: #fca5a5; }
+
+.aviso-peligro {
+    background: rgba(239,68,68,.1);
+    border: 1px solid rgba(239,68,68,.3);
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: #fca5a5;
+    font-size: 13px;
+    line-height: 1.5;
+    margin-top: 6px;
+}
+
+.modal-content--chico h2 i { color: var(--danger); }
+
+.modal-buttons {
+    margin-top: 22px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.btn-editar,
+.btn-guardar,
+.btn-eliminar,
+.btn-cancelar-edicion {
+    border: none;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all var(--transition);
+}
+
+.btn-editar  { background: rgba(255,255,255,.07); color: var(--text-dark); border: 1px solid rgba(255,255,255,.14); }
+.btn-guardar { background: #15803d; color: #fff; }
+.btn-eliminar{ background: var(--danger); color: #fff; }
+.btn-cancelar-edicion { background: rgba(255,255,255,.05); color: var(--text-mid); border: 1px solid rgba(255,255,255,.1); }
+
+.btn-editar:hover:not(:disabled)  { background: rgba(255,255,255,.13); transform: translateY(-2px); }
+.btn-guardar:hover:not(:disabled) { background: #166534; transform: translateY(-2px); }
+.btn-eliminar:hover:not(:disabled){ background: #dc2626; transform: translateY(-2px); }
+.btn-cancelar-edicion:hover       { background: rgba(255,255,255,.1); }
+
+.btn-editar:disabled,
+.btn-guardar:disabled,
+.btn-eliminar:disabled { opacity: .6; cursor: wait; }
 
 .btn-descargar {
     background: var(--accent);

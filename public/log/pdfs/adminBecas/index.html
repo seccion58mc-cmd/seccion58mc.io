@@ -71,12 +71,66 @@
             <h2 id="detalleNombre"></h2>
             <p class="detalle-sub" id="detalleSub"></p>
 
+            <div class="campos-grid">
+                <div class="campo">
+                    <label for="edNombre">Nombre(s)</label>
+                    <input type="text" id="edNombre" disabled>
+                </div>
+                <div class="campo">
+                    <label for="edNumEmpleado">Numero de empleado</label>
+                    <input type="text" id="edNumEmpleado" inputmode="numeric" maxlength="9" disabled>
+                </div>
+                <div class="campo">
+                    <label for="edApellidoPaterno">Apellido paterno</label>
+                    <input type="text" id="edApellidoPaterno" disabled>
+                </div>
+                <div class="campo">
+                    <label for="edApellidoMaterno">Apellido materno</label>
+                    <input type="text" id="edApellidoMaterno" disabled>
+                </div>
+                <div class="campo campo-ancho">
+                    <label for="edFechaIngreso">Fecha de ingreso</label>
+                    <input type="month" id="edFechaIngreso" max="2026-05" disabled>
+                </div>
+            </div>
+
             <div id="detalleHijos"></div>
+
+            <div class="aviso-edicion" id="avisoEdicion"></div>
 
             <div class="modal-buttons">
                 <button class="btn-descargar" id="btnDescargarZip">
-                    <i class="fa-solid fa-file-zipper"></i> Descargar ZIP con sus PDFs
+                    <i class="fa-solid fa-file-zipper"></i> Descargar ZIP
                 </button>
+                <button class="btn-editar" id="btnEditar">
+                    <i class="fa-solid fa-pen"></i> Editar datos
+                </button>
+                <button class="btn-guardar" id="btnGuardar" style="display:none;">
+                    <i class="fa-solid fa-floppy-disk"></i> Guardar cambios
+                </button>
+                <button class="btn-cancelar-edicion" id="btnCancelarEdicion" style="display:none;">
+                    Cancelar
+                </button>
+                <button class="btn-eliminar" id="btnEliminar">
+                    <i class="fa-solid fa-trash"></i> Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: confirmar eliminacion -->
+    <div id="modalEliminar" class="modal">
+        <div class="modal-content modal-content--chico">
+            <h2><i class="fa-solid fa-triangle-exclamation"></i> Eliminar solicitud</h2>
+            <p class="detalle-sub" id="textoEliminar"></p>
+            <p class="aviso-peligro">
+                Se borran tambien sus actas de nacimiento y boletas. Esta accion no se puede deshacer.
+            </p>
+            <div class="modal-buttons">
+                <button class="btn-eliminar" id="btnConfirmarEliminar">
+                    <i class="fa-solid fa-trash"></i> Si, eliminar
+                </button>
+                <button class="btn-cancelar-edicion" id="btnCancelarEliminar">Cancelar</button>
             </div>
         </div>
     </div>

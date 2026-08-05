@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Prueba admin becas</title>
+<script type="importmap">
+{ "imports": { "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js": "./_fakeFirestore.js" } }
+</script>
+<script>sessionStorage.setItem('pdfAuth','true');</script>
+<link rel="stylesheet" href="adminBecas.css">
+</head>
+<body>
+
+    <div class="admin-container">
+        <header>
+            <div class="header-text">
+                <h1><i class="fa-solid fa-graduation-cap"></i> Administracion &mdash; Proceso de Becas</h1>
+                <p>Consultar solicitudes y descargar los documentos de cada trabajador</p>
+            </div>
+            <button class="back-btn" onclick="window.location.href='../index.html'">
+                <i class="fa-solid fa-arrow-left"></i> Volver
+            </button>
+        </header>
+
+        <!-- Estadisticas -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <span class="stat-number" id="totalRegistros">0</span>
+                <span class="stat-label">Solicitudes</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="totalHijos">0</span>
+                <span class="stat-label">Hijos registrados</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="totalDocs">0</span>
+                <span class="stat-label">Documentos subidos</span>
+            </div>
+        </div>
+
+        <!-- Buscador -->
+        <div class="search-wrap">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" class="search-input"
+                   placeholder="Filtrar por nombre o numero de empleado..." autocomplete="off">
+        </div>
+
+        <!-- Cuadritos -->
+        <div class="empleados-grid" id="empleadosGrid"></div>
+
+        <div class="loading" id="loading">
+            <i class="fa-solid fa-spinner fa-spin"></i> Cargando solicitudes...
+        </div>
+
+        <div class="empty-state" id="emptyState" style="display:none;">
+            <i class="fa-solid fa-inbox"></i>
+            <p>No hay solicitudes que coincidan con la busqueda.</p>
+        </div>
+    </div>
+
+    <!-- Modal: detalle del empleado -->
+    <div id="modalDetalle" class="modal">
+        <div class="modal-content">
+            <span class="close" id="btnCerrarDetalle">&times;</span>
+            <h2 id="detalleNombre"></h2>
+            <p class="detalle-sub" id="detalleSub"></p>
+
+            <div class="campos-grid">
+                <div class="campo">
+                    <label for="edNombre">Nombre(s)</label>
+                    <input type="text" id="edNombre" disabled>
+                </div>
+                <div class="campo">
+                    <label for="edNumEmpleado">Numero de empleado</label>
+                    <input type="text" id="edNumEmpleado" inputmode="numeric" maxlength="9" disabled>
+                </div>
+                <div class="campo">
+                    <label for="edApellidoPaterno">Apellido paterno</label>
+                    <input type="text" id="edApellidoPaterno" disabled>
+                </div>
+                <div class="campo">
+                    <label for="edApellidoMaterno">Apellido materno</label>
+                    <input type="text" id="edApellidoMaterno" disabled>
+                </div>
+                <div class="campo campo-ancho">
+                    <label for="edFechaIngreso">Fecha de ingreso</label>
+                    <input type="month" id="edFechaIngreso" max="2026-05" disabled>
+                </div>
+            </div>
+
+            <div id="detalleHijos"></div>
+
+            <div class="aviso-edicion" id="avisoEdicion"></div>
+
+            <div class="modal-buttons">
+                <button class="btn-descargar" id="btnDescargarZip">
+                    <i class="fa-solid fa-file-zipper"></i> Descargar ZIP
+                </button>
+                <button class="btn-editar" id="btnEditar">
+                    <i class="fa-solid fa-pen"></i> Editar datos
+                </button>
+                <button class="btn-guardar" id="btnGuardar" style="display:none;">
+                    <i class="fa-solid fa-floppy-disk"></i> Guardar cambios
+                </button>
+                <button class="btn-cancelar-edicion" id="btnCancelarEdicion" style="display:none;">
+                    Cancelar
+                </button>
+                <button class="btn-eliminar" id="btnEliminar">
+                    <i class="fa-solid fa-trash"></i> Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: confirmar eliminacion -->
+    <div id="modalEliminar" class="modal">
+        <div class="modal-content modal-content--chico">
+            <h2><i class="fa-solid fa-triangle-exclamation"></i> Eliminar solicitud</h2>
+            <p class="detalle-sub" id="textoEliminar"></p>
+            <p class="aviso-peligro">
+                Se borran tambien sus actas de nacimiento y boletas. Esta accion no se puede deshacer.
+            </p>
+            <div class="modal-buttons">
+                <button class="btn-eliminar" id="btnConfirmarEliminar">
+                    <i class="fa-solid fa-trash"></i> Si, eliminar
+                </button>
+                <button class="btn-cancelar-edicion" id="btnCancelarEliminar">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    
+<pre id="salida" style="background:#000;color:#0f0;padding:16px;font-size:13px;">corriendo...</pre>
+
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script type="module">
+import { reset, datos } from './_fakeFirestore.js';
+
+const b64 = btoa('%PDF-1.4 falso');
+reset({
+    r1: { nombre:'JUAN', apellidoPaterno:'RAMIREZ', apellidoMaterno:'VARGAS',
+          nombreCompleto:'JUAN RAMIREZ VARGAS', numEmpleado:'12345', fechaIngreso:'2020-03',
+          hijos:[{nombre:'ANA RAMIREZ', nivel:'Primaria', actaId:'a1', boletaId:'b1'}] },
+    r2: { nombre:'MARIA', apellidoPaterno:'LOPEZ', apellidoMaterno:'SOTO',
+          nombreCompleto:'MARIA LOPEZ SOTO', numEmpleado:'67890', fechaIngreso:'2019-11',
+          hijos:[{nombre:'LUIS LOPEZ', nivel:'Secundaria', actaId:'a2', boletaId:'b2'}] },
+    // nombre con HTML (Firestore esta abierto) y un nivel que no esta en la lista
+    r3: { nombre:'X', apellidoPaterno:'Y', apellidoMaterno:'Z',
+          nombreCompleto:'<img src=x onerror="window.__xss=1">', numEmpleado:'999', fechaIngreso:'2021-01',
+          hijos:[{nombre:'HIJO RARO', nivel:'Posgrado', actaId:'a3', boletaId:'b3'}] }
+}, {
+    a1:{mime:'application/pdf',data:b64}, b1:{mime:'application/pdf',data:b64},
+    a2:{mime:'application/pdf',data:b64}, b2:{mime:'application/pdf',data:b64},
+    a3:{mime:'application/pdf',data:b64}, b3:{mime:'application/pdf',data:b64}
+});
+
+window.__log = [];
+const out = m => { window.__log.push(m); document.getElementById('salida').textContent = window.__log.join('\n'); };
+let fallas = 0;
+const check = (ok, msg) => { if(!ok) fallas++; out(`${ok?'PASA':'FALLA'}  ${msg}`); };
+const $ = id => document.getElementById(id);
+const esperar = ms => new Promise(r => setTimeout(r, ms));
+const visible = id => $(id).style.display !== 'none';
+const cerrarPorFuera = () => $('btnCerrarDetalle').click();
+
+await import('./adminBecas.js');
+document.dispatchEvent(new Event('DOMContentLoaded'));
+await esperar(300);
+
+try {
+    // Render inicial
+    check(document.querySelectorAll('.empleado-card').length === 3, 'pinta 3 cuadritos');
+    check($('totalRegistros').textContent === '3', 'stats: 3 solicitudes');
+
+    // Filtro por numero
+    $('searchInput').value = '67890';
+    $('searchInput').dispatchEvent(new Event('input'));
+    check(document.querySelectorAll('.empleado-card').length === 1, 'filtra por numero de empleado');
+    $('searchInput').value = 'juan';
+    $('searchInput').dispatchEvent(new Event('input'));
+    check(document.querySelectorAll('.empleado-card').length === 1, 'filtra por nombre');
+    $('searchInput').value = '';
+    $('searchInput').dispatchEvent(new Event('input'));
+
+    // Abrir detalle
+    [...document.querySelectorAll('.empleado-card')]
+        .find(c => c.textContent.includes('JUAN')).click();
+    await esperar(100);
+    check(visible('modalDetalle'), 'abre el detalle al hacer click');
+    check($('edNombre').value === 'JUAN', 'carga el nombre en el campo');
+    check($('edNombre').disabled, 'los campos arrancan bloqueados');
+    check(visible('btnEditar') && !visible('btnGuardar'), 'muestra Editar, no Guardar');
+
+    // Modo edicion
+    $('btnEditar').click();
+    check(!$('edNombre').disabled, 'Editar desbloquea los campos');
+    check(visible('btnGuardar') && !visible('btnEliminar'), 'en edicion muestra Guardar y esconde Eliminar');
+
+    // Guardar cambios
+    $('edNombre').value = 'JUAN CARLOS';
+    $('edApellidoPaterno').value = 'RAMIREZ';
+    document.querySelector('.ed-hijo-nivel[data-i="0"]').value = 'Secundaria';
+    $('btnGuardar').click();
+    await esperar(300);
+    check(datos.becas.r1.nombre === 'JUAN CARLOS', 'guarda el nombre editado');
+    check(datos.becas.r1.nombreCompleto === 'JUAN CARLOS RAMIREZ VARGAS', 'recalcula nombreCompleto');
+    check(datos.becas.r1.hijos[0].nivel === 'Secundaria', 'guarda el nivel del hijo');
+    check(datos.becas.r1.hijos[0].actaId === 'a1', 'no pierde la referencia a los documentos');
+    check($('edNombre').disabled, 'vuelve a modo lectura tras guardar');
+    check([...document.querySelectorAll('.empleado-card')].some(c => c.textContent.includes('JUAN CARLOS')),
+          'el cuadrito se actualiza');
+
+    // Numero de empleado duplicado
+    $('btnEditar').click();
+    $('edNumEmpleado').value = '67890';
+    $('btnGuardar').click();
+    await esperar(300);
+    check(datos.becas.r1.numEmpleado === '12345', 'rechaza un numero de empleado duplicado');
+    check($('avisoEdicion').textContent.includes('Ya existe'), 'avisa del duplicado');
+
+    // Fecha de ingreso fuera de rango
+    $('edNumEmpleado').value = '12345';
+    $('edFechaIngreso').value = '2026-09';
+    $('btnGuardar').click();
+    await esperar(200);
+    check(datos.becas.r1.fechaIngreso === '2020-03', 'rechaza ingreso posterior a mayo 2026');
+
+    // Campo vacio
+    $('edFechaIngreso').value = '2020-03';
+    $('edNombre').value = '';
+    $('btnGuardar').click();
+    await esperar(200);
+    check(datos.becas.r1.nombre === 'JUAN CARLOS', 'rechaza el nombre vacio');
+    $('btnCancelarEdicion').click();
+    await esperar(150);
+    check($('edNombre').value === 'JUAN CARLOS', 'Cancelar restaura los valores');
+
+    // ZIP
+    $('btnDescargarZip').click();
+    await esperar(600);
+    check(!$('btnDescargarZip').innerHTML.includes('Error'), 'el ZIP se genera sin error');
+
+    // Eliminar
+    $('btnEliminar').click();
+    check(visible('modalEliminar'), 'pide confirmacion antes de borrar');
+    check($('textoEliminar').textContent.includes('12345'), 'la confirmacion dice a quien borra');
+    $('btnConfirmarEliminar').click();
+    await esperar(400);
+    check(!datos.becas.r1, 'borra la solicitud');
+    check(!datos.becasArchivos.a1 && !datos.becasArchivos.b1, 'borra tambien sus archivos');
+    check(datos.becas.r2 && datos.becasArchivos.a2, 'no toca a los demas');
+    check(document.querySelectorAll('.empleado-card').length === 2, 'quedan 2 cuadritos');
+    check($('totalRegistros').textContent === '2', 'stats se actualizan tras borrar');
+    check(!visible('modalDetalle'), 'cierra el detalle tras borrar');
+
+    // Nombre con HTML: se muestra como texto, no se ejecuta
+    check(!window.__xss, 'un nombre con HTML no ejecuta codigo en el panel');
+    check(document.body.innerHTML.includes('&lt;img src=x'), 'el HTML del nombre sale escapado');
+
+    // Nivel fuera de la lista: se conserva en vez de cambiarse solo
+    [...document.querySelectorAll('.empleado-card')]
+        .find(c => c.textContent.includes('999')).click();
+    await esperar(100);
+    check(document.querySelector('.ed-hijo-nivel[data-i="0"]').value === 'Posgrado', 'conserva un nivel fuera de la lista');
+    $('btnEditar').click();
+    $('btnGuardar').click();
+    await esperar(300);
+    check(datos.becas.r3.hijos[0].nivel === 'Posgrado', 'guardar no pisa el nivel desconocido');
+    cerrarPorFuera();
+    await esperar(100);
+
+} catch (err) { fallas++; out('EXCEPCION: ' + (err && err.stack || err)); }
+
+out(fallas === 0 ? '\nRESULTADO: TODO OK' : `\nRESULTADO: ${fallas} FALLA(S)`);
+document.title = 'listo';
+</script>
+</body>
+</html>
