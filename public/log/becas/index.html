@@ -67,8 +67,9 @@
                         <ul>
                             <li>Puedes registrar un <strong>maximo de 2 hijos</strong>, los que tu elijas.</li>
                             <li>Cada hijo necesita su <strong>acta de nacimiento</strong> y su <strong>boleta de calificaciones</strong>.</li>
-                            <li>Se acepta <strong>PDF</strong> o una <strong>foto</strong> del documento. Si tomas foto, el sistema la comprime automaticamente.</li>
-                            <li>Cada archivo debe pesar menos de <strong>650 KB</strong>. Si tu PDF pesa mas, vuelve a escanearlo en blanco y negro o toma una foto.</li>
+                            <li>Se acepta <strong>PDF</strong> o una <strong>foto</strong> del documento.</li>
+                            <li>No te preocupes por el peso: si tu archivo esta pesado, el sistema lo <strong>comprime solo</strong> antes de enviarlo. Un escaneo de 4 MB se queda en unos cientos de KB.</li>
+                            <li>Los archivos muy pesados tardan <strong>unos segundos</strong> en procesarse. Espera a ver el mensaje <strong>&laquo;Listo&raquo;</strong> antes de enviar.</li>
                         </ul>
                     </div>
 
@@ -110,6 +111,9 @@
             </div>
         </div>
     </div>
+
+    <!-- jsPDF: rearma los PDF pesados ya comprimidos (ver comprimirPDF en becas.js) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <!-- Firebase SDK -->
     <script type="module">

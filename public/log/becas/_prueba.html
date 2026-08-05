@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Prueba de compresion</title></head>
+<body>
+<!-- ids minimos para que el init de becas.js no truene fuera de su pagina -->
+<form id="becasForm">
+    <input id="nombre"><input id="apellidoPaterno"><input id="apellidoMaterno"><input id="numEmpleado">
+    <input id="fechaIngreso"><button type="button" id="btnAgregarHijo"></button>
+    <button type="button" id="btnCancelar"></button><button type="button" id="btnConfirmar"></button>
+    <button type="button" id="btnCerrarExito"></button>
+    <div id="hijosLista"></div><div id="resumenDatos"></div>
+    <div id="modalConfirmacion"></div><div id="modalExito"></div>
+</form>
+
+<pre id="salida">corriendo...</pre>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script type="module">
+import { prepararArchivo } from './becas.js';
+
+const log = [];
+const out = m => { log.push(m); document.getElementById('salida').textContent = log.join('\n'); };
+
+// Simula un acta escaneada: hoja clara con grano de escaner, sellos de color
+// y renglones de texto. Es lo que de verdad sube la gente, no ruido puro.
+function hojaEscaneada() {
+    const c = document.createElement('canvas');
+    c.width = 1700; c.height = 2200;
+    const ctx = c.getContext('2d');
+
+    ctx.fillStyle = '#f4f1e8';
+    ctx.fillRect(0, 0, c.width, c.height);
+
+    // grano del escaner
+    const img = ctx.getImageData(0, 0, c.width, c.height);
+    for (let i = 0; i < img.data.length; i += 4) {
+        const n = (Math.random() - 0.5) * 26;
+        img.data[i] += n; img.data[i+1] += n; img.data[i+2] += n;
+    }
+    ctx.putImageData(img, 0, 0);
+
+    // sellos y bordes de color
+    ctx.strokeStyle = '#8a6d3b'; ctx.lineWidth = 8;
+    ctx.strokeRect(60, 60, c.width - 120, c.height - 120);
+    ctx.fillStyle = 'rgba(30,80,160,.35)';
+    ctx.beginPath(); ctx.arc(1350, 1850, 190, 0, Math.PI * 2); ctx.fill();
+
+    // renglones de texto
+    ctx.fillStyle = '#1a1a1a';
+    for (let y = 220; y < 1700; y += 46) {
+        let x = 140;
+        while (x < c.width - 220) {
+            const w = 40 + Math.random() * 130;
+            ctx.fillRect(x, y, w, 17);
+            x += w + 22;
+        }
+    }
+    return c;
+}
+
+function pdfPesado(paginas = 2) {
+    const { jsPDF } = window.jspdf;
+    let doc = null;
+    // una hoja distinta por pagina: jsPDF deduplica la misma imagen y el
+    // archivo no crecería, que es justo lo que queremos evitar aqui.
+    for (let p = 0; p < paginas; p++) {
+        const c = hojaEscaneada();
+        if (!doc) doc = new jsPDF({ unit: 'px', format: [c.width, c.height] });
+        else doc.addPage([c.width, c.height]);
+        doc.addImage(c.toDataURL('image/jpeg', 0.98), 'JPEG', 0, 0, c.width, c.height);
+    }
+    return doc.output('blob');
+}
+
+const MAX = 700 * 1024;
+const mb = b => (b / 1024 / 1024).toFixed(2) + ' MB';
+const kb = b => Math.round(b / 1024) + ' KB';
+let fallas = 0;
+const check = (ok, msg) => { if (!ok) fallas++; out(`${ok ? 'PASA' : 'FALLA'}  ${msg}`); };
+
+try {
+    // 1. PDF pesado de 2 paginas
+    const blob = pdfPesado(4);
+    const file = new File([blob], 'acta.pdf', { type: 'application/pdf' });
+    out(`PDF de prueba: ${mb(file.size)}`);
+    check(file.size > 3 * 1024 * 1024, `el PDF de prueba llega al rango real de 3-4 MB (${mb(file.size)})`);
+
+    const t0 = performance.now();
+    const r = await prepararArchivo(file, m => out('  aviso: ' + m));
+    const seg = ((performance.now() - t0) / 1000).toFixed(1);
+
+    check(r.bytes <= MAX, `comprimido a ${kb(r.bytes)} (limite ${kb(MAX)}) en ${seg}s`);
+    check(r.mime === 'application/pdf', 'sigue siendo application/pdf');
+    check(r.data.length > 0 && !r.data.startsWith('data:'), 'data es base64 puro');
+    check(atob(r.data.slice(0, 8)).startsWith('%PDF'), 'el resultado abre como PDF valido');
+
+    // 2. PDF chico pasa intacto
+    const chico = new File([new Blob(['%PDF-1.4 chiquito'])], 'chico.pdf', { type: 'application/pdf' });
+    const r2 = await prepararArchivo(chico);
+    check(r2.bytes === chico.size, 'un PDF chico pasa sin tocarse');
+
+    // 3. Foto pesada del documento (lo que manda quien usa el celular)
+    const c = hojaEscaneada();
+    const foto = await new Promise(res => c.toBlob(res, 'image/jpeg', 0.98));
+    const rFoto = await prepararArchivo(new File([foto], 'boleta.jpg', { type: 'image/jpeg' }));
+    check(rFoto.bytes <= MAX, `foto de ${mb(foto.size)} comprimida a ${kb(rFoto.bytes)}`);
+    check(rFoto.mime === 'image/jpeg', 'la foto sale como image/jpeg');
+
+    // 4. Formato invalido
+    let rechazado = false;
+    try { await prepararArchivo(new File([new Blob(['x'])], 'a.docx', { type: 'application/vnd.ms-word' })); }
+    catch { rechazado = true; }
+    check(rechazado, 'un .docx se rechaza');
+
+} catch (err) {
+    fallas++;
+    out('EXCEPCION: ' + (err && err.stack || err));
+}
+
+out(fallas === 0 ? '\nRESULTADO: TODO OK' : `\nRESULTADO: ${fallas} FALLA(S)`);
+document.title = 'listo';
+</script>
+</body>
+</html>

@@ -26,6 +26,7 @@ Frontend estático (HTML/CSS/JS vainilla) servido con Firebase Hosting, base de 
 | `public/log/diapadres/diapadres.html` | Registro Día del Padre. |
 | `public/log/listadoCorreos/` | Registro de correo electrónico del trabajador. |
 | `public/log/polizasEventual/` | Designación de beneficiarios para trabajadores eventuales. |
+| `public/log/becas/` | Proceso de Becas — datos del trabajador, hasta 2 hijos con acta de nacimiento y boleta en PDF/foto. Comprime los archivos en el navegador (pdf.js + jsPDF) y los guarda en base64 porque Storage no está habilitado. |
 
 ## Panel de Admin (`public/log/`)
 
@@ -38,6 +39,7 @@ Frontend estático (HTML/CSS/JS vainilla) servido con Firebase Hosting, base de 
 | `public/log/pdfs/adminBeneficiarioEventual/` | Admin de beneficiarios de trabajadores eventuales. |
 | `public/log/pdfs/adminDiaMadres/` | Admin de registros Día de las Madres. |
 | `public/log/pdfs/adminDiaPadres/` | Admin de registros Día del Padre. |
+| `public/log/pdfs/adminBecas/` | Proceso de Becas — cuadrícula filtrable por nombre/número de empleado; descarga los documentos de cada trabajador como `<numEmpleado><Nombre>.zip` (JSZip). |
 
 > **Nota de seguridad:** solo `log/index.html` y `log/pdfs/appPdf.js` validan `sessionStorage.pdfAuth`.
 > Las subcarpetas `afiliados/`, `adminAyudaDefuncion/`, `adminBeneficiarioEventual/`, `adminDiaMadres/` y `adminDiaPadres/`
