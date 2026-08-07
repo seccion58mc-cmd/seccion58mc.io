@@ -2,7 +2,7 @@ import { collection, addDoc, getDocs, query, where } from 'https://www.gstatic.c
 
 // ── Reglas del proceso ─────────────────────────────────────
 const MAX_HIJOS      = 2;
-const INGRESO_MAXIMO = '2026-05';          // mayo 2026; de junio en adelante no aplica
+const INGRESO_MAXIMO = '2026-02';          // febrero 2026; de marzo en adelante no aplica
 const MAX_DIGITOS_EMPLEADO = 9;            // el numero de empleado tiene menos de 10 digitos
 const NIVELES        = ['Preescolar', 'Primaria', 'Secundaria', 'Preparatoria', 'Universidad'];
 
@@ -312,8 +312,9 @@ function validarYConfirmar(e) {
     if (!d.fechaIngreso)
         return mostrarError('Selecciona tu fecha de ingreso.');
 
-    if (d.fechaIngreso > INGRESO_MAXIMO)
-        return mostrarError('Solo participan quienes ingresaron en mayo de 2026 o antes. Con fecha de ingreso de junio de 2026 en adelante no se puede registrar.');
+    // La regla es por mes, asi que comparamos solo el YYYY-MM.
+    if (d.fechaIngreso.slice(0, 7) > INGRESO_MAXIMO)
+        return mostrarError('Solo participan quienes ingresaron en febrero de 2026 o antes. Con fecha de ingreso de marzo de 2026 en adelante no se puede registrar.');
 
     const tarjetas = document.querySelectorAll('#hijosLista .hijo-card');
 
