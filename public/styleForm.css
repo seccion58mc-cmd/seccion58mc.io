@@ -318,3 +318,8 @@ body {
     display: flex;
     align-items: center;
 }
+/* Todo el texto libre se escribe y se guarda en MAYUSCULAS */
+.form-item input[type="text"],
+.form-item textarea {
+    text-transform: uppercase;
+}

@@ -419,7 +419,7 @@ async function generatePDF(servicio, cuatrimestre = '1er') {
             doc.setFont(undefined, 'normal');
             doc.text('NOMBRE COMPLETO:', margin, yPosition);
             doc.setFont(undefined, 'bold');
-            doc.text(`${record.nombreCompleto || 'N/A'}`, margin + 45, yPosition);
+            doc.text(`${(record.nombreCompleto || 'N/A').toUpperCase()}`, margin + 45, yPosition);
             yPosition += 10;
 
             const tableTop = yPosition;
