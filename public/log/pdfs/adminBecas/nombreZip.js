@@ -14,7 +14,11 @@ export function limpiar(texto) {
         .join('');
 }
 
-// 12345 + "JUAN RAMIREZ VARGAS" => "12345JuanRamirezVargas.zip"
+// 12345 + "JUAN RAMIREZ VARGAS" => "12345JuanRamirezVargas"
+export function nombreBase(reg) {
+    return `${reg.numEmpleado}${limpiar(reg.nombreCompleto)}`;
+}
+
 export function nombreZip(reg) {
-    return `${reg.numEmpleado}${limpiar(reg.nombreCompleto)}.zip`;
+    return `${nombreBase(reg)}.zip`;
 }

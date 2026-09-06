@@ -363,3 +363,5 @@ header {
     header { flex-direction: column; align-items: stretch; }
     .empleados-grid { grid-template-columns: 1fr 1fr; }
 }
+
+.btn-descargar-todo { margin-bottom: 24px; }

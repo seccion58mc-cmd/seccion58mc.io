@@ -1,6 +1,6 @@
 import { collection, getDocs, doc, getDoc, updateDoc, deleteDoc, query, where }
     from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
-import { limpiar, nombreZip } from './nombreZip.js';
+import { limpiar, nombreZip, nombreBase } from './nombreZip.js';
 
 // Mismo guardia de sesion que adminTrabajadores / datosPorTrabajador
 if (sessionStorage.getItem('pdfAuth') !== 'true') {
@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('searchInput').addEventListener('input', render);
     document.getElementById('btnCerrarDetalle').addEventListener('click', cerrarDetalle);
     document.getElementById('btnDescargarZip').addEventListener('click', descargarZip);
+    document.getElementById('btnDescargarTodo').addEventListener('click', descargarTodo);
 
     document.getElementById('btnEditar').addEventListener('click', () => modoEdicion(true));
     document.getElementById('btnCancelarEdicion').addEventListener('click', () => {
@@ -297,15 +298,7 @@ async function descargarZip() {
 
     try {
         const zip = new JSZip();
-
-        for (const [i, hijo] of (seleccionado.hijos || []).entries()) {
-            for (const [tipo, campoId] of [['Acta', 'actaId'], ['Boleta', 'boletaId']]) {
-                const archivo = await leerArchivo(hijo[campoId]);
-                if (!archivo) continue;
-                const ext = archivo.mime === 'application/pdf' ? 'pdf' : 'jpg';
-                zip.file(`Hijo${i + 1}_${limpiar(hijo.nombre)}_${tipo}.${ext}`, archivo.data, { base64: true });
-            }
-        }
+        await agregarDocumentos(zip, seleccionado, '');
 
         const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
         descargarBlob(blob, nombreZip(seleccionado));
@@ -317,6 +310,54 @@ async function descargarZip() {
         console.error('Error al generar el ZIP:', err);
         btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Error al descargar';
         setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 3000);
+    }
+}
+
+// Todas las solicitudes visibles en un solo ZIP, una carpeta por trabajador.
+// JSZip crea las carpetas solo con poner "/" en el nombre del archivo.
+// ponytail: se arma en memoria del navegador; con cientos de solicitudes
+// conviene filtrar antes de descargar (el boton respeta el buscador).
+async function descargarTodo() {
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    const visibles = registros.filter(r =>
+        !q ||
+        (r.nombreCompleto || '').toLowerCase().includes(q) ||
+        (r.numEmpleado || '').toLowerCase().includes(q)
+    );
+    if (!visibles.length) return;
+
+    const btn = document.getElementById('btnDescargarTodo');
+    const original = btn.innerHTML;
+    btn.disabled = true;
+
+    try {
+        const zip = new JSZip();
+        for (const [n, reg] of visibles.entries()) {
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Preparando ${n + 1} de ${visibles.length}...`;
+            await agregarDocumentos(zip, reg, `${nombreBase(reg)}/`);
+        }
+
+        const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+        descargarBlob(blob, `Becas_${visibles.length}Solicitudes.zip`);
+
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Descargado';
+        setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 2000);
+
+    } catch (err) {
+        console.error('Error al generar el ZIP completo:', err);
+        btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Error al descargar';
+        setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 3000);
+    }
+}
+
+async function agregarDocumentos(zip, reg, prefijo) {
+    for (const [i, hijo] of (reg.hijos || []).entries()) {
+        for (const [tipo, campoId] of [['Acta', 'actaId'], ['Boleta', 'boletaId']]) {
+            const archivo = await leerArchivo(hijo[campoId]);
+            if (!archivo) continue;
+            const ext = archivo.mime === 'application/pdf' ? 'pdf' : 'jpg';
+            zip.file(`${prefijo}Hijo${i + 1}_${limpiar(hijo.nombre)}_${tipo}.${ext}`, archivo.data, { base64: true });
+        }
     }
 }
 

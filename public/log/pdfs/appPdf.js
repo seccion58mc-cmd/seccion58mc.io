@@ -13,6 +13,7 @@ import {
     getDoc,
     setDoc
 } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+import { aplicarCorreccionesDepto } from './correccionDepto.js';
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -323,6 +324,9 @@ async function generatePDF(servicio, cuatrimestre = '1er') {
                 const rCuatri = r.cuatrimestre || '1er';
                 if (rCuatri === cuatrimestre) data.push(r);
             });
+            // Correcciones puntuales de depto mal capturado (no toca la BD)
+            aplicarCorreccionesDepto(data, servicio, cuatrimestre);
+
             if (servicio === 'ACONDICIONAMIENTO B') {
                 const supOrder = ['PABLO HERNÁNDEZ', 'CARINA ROJAS'];
                 data.sort((a, b) => {
