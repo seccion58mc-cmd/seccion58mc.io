@@ -321,27 +321,40 @@ async function borrarBaseDatosCena() {
             return;
         }
 
+        // Confirmación protegida: hay que escribir BORRAR para habilitar el borrado
         const confirmacion = await Swal.fire({
-            title: '¿Borrar base de datos de obsequios?',
+            title: '¿Seguro que quieres borrar TODO?',
             html: `
                 <div style="text-align: left; font-size: 14px; line-height: 1.5; color: #F0F4FF;">
                     <p style="margin-bottom: 12px;">
-                        Se encontraron <strong style="color:#00E5FF; font-size:16px;">${totalRegistros}</strong> registros de elecciones de <strong>Pavo y Pierna</strong> correspondientes al año anterior.
+                        Se encontraron <strong style="color:#00E5FF; font-size:16px;">${totalRegistros}</strong> registros de elecciones de <strong>Pavo y Pierna</strong>.
                     </p>
                     <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 8px; padding: 12px; margin-top: 10px; font-size: 13px; color: #fca5a5;">
                         <i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px; color: #ef4444;"></i>
-                        <strong>ATENCIÓN:</strong> Esta acción es irreversible. Se eliminarán permanentemente todos los registros únicamente de la colección <code>cenaNavidenia</code> para comenzar con nuevos registros este año.
+                        <strong>ATENCIÓN:</strong> Esta acción es irreversible. Se eliminarán permanentemente todos los registros de la colección <code>cenaNavidenia</code>.
                     </div>
+                    <p style="margin-top: 14px; font-size: 13px;">Para confirmar escribe <strong style="color:#ef4444;">BORRAR</strong>:</p>
                 </div>
             `,
             icon: 'warning',
+            input: 'text',
+            inputPlaceholder: 'Escribe BORRAR',
+            inputAttributes: { autocapitalize: 'characters', autocomplete: 'off' },
             showCancelButton: true,
-            confirmButtonText: '<i class="fa-solid fa-trash-can" style="margin-right:6px;"></i> Sí, borrar base de datos',
+            focusCancel: true,
+            confirmButtonText: 'Sí, borrar base de datos',
             cancelButtonText: 'Cancelar',
             confirmButtonColor: '#DC2626',
             cancelButtonColor: '#374151',
             background: '#111827',
-            color: '#F0F4FF'
+            color: '#F0F4FF',
+            preConfirm: (valor) => {
+                if ((valor || '').trim().toUpperCase() !== 'BORRAR') {
+                    Swal.showValidationMessage('Debes escribir BORRAR para confirmar');
+                    return false;
+                }
+                return true;
+            }
         });
 
         if (!confirmacion.isConfirmed) {
@@ -355,18 +368,27 @@ async function borrarBaseDatosCena() {
 
         for (let i = 0; i < docs.length; i += BATCH_SIZE) {
             const batch = writeBatch(db);
-            const chunk = docs.slice(i, i + BATCH_SIZE);
-            chunk.forEach(docSnap => {
-                batch.delete(docSnap.ref);
-            });
+            docs.slice(i, i + BATCH_SIZE).forEach(docSnap => batch.delete(docSnap.ref));
             await batch.commit();
         }
 
+        // Verificar que la colección quedó realmente vacía
+        const restantes = (await getDocs(collection(db, 'cenaNavidenia'))).size;
         Swal.close();
+
+        if (restantes > 0) {
+            swalDark({
+                icon: 'error',
+                title: 'Borrado incompleto',
+                text: `Aún quedan ${restantes} registros. Intenta de nuevo.`
+            });
+            return;
+        }
+
         await Swal.fire({
             icon: 'success',
             title: 'Base de datos eliminada',
-            text: `Se eliminaron exitosamente los ${totalRegistros} registros de obsequios de Pavo y Pierna. La base de datos está lista para el nuevo periodo.`,
+            text: `Se eliminaron ${totalRegistros} registros. La colección quedó vacía y lista para nuevos registros.`,
             confirmButtonColor: '#2979FF',
             background: '#111827',
             color: '#F0F4FF'
