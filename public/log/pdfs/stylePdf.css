@@ -659,6 +659,29 @@ body {
 .service-btn--red:hover .btn-icon-wrap { background: rgba(229, 57, 53, 0.22); box-shadow: 0 0 18px rgba(229, 57, 53, 0.3); }
 .service-btn--red::after { background: linear-gradient(90deg, #E53935, #FF1744); }
 
+.service-btn--danger {
+    grid-column: 1 / -1;
+    border-color: rgba(239, 68, 68, 0.35);
+    background: rgba(239, 68, 68, 0.05);
+}
+.service-btn--danger .btn-icon-wrap {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #EF4444;
+}
+.service-btn--danger:hover {
+    border-color: rgba(239, 68, 68, 0.6);
+    background: rgba(239, 68, 68, 0.1);
+    box-shadow: 0 0 24px rgba(239, 68, 68, 0.25);
+}
+.service-btn--danger:hover .btn-icon-wrap {
+    background: rgba(239, 68, 68, 0.28);
+    box-shadow: 0 0 18px rgba(239, 68, 68, 0.4);
+}
+.service-btn--danger::after {
+    background: linear-gradient(90deg, #EF4444, #DC2626);
+}
+
 .service-btn--teal .btn-icon-wrap {
     background: rgba(0, 191, 165, 0.12);
     border-color: rgba(0, 191, 165, 0.2);

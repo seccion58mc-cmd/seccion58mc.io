@@ -11,7 +11,8 @@ import {
     updateDoc,
     deleteDoc,
     getDoc,
-    setDoc
+    setDoc,
+    writeBatch
 } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 import { aplicarCorreccionesDepto } from './correccionDepto.js';
 
@@ -299,6 +300,86 @@ async function generarPDFCena(tipoCena) {
         console.error('Error generando PDF de cena:', error);
         Swal.close();
         swalDark({ icon: 'error', title: 'Error', text: 'Error al generar el PDF: ' + error.message });
+    }
+}
+
+// Función para borrar la base de datos de cena navideña (pavo y pierna)
+async function borrarBaseDatosCena() {
+    try {
+        swalLoading('Consultando registros de obsequios...');
+        const querySnapshot = await getDocs(collection(db, 'cenaNavidenia'));
+        Swal.close();
+
+        const totalRegistros = querySnapshot.size;
+
+        if (totalRegistros === 0) {
+            swalDark({
+                icon: 'info',
+                title: 'Base de datos vacía',
+                text: 'No se encontraron registros de obsequios (Pavo o Pierna) para eliminar.'
+            });
+            return;
+        }
+
+        const confirmacion = await Swal.fire({
+            title: '¿Borrar base de datos de obsequios?',
+            html: `
+                <div style="text-align: left; font-size: 14px; line-height: 1.5; color: #F0F4FF;">
+                    <p style="margin-bottom: 12px;">
+                        Se encontraron <strong style="color:#00E5FF; font-size:16px;">${totalRegistros}</strong> registros de elecciones de <strong>Pavo y Pierna</strong> correspondientes al año anterior.
+                    </p>
+                    <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 8px; padding: 12px; margin-top: 10px; font-size: 13px; color: #fca5a5;">
+                        <i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px; color: #ef4444;"></i>
+                        <strong>ATENCIÓN:</strong> Esta acción es irreversible. Se eliminarán permanentemente todos los registros únicamente de la colección <code>cenaNavidenia</code> para comenzar con nuevos registros este año.
+                    </div>
+                </div>
+            `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: '<i class="fa-solid fa-trash-can" style="margin-right:6px;"></i> Sí, borrar base de datos',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#DC2626',
+            cancelButtonColor: '#374151',
+            background: '#111827',
+            color: '#F0F4FF'
+        });
+
+        if (!confirmacion.isConfirmed) {
+            return;
+        }
+
+        swalLoading(`Eliminando ${totalRegistros} registros de obsequios...`);
+
+        const docs = querySnapshot.docs;
+        const BATCH_SIZE = 400;
+
+        for (let i = 0; i < docs.length; i += BATCH_SIZE) {
+            const batch = writeBatch(db);
+            const chunk = docs.slice(i, i + BATCH_SIZE);
+            chunk.forEach(docSnap => {
+                batch.delete(docSnap.ref);
+            });
+            await batch.commit();
+        }
+
+        Swal.close();
+        await Swal.fire({
+            icon: 'success',
+            title: 'Base de datos eliminada',
+            text: `Se eliminaron exitosamente los ${totalRegistros} registros de obsequios de Pavo y Pierna. La base de datos está lista para el nuevo periodo.`,
+            confirmButtonColor: '#2979FF',
+            background: '#111827',
+            color: '#F0F4FF'
+        });
+
+    } catch (error) {
+        console.error('Error al borrar la base de datos de obsequios:', error);
+        Swal.close();
+        swalDark({
+            icon: 'error',
+            title: 'Error al eliminar',
+            text: 'Ocurrió un error al intentar borrar los registros: ' + error.message
+        });
     }
 }
 
@@ -1382,6 +1463,8 @@ function initApp() {
             if (!service) return; // Si es un botón de navegación pura (sin data-service), no hacer nada
             if (service === 'PAVO' || service === 'PIERNA') {
                 generarPDFCena(service);
+            } else if (service === 'BORRAR_CENA') {
+                borrarBaseDatosCena();
             } else if (service === 'FIESTA_FIN_ANIO') {
                 generarPDFFiestaFinAnio();
             } else if (service === 'LISTADO_CORREOS') {

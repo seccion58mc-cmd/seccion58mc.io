@@ -55,7 +55,7 @@
             </a>
             <a href="#" class="nav-item" data-section="cena">
                 <i class="fa-solid fa-utensils"></i>
-                <span>Cena Fin de Ano</span>
+                <span>Obsequios Fin de Ano</span>
             </a>
             <a href="#" class="nav-item" data-section="celebracion">
                 <i class="fa-solid fa-star"></i>
@@ -266,13 +266,13 @@
                     </div>
 
                     <!-- Cena -->
-                    <div class="dash-card" data-goto="cena" data-search-terms="cena fin de ano pavo pierna obsequios navidad">
+                    <div class="dash-card" data-goto="cena" data-search-terms="cena fin de ano pavo pierna obsequios navidad borrar base de datos">
                         <div class="dash-card-icon" style="--card-color: #E53935;">
                             <i class="fa-solid fa-utensils"></i>
                         </div>
                         <div class="dash-card-body">
-                            <h3>Cena Fin de Ano</h3>
-                            <p>PDF de eleccion de obsequios — pavo o pierna</p>
+                            <h3>Obsequios Fin de Año</h3>
+                            <p>Pavo o pierna — Descargar PDFs o borrar base de datos</p>
                         </div>
                         <div class="dash-card-arrow">
                             <i class="fa-solid fa-chevron-right"></i>
@@ -531,19 +531,24 @@
                         <i class="fa-solid fa-arrow-left"></i>
                         <span>Volver</span>
                     </div>
-                    <h1 class="section-title">Cena Fin de Ano</h1>
-                    <p class="section-subtitle">Genera PDF de quienes eligieron cada opcion</p>
+                    <h1 class="section-title">Elección de Obsequios — Pavo y Pierna</h1>
+                    <p class="section-subtitle">Gestión y depuración de la base de datos de obsequios de fin de año</p>
                 </div>
                 <div class="service-buttons">
+                    <button class="service-btn service-btn--danger" id="btn-borrar-cena" data-service="BORRAR_CENA">
+                        <span class="btn-icon-wrap"><i class="fa-solid fa-trash-can"></i></span>
+                        <span class="btn-text" style="color: #FF5252; font-size: 15px;">Borrar base de datos relacionada a obsequios de pavo y pierna</span>
+                        <span class="btn-desc">Elimina permanentemente todos los registros del año pasado (solo afecta la colección cenaNavidenia)</span>
+                    </button>
                     <button class="service-btn service-btn--red" id="reporte-pavo" data-service="PAVO">
                         <span class="btn-icon-wrap"><i class="fa-solid fa-drumstick-bite"></i></span>
-                        <span class="btn-text">Pavo</span>
-                        <span class="btn-desc">Ver quienes eligieron pavo</span>
+                        <span class="btn-text">Descargar PDF Pavo</span>
+                        <span class="btn-desc">Ver quienes eligieron pavo (Respaldo)</span>
                     </button>
                     <button class="service-btn service-btn--red" id="reporte-pierna" data-service="PIERNA">
                         <span class="btn-icon-wrap"><i class="fa-solid fa-bone"></i></span>
-                        <span class="btn-text">Pierna</span>
-                        <span class="btn-desc">Ver quienes eligieron pierna</span>
+                        <span class="btn-text">Descargar PDF Pierna</span>
+                        <span class="btn-desc">Ver quienes eligieron pierna (Respaldo)</span>
                     </button>
                 </div>
             </section>
@@ -858,7 +863,7 @@ const sectionTitles = {
     home: 'Dashboard',
     enlaces: 'Enlaces de Formularios',
     vacaciones: 'Vacaciones por Area',
-    cena: 'Cena Fin de Ano',
+    cena: 'Elección de Obsequios — Pavo y Pierna',
     celebracion: 'Celebracion Anual',
     correos: 'Correos Electronicos',
     'correos-transporte': 'Lista de Correos de transporte',
