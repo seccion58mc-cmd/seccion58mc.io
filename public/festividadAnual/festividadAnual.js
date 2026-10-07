@@ -1,5 +1,6 @@
 // Importar configuración de Firebase desde archivo centralizado
 import { db } from '../firebase-config.js';
+import { collection, query, where, getDocs, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 
 // Variables globales
 let numEmpleadoExiste = false;
@@ -202,9 +203,10 @@ async function verificarNumEmpleado() {
     }
     
     try {
-        const querySnapshot = await db.collection('fiestaFinAnio')
-            .where('numEmpleado', '==', numEmpleado)
-            .get();
+        const querySnapshot = await getDocs(query(
+            collection(db, 'fiestaFinAnio'),
+            where('numEmpleado', '==', numEmpleado)
+        ));
             
         numEmpleadoExiste = !querySnapshot.empty;
         
@@ -241,9 +243,10 @@ async function verificarNombreCompleto() {
     if (!nombre || !apellidoPaterno || !apellidoMaterno) return false;
     
     try {
-        const querySnapshot = await db.collection('fiestaFinAnio')
-            .where('nombre', '==', nombreCompleto)
-            .get();
+        const querySnapshot = await getDocs(query(
+            collection(db, 'fiestaFinAnio'),
+            where('nombre', '==', nombreCompleto)
+        ));
             
         nombreCompletoExiste = !querySnapshot.empty;
         
@@ -403,9 +406,10 @@ async function enviarFormulario() {
     
     try {
         // Verificar una vez más antes de guardar (por seguridad)
-        const querySnapshot = await db.collection('fiestaFinAnio')
-            .where('numEmpleado', '==', numEmpleado)
-            .get();
+        const querySnapshot = await getDocs(query(
+            collection(db, 'fiestaFinAnio'),
+            where('numEmpleado', '==', numEmpleado)
+        ));
             
         if (!querySnapshot.empty) {
             notifications.hideAll();
@@ -415,9 +419,10 @@ async function enviarFormulario() {
             return;
         }
         
-        const querySnapshot2 = await db.collection('fiestaFinAnio')
-            .where('nombre', '==', nombreCompleto)
-            .get();
+        const querySnapshot2 = await getDocs(query(
+            collection(db, 'fiestaFinAnio'),
+            where('nombre', '==', nombreCompleto)
+        ));
             
         if (!querySnapshot2.empty) {
             notifications.hideAll();
@@ -428,7 +433,7 @@ async function enviarFormulario() {
         }
         
         // Guardar en Firebase (solo datos básicos)
-        await db.collection('fiestaFinAnio').add({
+        await addDoc(collection(db, 'fiestaFinAnio'), {
             nombre: nombreCompleto,
             apellidoPaterno: apellidoPaterno,
             apellidoMaterno: apellidoMaterno,

@@ -1,5 +1,6 @@
 // Importar configuración de Firebase desde archivo centralizado
 import { db } from '../firebase-config.js';
+import { collection, query, where, getDocs, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 
 // Variables globales
 let seleccion = null;
@@ -225,9 +226,10 @@ async function verificarNumEmpleado() {
     }
     
     try {
-        const querySnapshot = await db.collection('cenaNavidenia')
-            .where('numEmpleado', '==', numEmpleado)
-            .get();
+        const querySnapshot = await getDocs(query(
+            collection(db, 'cenaNavidenia'),
+            where('numEmpleado', '==', numEmpleado)
+        ));
             
         numEmpleadoExiste = !querySnapshot.empty;
         
@@ -270,9 +272,10 @@ async function verificarNombreCompleto() {
     if (!nombres || !apellidoPaterno || !apellidoMaterno) return false;
     
     try {
-        const querySnapshot = await db.collection('cenaNavidenia')
-            .where('nombre', '==', nombreCompleto)
-            .get();
+        const querySnapshot = await getDocs(query(
+            collection(db, 'cenaNavidenia'),
+            where('nombre', '==', nombreCompleto)
+        ));
             
         nombreCompletoExiste = !querySnapshot.empty;
         
@@ -441,9 +444,10 @@ async function enviarFormulario() {
     
     try {
         // Verificar una vez más antes de guardar (por seguridad)
-        const querySnapshot = await db.collection('cenaNavidenia')
-            .where('numEmpleado', '==', numEmpleado)
-            .get();
+        const querySnapshot = await getDocs(query(
+            collection(db, 'cenaNavidenia'),
+            where('numEmpleado', '==', numEmpleado)
+        ));
             
         if (!querySnapshot.empty) {
             notifications.hideAll();
@@ -453,9 +457,10 @@ async function enviarFormulario() {
             return;
         }
         
-        const querySnapshot2 = await db.collection('cenaNavidenia')
-            .where('nombre', '==', nombreCompleto)
-            .get();
+        const querySnapshot2 = await getDocs(query(
+            collection(db, 'cenaNavidenia'),
+            where('nombre', '==', nombreCompleto)
+        ));
             
         if (!querySnapshot2.empty) {
             notifications.hideAll();
@@ -466,7 +471,7 @@ async function enviarFormulario() {
         }
         
         // Guardar en Firebase
-        await db.collection('cenaNavidenia').add({
+        await addDoc(collection(db, 'cenaNavidenia'), {
             nombre: nombreCompleto,
             nombres: nombres,
             apellido1: apellidoPaterno,
