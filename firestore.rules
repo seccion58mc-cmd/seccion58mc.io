@@ -12,7 +12,10 @@ service cloud.firestore {
       // Make sure to write security rules for your app before that time, or
       // else all client requests to your database will be denied until you
       // update your rules.
-      allow read, write: if request.time < timestamp.date(2027, 1, 1);
+      allow read, update, delete: if request.time < timestamp.date(2027, 1, 1);
+      // Registro de cenaNavidenia cerrado (reactivar: quitar la condicion de document.matches)
+      allow create: if request.time < timestamp.date(2027, 1, 1)
+                    && !document.matches('cenaNavidenia/.*');
     }
   }
 }
