@@ -1,6 +1,9 @@
 // Importar configuración de Firebase desde archivo centralizado
 import { db } from '../firebase-config.js';
 import { collection, query, where, getDocs, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+import { bloquearSiCerrado } from '../formControl.js';
+
+await bloquearSiCerrado(db, 'fiestaFinAnio', 'fiestaForm');
 
 // Variables globales
 let numEmpleadoExiste = false;

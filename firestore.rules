@@ -13,9 +13,20 @@ service cloud.firestore {
       // else all client requests to your database will be denied until you
       // update your rules.
       allow read, update, delete: if request.time < timestamp.date(2027, 1, 1);
-      // Registro de cenaNavidenia cerrado (reactivar: quitar la condicion de document.matches)
-      allow create: if request.time < timestamp.date(2027, 1, 1)
-                    && !document.matches('cenaNavidenia/.*');
+    }
+
+    // Crear: respeta el interruptor Config/<formulario>.habilitado (false = cerrado)
+    match /{col}/{docId} {
+      allow create: if request.time < timestamp.date(2027, 1, 1) && formularioAbierto(col);
+    }
+
+    function formularioAbierto(col) {
+      let id = col == 'becasArchivos' ? 'becas' : col;
+      let cfg = /databases/$(database)/documents/Config/$(id);
+      return !(id in ['vacaciones', 'cenaNavidenia', 'fiestaFinAnio', 'contactosEmergencia', 'ayudaDefuncion',
+                      'beneficiarioEventual', 'becas', 'diamadres', 'diapadre', 'ListadoCorreos'])
+          || !exists(cfg)
+          || get(cfg).data.get('habilitado', true) != false;
     }
   }
 }

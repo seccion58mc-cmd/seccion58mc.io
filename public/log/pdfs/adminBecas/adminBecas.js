@@ -1,11 +1,14 @@
 import { collection, getDocs, doc, getDoc, updateDoc, deleteDoc, query, where }
     from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 import { limpiar, nombreZip, nombreBase } from './nombreZip.js';
+import { montarControl } from '../../../formControl.js';
 
 // Mismo guardia de sesion que adminTrabajadores / datosPorTrabajador
 if (sessionStorage.getItem('pdfAuth') !== 'true') {
     window.location.href = '../../index.html';
 }
+
+montarControl(window.db, 'becas', ['becas', 'becasArchivos'], { alLimpiar: () => location.reload() });
 
 // Mismos valores que el formulario publico (public/log/becas/becas.js)
 const NIVELES = ['Preescolar', 'Primaria', 'Secundaria', 'Preparatoria', 'Universidad'];

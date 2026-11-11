@@ -1,9 +1,9 @@
 // Importar configuración de Firebase desde archivo centralizado
 import { db } from '../firebase-config.js';
 import { collection, query, where, getDocs, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+import { bloquearSiCerrado } from '../formControl.js';
 
-// Registro cerrado. Para reactivar: false aquí y quitar el bloqueo en firestore.rules
-const REGISTRO_CERRADO = true;
+await bloquearSiCerrado(db, 'cenaNavidenia', 'cenaForm');
 
 // Variables globales
 let seleccion = null;
@@ -129,10 +129,6 @@ const notifications = new NotificationSystem();
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
-    if (REGISTRO_CERRADO) {
-        form.innerHTML = '<h2>El periodo de registro ha concluido</h2><p>Ya no se reciben más elecciones.</p>';
-        return;
-    }
     opcionPavo.addEventListener('click', () => seleccionarOpcion('pavo'));
     opcionPierna.addEventListener('click', () => seleccionarOpcion('pierna'));
     
@@ -433,7 +429,6 @@ async function manejarEnvioFormulario(e) {
 
 // Función para enviar el formulario
 async function enviarFormulario() {
-    if (REGISTRO_CERRADO) return;
     // Obtener y limpiar datos
     const nombres = nombresInput.value.trim().toUpperCase();
     const apellidoPaterno = apellidoPaternoInput.value.trim().toUpperCase();

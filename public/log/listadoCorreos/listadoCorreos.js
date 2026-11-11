@@ -1,4 +1,7 @@
 import { collection, addDoc, query, where, getDocs, Timestamp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+import { bloquearSiCerrado } from '../../formControl.js';
+
+await bloquearSiCerrado(window.db, 'ListadoCorreos', 'formCorreos');
 
 document.addEventListener('DOMContentLoaded', () => {
     // Configurar año actual en el footer

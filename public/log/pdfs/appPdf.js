@@ -15,6 +15,7 @@ import {
     writeBatch
 } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 import { aplicarCorreccionesDepto } from './correccionDepto.js';
+import { montarControl } from '../../formControl.js';
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -302,112 +303,6 @@ async function generarPDFCena(tipoCena) {
         swalDark({ icon: 'error', title: 'Error', text: 'Error al generar el PDF: ' + error.message });
     }
 }
-
-// Función para borrar la base de datos de cena navideña (pavo y pierna)
-async function borrarBaseDatosCena() {
-    try {
-        swalLoading('Consultando registros de obsequios...');
-        const querySnapshot = await getDocs(collection(db, 'cenaNavidenia'));
-        Swal.close();
-
-        const totalRegistros = querySnapshot.size;
-
-        if (totalRegistros === 0) {
-            swalDark({
-                icon: 'info',
-                title: 'Base de datos vacía',
-                text: 'No se encontraron registros de obsequios (Pavo o Pierna) para eliminar.'
-            });
-            return;
-        }
-
-        // Confirmación protegida: hay que escribir BORRAR para habilitar el borrado
-        const confirmacion = await Swal.fire({
-            title: '¿Seguro que quieres borrar TODO?',
-            html: `
-                <div style="text-align: left; font-size: 14px; line-height: 1.5; color: #F0F4FF;">
-                    <p style="margin-bottom: 12px;">
-                        Se encontraron <strong style="color:#00E5FF; font-size:16px;">${totalRegistros}</strong> registros de elecciones de <strong>Pavo y Pierna</strong>.
-                    </p>
-                    <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 8px; padding: 12px; margin-top: 10px; font-size: 13px; color: #fca5a5;">
-                        <i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px; color: #ef4444;"></i>
-                        <strong>ATENCIÓN:</strong> Esta acción es irreversible. Se eliminarán permanentemente todos los registros de la colección <code>cenaNavidenia</code>.
-                    </div>
-                    <p style="margin-top: 14px; font-size: 13px;">Para confirmar escribe <strong style="color:#ef4444;">BORRAR</strong>:</p>
-                </div>
-            `,
-            icon: 'warning',
-            input: 'text',
-            inputPlaceholder: 'Escribe BORRAR',
-            inputAttributes: { autocapitalize: 'characters', autocomplete: 'off' },
-            showCancelButton: true,
-            focusCancel: true,
-            confirmButtonText: 'Sí, borrar base de datos',
-            cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#DC2626',
-            cancelButtonColor: '#374151',
-            background: '#111827',
-            color: '#F0F4FF',
-            preConfirm: (valor) => {
-                if ((valor || '').trim().toUpperCase() !== 'BORRAR') {
-                    Swal.showValidationMessage('Debes escribir BORRAR para confirmar');
-                    return false;
-                }
-                return true;
-            }
-        });
-
-        if (!confirmacion.isConfirmed) {
-            return;
-        }
-
-        swalLoading(`Eliminando ${totalRegistros} registros de obsequios...`);
-
-        const docs = querySnapshot.docs;
-        const BATCH_SIZE = 400;
-
-        for (let i = 0; i < docs.length; i += BATCH_SIZE) {
-            const batch = writeBatch(db);
-            docs.slice(i, i + BATCH_SIZE).forEach(docSnap => batch.delete(docSnap.ref));
-            await batch.commit();
-        }
-
-        // Verificar que la colección quedó realmente vacía
-        const restantes = (await getDocs(collection(db, 'cenaNavidenia'))).size;
-        Swal.close();
-
-        if (restantes > 0) {
-            swalDark({
-                icon: 'error',
-                title: 'Borrado incompleto',
-                text: `Aún quedan ${restantes} registros. Intenta de nuevo.`
-            });
-            return;
-        }
-
-        await Swal.fire({
-            icon: 'success',
-            title: 'Base de datos eliminada',
-            text: `Se eliminaron ${totalRegistros} registros. La colección quedó vacía y lista para nuevos registros.`,
-            confirmButtonColor: '#2979FF',
-            background: '#111827',
-            color: '#F0F4FF'
-        });
-
-    } catch (error) {
-        console.error('Error al borrar la base de datos de obsequios:', error);
-        Swal.close();
-        swalDark({
-            icon: 'error',
-            title: 'Error al eliminar',
-            text: 'Ocurrió un error al intentar borrar los registros: ' + error.message
-        });
-    }
-}
-
-
-
-
 
 // Función para generar PDF de vacaciones
 async function generatePDF(servicio, cuatrimestre = '1er') {
@@ -1478,6 +1373,14 @@ function initApp() {
     const userLabel = document.getElementById('user-label');
     if (userLabel && usuario) userLabel.textContent = usuario;
     
+    // Interruptor abrir/cerrar y limpieza de registros por formulario
+    [
+        ['section-vacaciones', 'vacaciones'],
+        ['section-cena', 'cenaNavidenia'],
+        ['section-celebracion', 'fiestaFinAnio'],
+        ['section-correos', 'ListadoCorreos']
+    ].forEach(([seccion, id]) => montarControl(db, id, [id], { ancla: `#${seccion} .section-header` }));
+
     // Agregar event listeners a los botones de áreas
     document.querySelectorAll('.service-btn').forEach(button => {
         button.addEventListener('click', (e) => {
@@ -1485,8 +1388,6 @@ function initApp() {
             if (!service) return; // Si es un botón de navegación pura (sin data-service), no hacer nada
             if (service === 'PAVO' || service === 'PIERNA') {
                 generarPDFCena(service);
-            } else if (service === 'BORRAR_CENA') {
-                borrarBaseDatosCena();
             } else if (service === 'FIESTA_FIN_ANIO') {
                 generarPDFFiestaFinAnio();
             } else if (service === 'LISTADO_CORREOS') {

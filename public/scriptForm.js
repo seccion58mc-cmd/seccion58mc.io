@@ -1,5 +1,6 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
-import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+import { bloquearSiCerrado } from './formControl.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyCcBqpSXsz_wqm3xyg0NSJYnvQTK0NhkXg",
@@ -13,6 +14,8 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+await bloquearSiCerrado(db, 'vacaciones', 'vacations-form');
 
 const CUATRIMESTRES = {
     '1er': {
@@ -248,21 +251,6 @@ window.removeFestivo = function (monthNum, day) {
     if (idx !== -1) {
         const mes = info.meses[idx];
         generateCalendar(`mes${idx + 1}`, mes.year, mes.monthNum - 1, mes.monthNum);
-    }
-};
-
-window.borrarRegistrosAnteriores = async function () {
-    if (!confirm('¿Estas seguro de que deseas borrar TODOS los registros de vacaciones?\n\nEsta accion no se puede deshacer.')) return;
-    if (!confirm('Confirma una vez mas: ¿Borrar TODOS los registros de vacaciones?')) return;
-
-    try {
-        showNotification('Eliminando registros...', 'success');
-        const snapshot = await getDocs(collection(db, 'vacaciones'));
-        await Promise.all(snapshot.docs.map(d => deleteDoc(d.ref)));
-        showNotification(`${snapshot.docs.length} registros eliminados correctamente`, 'success');
-        if (currentCarpeta) loadNextFolioForCarpeta(currentCarpeta, document.getElementById('departamento').value);
-    } catch (error) {
-        showNotification('Error al eliminar registros: ' + error.message, 'error');
     }
 };
 

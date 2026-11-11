@@ -1,4 +1,7 @@
 import { collection, getDocs, doc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+import { montarControl } from '../../../formControl.js';
+
+montarControl(window.db, 'diamadres', ['diamadres'], { alLimpiar: () => location.reload() });
 
 let registros = [];
 let registroActual = null;
