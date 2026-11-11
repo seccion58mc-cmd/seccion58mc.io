@@ -21,33 +21,58 @@ export async function bloquearSiCerrado(db, id, formId) {
     return true;
 }
 
-async function pedirBorrar(total) {
-    const texto = `Se eliminarán ${total} registros de forma permanente. Para confirmar escribe BORRAR`;
-    if (window.Swal) {
-        const r = await Swal.fire({
-            title: '¿Seguro que quieres borrar TODO?',
-            html: `Se eliminarán <strong>${total}</strong> registros de forma permanente.<br>Para confirmar escribe <strong style="color:#ef4444;">BORRAR</strong>:`,
-            icon: 'warning',
-            input: 'text',
-            inputAttributes: { autocapitalize: 'characters', autocomplete: 'off' },
-            showCancelButton: true,
-            focusCancel: true,
-            confirmButtonText: 'Sí, borrar',
-            cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#DC2626',
-            cancelButtonColor: '#374151',
-            background: '#111827',
-            color: '#F0F4FF',
-            preConfirm: v => (v || '').trim().toUpperCase() === 'BORRAR' || Swal.showValidationMessage('Debes escribir BORRAR para confirmar')
-        });
-        return r.isConfirmed;
-    }
-    return (prompt(texto) || '').trim().toUpperCase() === 'BORRAR';
+// Diálogo propio (mismo aspecto en todos los paneles). `input`: texto que hay que escribir para habilitar el botón.
+function dialogo({ icono, color, titulo, html, input, confirmar = 'Aceptar', cancelar }) {
+    return new Promise(resolve => {
+        const ov = document.createElement('div');
+        ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;';
+        const b = 'flex:1;padding:12px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;border:1px solid ';
+        ov.innerHTML = `
+            <div style="background:#111827;color:#F0F4FF;border:1px solid rgba(255,255,255,.1);border-radius:16px;width:100%;max-width:420px;padding:28px;text-align:center;box-shadow:0 10px 60px rgba(0,0,0,.7);">
+                <div style="width:56px;height:56px;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:24px;color:${color};background:${color}26;"><i class="fa-solid ${icono}"></i></div>
+                <h3 style="margin:0 0 8px;font-size:20px;color:#F0F4FF;">${titulo}</h3>
+                <p style="margin:0;color:#8FA3C0;font-size:14px;line-height:1.5;">${html}</p>
+                ${input ? '<input type="text" autocomplete="off" style="width:100%;box-sizing:border-box;margin-top:16px;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);color:#F0F4FF;font-size:15px;text-align:center;letter-spacing:2px;outline:none;">' : ''}
+                <div style="display:flex;gap:10px;margin-top:22px;">
+                    ${cancelar ? `<button type="button" class="fc-no" style="${b}rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#F0F4FF;">${cancelar}</button>` : ''}
+                    <button type="button" class="fc-si" style="${b}${color};background:${color};color:#fff;">${confirmar}</button>
+                </div>
+            </div>`;
+        document.body.appendChild(ov);
+
+        const si = ov.querySelector('.fc-si');
+        const campo = ov.querySelector('input');
+        const cerrar = r => { document.removeEventListener('keydown', tecla); ov.remove(); resolve(r); };
+        const tecla = e => { if (e.key === 'Escape') cerrar(false); };
+        document.addEventListener('keydown', tecla);
+        ov.addEventListener('click', e => { if (e.target === ov) cerrar(false); });
+        si.addEventListener('click', () => cerrar(true));
+        if (cancelar) ov.querySelector('.fc-no').addEventListener('click', () => cerrar(false));
+        if (campo) {
+            const revisar = () => {
+                const ok = campo.value.trim().toUpperCase() === input;
+                si.disabled = !ok;
+                si.style.opacity = ok ? '1' : '.4';
+                si.style.cursor = ok ? 'pointer' : 'not-allowed';
+            };
+            campo.placeholder = `Escribe ${input}`;
+            campo.addEventListener('input', revisar);
+            revisar();
+            campo.focus();
+        }
+    });
 }
 
-const aviso = msg => window.Swal
-    ? Swal.fire({ text: msg, background: '#111827', color: '#F0F4FF', confirmButtonColor: '#2979FF' })
-    : alert(msg);
+const pedirBorrar = total => dialogo({
+    icono: 'fa-triangle-exclamation', color: '#EF4444', titulo: '¿Borrar todos los registros?',
+    html: `Se eliminarán <strong style="color:#F0F4FF;">${total}</strong> registros de forma permanente.<br>Para confirmar escribe <strong style="color:#EF4444;">BORRAR</strong>.`,
+    input: 'BORRAR', confirmar: 'Sí, borrar', cancelar: 'Cancelar'
+});
+
+const aviso = (msg, error = false) => dialogo({
+    icono: error ? 'fa-circle-xmark' : 'fa-circle-check', color: error ? '#EF4444' : '#22C55E',
+    titulo: error ? 'Ocurrió un error' : 'Listo', html: msg
+});
 
 // Admin: barra con estado, botón habilitar/deshabilitar y limpiar registros.
 // Solo borra las colecciones indicadas en `colecciones`.
@@ -74,12 +99,17 @@ export async function montarControl(db, id, colecciones, { ancla = '.admin-conta
 
     toggle.addEventListener('click', async () => {
         const nuevo = !abierto;
-        if (!confirm(nuevo ? '¿Habilitar el formulario? Volverá a recibir respuestas.' : '¿Deshabilitar el formulario? Dejará de recibir respuestas.')) return;
+        if (!await dialogo({
+            icono: nuevo ? 'fa-lock-open' : 'fa-lock', color: nuevo ? '#22C55E' : '#EF4444',
+            titulo: nuevo ? 'Habilitar formulario' : 'Deshabilitar formulario',
+            html: nuevo ? 'El formulario volverá a recibir respuestas de los trabajadores.' : 'Dejará de recibir respuestas y los trabajadores verán el aviso de formulario cerrado.',
+            confirmar: nuevo ? 'Habilitar' : 'Deshabilitar', cancelar: 'Cancelar'
+        })) return;
         try {
             await setDoc(doc(db, 'Config', id), { habilitado: nuevo }, { merge: true });
             abierto = nuevo;
             pintar();
-        } catch (err) { aviso('No se pudo cambiar el estado: ' + err.message); }
+        } catch (err) { aviso('No se pudo cambiar el estado: ' + err.message, true); }
     });
 
     barra.querySelector('.fc-limpiar').addEventListener('click', async () => {
@@ -99,6 +129,6 @@ export async function montarControl(db, id, colecciones, { ancla = '.admin-conta
             }
             await aviso(`Se eliminaron ${total} registros.`);
             if (alLimpiar) alLimpiar();
-        } catch (err) { aviso('Error al borrar registros: ' + err.message); }
+        } catch (err) { aviso('Error al borrar registros: ' + err.message, true); }
     });
 }
