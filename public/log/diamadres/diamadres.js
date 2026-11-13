@@ -1,7 +1,7 @@
 import { collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 import { bloquearSiCerrado } from '../../formControl.js';
 
-await bloquearSiCerrado(window.db, 'diamadres', 'diaMadresForm');
+bloquearSiCerrado(window.db, 'diamadres', 'diaMadresForm');
 
 // ── Estado global ──────────────────────────────────────────
 let hijosCount = 0;

@@ -15,7 +15,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-await bloquearSiCerrado(db, 'vacaciones', 'vacations-form');
+bloquearSiCerrado(db, 'vacaciones', 'vacations-form');
 
 const CUATRIMESTRES = {
     '1er': {

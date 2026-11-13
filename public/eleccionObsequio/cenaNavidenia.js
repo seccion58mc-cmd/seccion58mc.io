@@ -3,7 +3,7 @@ import { db } from '../firebase-config.js';
 import { collection, query, where, getDocs, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 import { bloquearSiCerrado } from '../formControl.js';
 
-await bloquearSiCerrado(db, 'cenaNavidenia', 'cenaForm');
+bloquearSiCerrado(db, 'cenaNavidenia', 'cenaForm');
 
 // Variables globales
 let seleccion = null;

@@ -2,7 +2,7 @@ import { db } from '../firebase-config.js';
 import { collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 import { bloquearSiCerrado } from '../formControl.js';
 
-await bloquearSiCerrado(db, 'contactosEmergencia', 'contactoForm');
+bloquearSiCerrado(db, 'contactosEmergencia', 'contactoForm');
 
 let contacto2Activo = false;
 
